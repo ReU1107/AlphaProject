@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="AlphaEngine/AlphaEngine.vcxproj" Id="b9014fab-7201-42ba-85ef-5f4db9a47e6b" />
+</Solution>

@@ -1,0 +1,278 @@
+﻿#pragma once
+#include "Core/Types.h"
+#include "Core/EnumClassUtil.h"
+
+namespace Alpha
+{
+	enum class ERHICommandType
+	{
+		Direct,
+		Bundle,
+		Compute,
+		Copy,
+	};
+
+	enum class ERHIDescriptorType
+	{
+		SRV_UAV_CBV,	 
+		RTV,			 
+		DSV,			 
+		Sampler,
+	};
+
+	enum class ERHIResourceViewType
+	{
+		Unknown,
+		ShaderResourceView,			// SRV
+		UnorderedAccessView,		// UAV
+		ConstantBufferView,			// CBV
+		RenderTargetView,			// RTV
+		DepthStencilView,			// DSV
+		SamplerView,				// Sampler
+	};
+
+	enum class ERHIPipelineLayoutFlags
+	{
+		InputAssembler	= 1 << 0,	//
+		Local			= 1 << 1,	// レイトレ用(今どき全部グローバルでよくてもいいらしいけど)
+		Bindless		= 1 << 2,	// バインドレスリソースを使用するか
+	};
+
+	EnumClassFlags(ERHIPipelineLayoutFlags);
+
+	enum class ERHIIndirectArgType
+	{
+		Draw,
+		DrawIndexed,
+		Dispatch,
+		Constant,
+		VertexBuffer,
+		IndexBuffer,
+	};
+
+	enum class ERHIAddressMode 
+	{ 
+		Wrap, 
+		Mirror, 
+		Clamp,
+		Border 
+	};
+
+	enum class ERHIFilter 
+	{
+		Point, 
+		Linear, 
+		Anisotropic,
+		ComparisonLinear 
+	};
+
+	enum class ERHIComparisonFunc
+	{ 
+		Never,
+		Less, 
+		Equal, 
+		LessEqual, 
+		Always
+	};
+
+	enum class ERHIParameterType
+	{
+		RootConstants,
+		RootDescriptors,
+		DescriptorTable,
+	};
+
+	enum class ERHIPipelineType
+	{
+		Graphics,
+		Compute,
+		RayTracing,
+	};
+
+	enum class ERHIResourceDimension
+	{
+		Unknown,	// テクスチャタイプが初期化されていないか、不明です。
+		None,		// テクスチャが指定されていません。
+		Any,		// すべてのテクスチャタイプ。
+		Tex1D,		// 1Dテクスチャ
+		Tex2D,		// 2Dテクスチャ(Texture2D)。
+		Tex3D,		// 3Dボリュームテクスチャ(Texture3D)。
+		Cube,		// キューブマップ テクスチャ。
+		Tex2DArray,	// 2D配列テクスチャ(Texture2DArray)。
+		CubeArray,	// Cubemap array texture(CubemapArray).
+	};
+
+	enum class ERHIResourceViewFlags
+	{
+		None = 0x0,
+		ByteAddressBuffer				= 1 << 0,	// バイトアドレスバッファとして使用
+		RayTracingAccelerationStructure = 1 << 1,	// レイトレーシング加速構造体として使用
+	};
+
+	EnumClassFlags(ERHIResourceViewFlags);
+
+	enum class ERHIResourceFlags
+	{
+		None					= 0,		// なし
+		AllowRenderTarget		= 1 << 0,	// 描画先指定許可
+		AllowDepthStencil		= 1 << 1,	// 深度、ステンシル書き込み許可
+		AllowUnorderedAccess	= 1 << 2,	// コンピュートシェーダーのアクセス許可
+		DenyShaderResource		= 1 << 3,	// シェーダーリソース指定不許可
+		AllowCrossAdapter		= 1 << 4,	// 別々のアダプターでの使用許可
+		AllowSimultaneousAccess = 1 << 5,	// 
+		DecodeReferenceOnly		= 1 << 6,	// 
+	};
+
+	EnumClassFlags(ERHIResourceFlags);
+
+	enum class ERHIPrimitiveTopology
+	{
+		Umdefined = 0,
+		PointList = 1,
+		LineList = 2,
+		LineStrip = 3,
+		TriangleList = 4,
+		TriangleStrip = 5,
+	};
+
+	enum class ERHIResourceState
+	{
+		Common = 0,							// なし
+		VertexConstantBuffer	 = 1 << 0,	// 頂点,定数バッファ
+		IndexBuffer				 = 1 << 1,	// インデックスバッファ
+		RenderTarget			 = 1 << 2,	// レンダーターゲット
+		UnorderedAccess			 = 1 << 3,	// アンオーダードアクセス
+		DepthWrite				 = 1 << 4,	// 深度書き込み
+		DepthRead				 = 1 << 5,	// 深度読み込み
+		NonPixelShaderResource	 = 1 << 6,	// ピクセルシェーダー内でのリソースとして扱わない
+		PixelShaderResource		 = 1 << 7,	// ピクセルシェーダー内でリソースとして扱う
+		StreamOut				 = 1 << 8,	// ストリームアウト
+		IndirectArgument		 = 1 << 9,	// 即時
+		CopyDestination			 = 1 << 10,	// コピー先
+		CopySource				 = 1 << 11,	// コピー元
+		ResolveDestination		 = 1 << 12,	// 
+		ResolveSource			 = 1 << 13,	// 
+		RaytracingStructure		 = 1 << 14,	// レイトレーシング構造体
+		GenericRead = ((((					// 一般的な読み込み用のステート
+			(VertexConstantBuffer | IndexBuffer)
+			| NonPixelShaderResource)
+			| PixelShaderResource)
+			| IndirectArgument) | CopySource),
+		Present					 = 1 << 15,	// プレゼント
+	};
+
+	EnumClassFlags(ERHIResourceState);
+
+	enum class ERHIBufferAccess
+	{
+		Static,   // GPU専用 (DEFAULT heap)
+		Dynamic,  // CPUからアクセス可能 (UPLOAD heap / ConstantBuffer的)
+		Staging,  // 読み戻し用 (READBACK heap)
+	};
+
+	enum class ERHIBufferBindFlags
+	{
+		None = 0,
+		ShaderResource	= 1 << 0, // 基本これ
+		UnorderedAccess = 1 << 1, // RWならこれ
+		Raw				= 1 << 2, // ByteAddressBuffer
+	};
+
+	EnumClassFlags(ERHIBufferBindFlags);
+
+	enum class ERHIResourceFormat
+	{
+		Unknown,
+		RGBA32UInt,
+		RGBA32SInt,
+		RGBAFloat,
+		RGBAHalf,
+		RGBAUnorm,
+		RGBFloat,
+		RGFloat,
+		RFloat,
+		RUInt,
+		RGHalf,
+		RHalf,
+		Depth32,
+		Depth16,
+		Depth24Stencil8,
+		RGB10A2Unorm,
+	};
+
+	enum class ERHIIndexFormat
+	{
+		UInt16,		// 16bit 2byte
+		UInt32,		// 32bit 4byte
+	};
+
+	enum class ERHIShaderType
+	{
+		Vertex,	// 
+		Pixel,	// 
+		Geometry,	// 
+		Hull,	// 
+		Domain,	// 
+		Mesh,	// 
+		Compute,	// 
+		RayTracing,	// 
+		Library,
+	};
+
+	enum class ERHIShaderFlags
+	{
+		All					= 0,		// 最適化するなら↓を活用して
+		Vertex				= 1 << 0,	// 
+		Pixel				= 1 << 1,	// 
+		Geometry			= 1 << 2,	// 
+		Hull				= 1 << 3,	// 
+		Domain				= 1 << 4,	// 
+		Mesh				= 1 << 5,	// 
+		Compute				= 1 << 6,	// 
+		RayTracing			= 1 << 7,	// 
+		Library				= 1 << 8,
+	};
+
+	EnumClassFlags(ERHIShaderFlags);
+	EnumFlagsFromType(ERHIShaderFlags, ERHIShaderType);
+
+	enum class ERHICullMode
+	{
+		None,
+		Front,
+		Back,
+		FrontAndBack,
+	};
+
+	enum class ERHIFillMode
+	{
+		Solid,
+		Wireframe,
+	};
+
+	enum class ERHIBlend
+	{
+		Zero,
+		One,
+		SrcColor,
+		InvSrcColor,
+		SrcAlpha,
+		InvSrcAlpha,
+		DestAlpha,
+		InvDestAlpha,
+		DestColor,
+		InvDestColor,
+		SrcAlphaSat,
+		BlendFactor,
+		InvBlendFactor,
+	};
+
+	enum class ERHIBlendOp
+	{
+		Add,
+		Subtract,
+		RevSubtract,
+		Min,
+		Max,
+	};
+}
