@@ -1,0 +1,24 @@
+﻿
+一旦vulkanは停止
+
+
+VkSemaphoreの管理方法
+
+
+
+SwapchainはQueueが持つ、いま実行している(Submit)SignalSemaphoreの配列を使用する。
+
+基本的にそのセマフォの実体は実行するCommandList達が持っているものであり。
+実効が完了したらQueueのセマフォ配列をクリアする。
+
+
+
+// Swapchainに関して
+Swapchainの作成時にキャパシティを取得して作ると思うが
+基本的に2が返ってくる
+
+vkAcquireNextImageKHR()のタイムアウトにUINT64_MAXを指定すると
+Swapchainのバックバッファ(イメージ)を3つやそれ以上で作成していた時エラーになる。
+
+
+
