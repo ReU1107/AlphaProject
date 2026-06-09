@@ -159,6 +159,7 @@
     <ClCompile Include="Source\Core\Time\TimeManager.cpp" />
     <ClCompile Include="Source\Core\Window\Win32Window.cpp" />
     <ClCompile Include="Source\Core\Window\WindowSystem.cpp" />
+    <ClCompile Include="Source\Runtime\Audio\AudioSystem.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12Buffer.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12CommandBuffer.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12CommandQueue.cpp" />
@@ -174,6 +175,7 @@
     <ClCompile Include="Source\Runtime\D3D12\D3D12SwapChain.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12Texture.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12Timeline.cpp" />
+    <ClCompile Include="Source\Runtime\XAudio2\XAudio2Device.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\Buffer\Buffer.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\Buffer\ByteAddressBuffer.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\Buffer\ConstantBuffer.cpp" />
@@ -199,6 +201,11 @@
     <ClCompile Include="Source\Runtime\RenderCore\Texture\RenderTexture.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\Texture\Texture.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\Timeline.cpp" />
+    <ClCompile Include="Source\Runtime\XAudio2\XAudio2Dynamic.cpp" />
+    <ClCompile Include="Source\Runtime\XAudio2\XAudio2Effect.cpp" />
+    <ClCompile Include="Source\Runtime\XAudio2\XAudio2MasterBus.cpp" />
+    <ClCompile Include="Source\Runtime\XAudio2\XAudio2SourceBus.cpp" />
+    <ClCompile Include="Source\Runtime\XAudio2\XAudio2SubmixBus.cpp" />
     <ClCompile Include="Test.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -206,6 +213,7 @@
     <ClInclude Include="Source\Core\Common.h" />
     <ClInclude Include="Source\Core\Component.h" />
     <ClInclude Include="Source\Core\Container\Array.h" />
+    <ClInclude Include="Source\Core\Container\Hierarchy.h" />
     <ClInclude Include="Source\Core\Container\Map.h" />
     <ClInclude Include="Source\Core\EnumClassUtil.h" />
     <ClInclude Include="Source\Core\IO\BinaryReader.h" />
@@ -234,6 +242,17 @@
     <ClInclude Include="Source\Core\Window\IWindow.h" />
     <ClInclude Include="Source\Core\Window\Win32Window.h" />
     <ClInclude Include="Source\Core\Window\WindowSystem.h" />
+    <ClInclude Include="Source\Runtime\AHI\AHIDynamic.h" />
+    <ClInclude Include="Source\Runtime\AHI\AHIEffect.h" />
+    <ClInclude Include="Source\Runtime\AHI\AHIMasterBus.h" />
+    <ClInclude Include="Source\Runtime\AHI\AHISourceBus.h" />
+    <ClInclude Include="Source\Runtime\AHI\AHISubmixBus.h" />
+    <ClInclude Include="Source\Runtime\AHI\Declarations.h" />
+    <ClInclude Include="Source\Runtime\AHI\Definitions.h" />
+    <ClInclude Include="Source\Runtime\AHI\Types.h" />
+    <ClInclude Include="Source\Runtime\Audio\DistortionEffect.h" />
+    <ClInclude Include="Source\Runtime\Audio\Wave.h" />
+    <ClInclude Include="Source\Runtime\Audio\AudioSystem.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12Buffer.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12CommandBuffer.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12CommandQueue.h" />
@@ -251,6 +270,8 @@
     <ClInclude Include="Source\Runtime\D3D12\D3D12Timeline.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12Util.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12WorkGraphPipeline.h" />
+    <ClInclude Include="Source\Runtime\Scene\Scene.h" />
+    <ClInclude Include="Source\Runtime\XAudio2\XAudio2Device.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Buffer\Buffer.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Buffer\ByteAddressBuffer.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Buffer\ConstantBuffer.h" />
@@ -301,6 +322,11 @@
     <ClInclude Include="Source\Runtime\RHI\RHITimeline.h" />
     <ClInclude Include="Source\Runtime\RHI\RHIWorkGraphPipeline.h" />
     <ClInclude Include="Source\Runtime\RHI\Types.h" />
+    <ClInclude Include="Source\Runtime\XAudio2\XAudio2Dynamic.h" />
+    <ClInclude Include="Source\Runtime\XAudio2\XAudio2Effect.h" />
+    <ClInclude Include="Source\Runtime\XAudio2\XAudio2MasterBus.h" />
+    <ClInclude Include="Source\Runtime\XAudio2\XAudio2SourceBus.h" />
+    <ClInclude Include="Source\Runtime\XAudio2\XAudio2SubmixBus.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -28,7 +28,7 @@ namespace Alpha
 #if _DEBUG
 		//flag |= DXGI_CREATE_FACTORY_DEBUG;
 #endif
-		hr = CreateDXGIFactory2(flag, IID_PPV_ARGS(&mFactory));
+		hr = CreateDXGIFactory2(flag, IID_PPV_ARGS(&m_factory));
 
 		if (ALPHA_CHECK_FATAL(FAILED(hr), L"DXGIファクトリーの作成に失敗しました"))
 		{
@@ -41,7 +41,7 @@ namespace Alpha
 		ComPtr<IDXGIAdapter4> adapter = nullptr;
 		per = performance ? DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE : DXGI_GPU_PREFERENCE_MINIMUM_POWER;
 
-		hr = mFactory->EnumAdapterByGpuPreference(0, per, IID_PPV_ARGS(&mAdapter));
+		hr = m_factory->EnumAdapterByGpuPreference(0, per, IID_PPV_ARGS(&m_adapter));
 
 		if (ALPHA_CHECK_FATAL(FAILED(hr), L"DXGIアダプター作成に失敗しました"))
 		{
@@ -63,14 +63,14 @@ namespace Alpha
 			pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
 		}
 #endif
-		hr = D3D12CreateDevice(mAdapter.Get(), D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&mDevice));
+		hr = D3D12CreateDevice(m_adapter.Get(), D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&m_device));
 		if (ALPHA_CHECK_FATAL(FAILED(hr), L"D3D12デバイスの作成に失敗しました"))
 		{
 			return false;
 		}
 
 		ComPtr<ID3D12InfoQueue> info;
-		if (SUCCEEDED(mDevice.As(&info)))
+		if (SUCCEEDED(m_device.As(&info)))
 		{
 			// 深刻なエラーの時だけデバッガを止める
 			info->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
