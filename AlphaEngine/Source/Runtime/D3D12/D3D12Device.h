@@ -17,16 +17,16 @@ namespace Alpha
 
 		bool Initialize();
 
-		ID3D12Device15* GetDevice() const { return mDevice.Get(); }
-		IDXGIAdapter4* GetAdapter() const { return mAdapter.Get(); }
-		IDXGIFactory7* GetFactory() const { return mFactory.Get(); }
+		ID3D12Device15* GetDevice() const { return m_device.Get(); }
+		IDXGIAdapter4* GetAdapter() const { return m_adapter.Get(); }
+		IDXGIFactory7* GetFactory() const { return m_factory.Get(); }
 
 	private:
 
-		ComPtr<ID3D12Device15> mDevice{ nullptr };
+		ComPtr<ID3D12Device15> m_device{ nullptr };
 
-		ComPtr<IDXGIAdapter4> mAdapter{ nullptr };
-		ComPtr<IDXGIFactory7> mFactory{ nullptr };
+		ComPtr<IDXGIAdapter4> m_adapter{ nullptr };
+		ComPtr<IDXGIFactory7> m_factory{ nullptr };
 
 	};
 
@@ -34,24 +34,24 @@ namespace Alpha
 	{
 	public:
 		D3D12DeviceChild(D3D12Device* device)
-			: mDevice(device)
+			: m_device(device)
 		{
 
 		}
 		virtual ~D3D12DeviceChild()
 		{
-			mDevice = nullptr;
+			m_device = nullptr;
 		}
 
 	protected:
-		D3D12Device* GetDeviceObject() const { return mDevice; }
-		ID3D12Device15* GetD3D12Device() const { return mDevice->GetDevice(); }
-		IDXGIAdapter4* GetDXGIAdapter() const { return mDevice->GetAdapter(); }
-		IDXGIFactory7* GetFactory() const { return mDevice->GetFactory(); }
+		D3D12Device* GetDeviceObject() const { return m_device; }
+		ID3D12Device15* GetD3D12Device() const { return m_device->GetDevice(); }
+		IDXGIAdapter4* GetDXGIAdapter() const { return m_device->GetAdapter(); }
+		IDXGIFactory7* GetFactory() const { return m_device->GetFactory(); }
 
 
 	private:
-		D3D12Device* mDevice{ nullptr };
+		D3D12Device* m_device{ nullptr };
 	};
 
 }

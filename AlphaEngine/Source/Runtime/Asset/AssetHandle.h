@@ -8,6 +8,7 @@ namespace Alpha
 {
 	enum class AssetType
 	{
+		Audio,
 		Model,
 		Motion,
 		Texture,
