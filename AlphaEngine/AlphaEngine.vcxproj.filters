@@ -54,19 +54,7 @@
     <ClCompile Include="Source\Core\Object.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\Buffer.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\ByteAddressBuffer.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\ConstantBuffer.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\RingBuffer.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\StructuredBuffer.cpp">
+    <ClCompile Include="Source\Runtime\RenderCore\Buffer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\RenderCore\Pipeline\ComputePipeline.cpp">
@@ -81,13 +69,7 @@
     <ClCompile Include="Source\Runtime\RenderCore\Pipeline\VertexLayout.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\Texture\DepthTexture.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\Texture\RenderTexture.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\Texture\Texture.cpp">
+    <ClCompile Include="Source\Runtime\RenderCore\Texture.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\RenderCore\CommandList.cpp">
@@ -97,9 +79,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\RenderCore\DescriptorHeap.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\DescriptorTable.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\RenderCore\GPUDataTransfer.cpp">
@@ -196,6 +175,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2Effect.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\RenderCore\DescriptorHandle.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -296,19 +278,7 @@
     <ClInclude Include="Source\Core\Container\Map.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\Buffer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\ByteAddressBuffer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\ConstantBuffer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\RingBuffer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\StructuredBuffer.h">
+    <ClInclude Include="Source\Runtime\RenderCore\Buffer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RenderCore\Pipeline\ComputePipeline.h">
@@ -326,13 +296,7 @@
     <ClInclude Include="Source\Runtime\RenderCore\Pipeline\VertexLayout.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\Texture\DepthTexture.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\Texture\RenderTexture.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\Texture\Texture.h">
+    <ClInclude Include="Source\Runtime\RenderCore\Texture.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RenderCore\CommandList.h">
@@ -345,9 +309,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RenderCore\DescriptorHeap.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\DescriptorTable.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RenderCore\GPUDataTransfer.h">
@@ -366,9 +327,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RenderCore\RenderHardwareInterface.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\Resources.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RenderCore\SamplerState.h">
@@ -552,6 +510,18 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Scene\Scene.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Audio\AudioSource.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Scene\SceneObject.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Allocator\Allocator.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Allocator\LinearAllocator.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

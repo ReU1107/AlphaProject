@@ -60,8 +60,11 @@ namespace Alpha
 
 		String GetName() const { return m_info.name; }
 		
-		TArray<Renderer::StaticVertex> CreateStaticVertices() const;
-		TArray<Renderer::SkeletalVertex> CreateSkeletalVertices() const;
+		TArray<Vector3> CreatePositionVertices() const;
+		TArray<Vector3> CreateNormalVertices() const;
+		TArray<Vector2> CreateTexcoordVertices() const;
+		TArray<UVector4> CreateBoneIndexVertices() const;
+		TArray<Vector4> CreateBoneWeightVertices() const;
 
 		TArray<uint32_t> CreateIndices() const;
 

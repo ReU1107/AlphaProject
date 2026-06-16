@@ -19,6 +19,20 @@ namespace Alpha
 
 	bool ResourceManager::Initialize(const Args& args)
 	{
+		m_base_position_pool = RenderCore::Get().CreateBuffer(sizeof(Vector3), args.base_position_pool_size, EBufferPresetType::ROByteAddress);
+		m_base_normal_pool = RenderCore::Get().CreateBuffer(sizeof(Vector3), args.base_normal_pool_size, EBufferPresetType::ROByteAddress);
+		m_texcoord_pool = RenderCore::Get().CreateBuffer(sizeof(Vector2), args.texcoord_pool_size, EBufferPresetType::ROByteAddress);
+		
+		m_bone_indices_pool = RenderCore::Get().CreateBuffer(sizeof(UVector4), args.bone_indices_pool_size, EBufferPresetType::ROByteAddress);
+		m_bone_weights_pool = RenderCore::Get().CreateBuffer(sizeof(Vector4), args.bone_weights_pool_size, EBufferPresetType::ROByteAddress);
+
+		m_bone_matrices_pool = RenderCore::Get().CreateBuffer(sizeof(Matrix4x4), args.bone_matrices_pool_size, EBufferPresetType::ROByteAddress);
+
+		m_deformed_position_pool = RenderCore::Get().CreateBuffer(sizeof(Vector3), args.deformed_position_pool_size, EBufferPresetType::RWByteAddress);
+		m_deformed_normal_pool = RenderCore::Get().CreateBuffer(sizeof(Vector3), args.deformed_normal_pool_size, EBufferPresetType::RWByteAddress);
+
+		m_index_pool = RenderCore::Get().CreateBuffer(sizeof(UInt32), args.index_pool_size, EBufferPresetType::ROByteAddress);
+
 		return true;
 	}
 
@@ -34,6 +48,7 @@ namespace Alpha
 
 		if (!handle->IsSkeletal())
 		{
+			ALPHA_LOG_WARN(L"モデルハンドル(ID: {})はスケルタルメッシュではありません。", handle->GetID());
 			// エラーを伝える
 			return nullptr;
 		}
@@ -42,7 +57,8 @@ namespace Alpha
 
 		auto render_core = RenderCore::GetPtr();
 
-		auto& vertices = handle->GetSkeletalVeretices();
+		RenderCore::Get().UploadBuffer(m_base_position_pool.get(), handle->GetPositions().data(), );
+
 		mesh->SetVertexBuffer(render_core->CreateVertexBuffer(sizeof(SkeletalVertex), vertices.size(), vertices.data()));
 
 		auto& indices = handle->GetIndices();

@@ -8,28 +8,25 @@ namespace Alpha
 	class CommandList;
 	class CommandQueue;
 	class Timeline;
-	class RingBuffer;
 
 	class GPUResource;
 	class Buffer;
-	class VertexBuffer;
-	class IndexBuffer;
-	class StructuredBuffer;
 	class Texture;
 
 	enum class UploadType
 	{
-		Structured,
+		Buffer,
 		Texture,
 	};
 
 	struct UploadRequest
 	{
-		UploadType type{ UploadType::Structured };
+		UploadType type{ UploadType::Buffer };
 		GPUResource* resource{ nullptr };				// 転送先バッファ
-		void* data{ nullptr };					// 転送元データ
+		UInt64 offset{ 0 };						// 転送先オフセット（Bufferの要素単位、Textureのサブリソース単位）
+		void* data{ nullptr };					// 転送するデータ
 		
-		UInt64 size{ 0 };
+		UInt64 size{ 0 };						// 転送するデータのサイズ（Bufferの場合はバイト単位、Textureの場合はサブリソース全体のサイズ）
 	};
 
 	// CPUとGPUのデータの受け渡しを担う
@@ -40,8 +37,8 @@ namespace Alpha
 		TUnique<CommandQueue> m_copy_queue{};	// コピー用のコマンドキュー
 		TUnique<CommandList> m_copy_list{};		// コピー用のコマンドリスト
 		TUnique<Timeline> m_copy_fence{};		// コピー完了を待つためのフェンス
-		TUnique<RingBuffer> m_staging_buffer{};	// ステージングバッファ
-
+		TUnique<Buffer> m_staging_buffer{};		// ステージングバッファ
+		LinearAllocator m_staging_allocator{};	// ステージングバッファ用のアロケータ
 	public:
 		GPUDataTransfer();
 		~GPUDataTransfer();
@@ -49,18 +46,18 @@ namespace Alpha
 		struct Args
 		{
 			RenderCore* render_core{ nullptr };
-			uint64_t staging_buffer_size{ 10_MB };
+			UInt64 staging_buffer_size{ 64_MB };
 		};
 
 		void Initialize(const Args& args);
 
-		void AddStructuredBuffer(StructuredBuffer* buffer, void* data);
+		void AddBufferRegion(Buffer* buffer, UInt64 offset, void* data, UInt64 size);
 		void AddTexture(Texture* texture, void* data);
 
 		bool HasUpload() const { return !m_requests.empty(); }
 
 		// 非同期サブミット：コピーキューにサブミットして fence value を返す
-		uint64_t UploadAsync();
+		UInt64 UploadAsync();
 
 		// 同期(ブロッキング)：UploadAsync() の後 fence 到達まで待つ
 		void Upload();

@@ -33,6 +33,6 @@ namespace Alpha
 
 		void Finalize();
 
-		const DescriptorHandle& GetSamplerHandle() const { return m_handle; }
+		DescriptorHandle GetSamplerHandle() const { return m_handle; }
 	};
 }

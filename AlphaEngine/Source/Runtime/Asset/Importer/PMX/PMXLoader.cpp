@@ -17,6 +17,8 @@ namespace Alpha
 
         if (parser.IsSkeletal())
         {
+            
+
             handle->m_skeletal_vertices = parser.CreateSkeletalVertices();
             handle->m_indices = parser.CreateIndices();
             handle->m_materials = parser.CreateMaterials();

@@ -7,6 +7,7 @@ namespace Alpha
 {
 	class RenderHardwareInterface;
 	class RHIDescriptorHeap;
+	class GPUResource;
 
 	class DescriptorHeap
 	{
@@ -32,13 +33,11 @@ namespace Alpha
 		RHIDescriptorHeap* GetRHI();
 
 		void Finalize();
-
-		DescriptorHandle Allocate();
-		DescriptorHandle Allocate(UInt32 num);
+		DescriptorHandle Allocate(GPUResource* resource, ERHIResourceViewType type);
+		// Sampler用
+		DescriptorHandle Allocate(ERHIResourceViewType type);
 
 		void Free(DescriptorHandle& handle);
-
-
 
 	};
 }

@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Core/Types.h"
+#include "Core/Common.h"
 #include "Core/Object.h"
 #include <atomic>
 #include <concepts>

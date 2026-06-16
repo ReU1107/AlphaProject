@@ -8,14 +8,19 @@ namespace Alpha
 	{
 	private:
 		ERHIResourceState m_current_state{ ERHIResourceState::Common };
-
+		ERHIResourceAccessType m_access{ ERHIResourceAccessType::Static };
+		ERHIResourceBindFlags m_flags{ ERHIResourceBindFlags::ShaderResource };
+		
 	public:
 		virtual ~RHIResource() {}
 
-		// 状態設定
 		void SetState(ERHIResourceState state) { m_current_state = state; }
-		// 状態取得
+		void SetAccessType(ERHIResourceAccessType access) { m_access = access; }
+		void SetFlags(ERHIResourceBindFlags flags) { m_flags = flags; }
+
 		ERHIResourceState GetCurrentState() const { return m_current_state; }
+
+		ERHIResourceBindFlags GetFlags() const { return m_flags; }
 
 		template<typename T>
 		T* As()

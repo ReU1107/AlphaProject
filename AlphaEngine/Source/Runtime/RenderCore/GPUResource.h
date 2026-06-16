@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Core/Common.h"
+#include "DescriptorHandle.h"
 
 namespace Alpha
 {
@@ -15,6 +16,8 @@ namespace Alpha
 		~GPUResource();
 
 		RHIResource* GetRHI() const;
+
+		ERHIResourceBindFlags GetFlags() const;
 
 	};
 

@@ -1,6 +1,7 @@
 ﻿#include "DescriptorHeap.h"
 #include "RHI/RHIDescriptorHeap.h"
 #include "RenderHardwareInterface.h"
+#include "GPUResource.h"
 
 namespace Alpha
 {
@@ -32,7 +33,7 @@ namespace Alpha
 	{
 	}
 
-	DescriptorHandle DescriptorHeap::Allocate()
+	DescriptorHandle DescriptorHeap::Allocate(GPUResource* resource, ERHIResourceViewType type)
 	{
 		UInt32 index = 0;
 		// 空きがあればそこを返す
@@ -47,37 +48,47 @@ namespace Alpha
 			index = m_allocated_count++;
 		}
 
+		RHIResourceViewDesc view_desc = {
+			.resource = resource->GetRHI(),
+			.type = type,
+			.heap_index = index,
+		};
+		m_rhi->CreateView(view_desc);
+
 		DescriptorHandle handle;
 		handle.heap = this;
 		handle.index = index;
-		handle.num = 1;
+		handle.view_type = type;
 		return handle;
 	}
 
-	DescriptorHandle DescriptorHeap::Allocate(UInt32 num)
+	DescriptorHandle DescriptorHeap::Allocate(ERHIResourceViewType type)
 	{
 		UInt32 index = 0;
-
-		// 数指定は末尾から限定
-		
-		ALPHA_CHECK_ERROR((m_allocated_count + num >= m_max_count), L"デスクリプタヒープの最大数を超えています。");
-
-		index = m_allocated_count;
-		m_allocated_count += num;
+		// 空きがあればそこを返す
+		if (!m_free_indices.empty())
+		{
+			index = m_free_indices.back();
+			m_free_indices.pop_back();
+		}
+		else
+		{
+			ALPHA_CHECK_ERROR((m_allocated_count >= m_max_count), L"デスクリプタヒープの最大数を超えています。");
+			index = m_allocated_count++;
+		}
 
 		DescriptorHandle handle;
 		handle.heap = this;
 		handle.index = index;
-		handle.num = num;
+		handle.view_type = type;
 		return handle;
 	}
 
 	void DescriptorHeap::Free(DescriptorHandle& handle)
 	{
-		// 後で作成
-
+		m_free_indices.push_back(handle.index);
 		handle.heap = nullptr;
 		handle.index = 0;
-		handle.num = 0;
+		handle.view_type = ERHIResourceViewType::Unknown;
 	}
 }

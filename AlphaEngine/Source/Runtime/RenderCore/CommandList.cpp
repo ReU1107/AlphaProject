@@ -3,19 +3,13 @@
 #include "RenderHardwareInterface.h"
 
 #include "DescriptorHeap.h"
-#include "DescriptorTable.h"
 #include "DescriptorHandle.h"
 
 #include "SamplerState.h"
 
-#include "Texture/Texture.h"
-#include "Texture/RenderTexture.h"
-#include "Texture/DepthTexture.h"
+#include "Texture.h"
+#include "Buffer.h"
 
-#include "Buffer/ConstantBuffer.h"
-#include "Buffer/StructuredBuffer.h"
-#include "Buffer/ByteAddressBuffer.h"
-#include "Buffer/RingBuffer.h"
 
 #include "Pipeline/GraphicsPipeline.h"
 #include "Pipeline/ComputePipeline.h"
@@ -78,7 +72,7 @@ namespace Alpha
 		m_rhi->SetComputePipeline(pipeline->GetRHI(), pipeline->GetPipelineLayout()->GetRHI());
 	}
 
-	void CommandList::SetRenderTarget(RenderTexture* render_target, DepthTexture* depth_stencil)
+	void CommandList::SetRenderTarget(Texture* render_target, Texture* depth_stencil)
 	{
 		auto rtv_handle = render_target->GetRTVHandle();
 
@@ -94,19 +88,19 @@ namespace Alpha
 		m_rhi->SetRenderTarget(rtv_handle.heap->GetRHI(), rtv_handle.index, 1, dsv_heap, dsv_index);
 	}
 
-	void CommandList::SetRenderTargets(RenderTexture** render_targets, UInt32 num, DepthTexture* depth_stencil)
+	void CommandList::SetRenderTargets(Texture** render_targets, UInt32 num, Texture* depth_stencil)
 	{
 
 	}
 
-	void CommandList::ClearRenderTarget(RenderTexture* render_target, const Rect2D& rect, const Color4& clear_color)
+	void CommandList::ClearRenderTarget(Texture* render_target, const Rect2D& rect, const Color4& clear_color)
 	{
 		auto rtv_handle = render_target->GetRTVHandle();
 
 		m_rhi->ClearRenderTarget(rtv_handle.heap->GetRHI(), rtv_handle.index, rect, clear_color.data());
 	}
 
-	void CommandList::ClearDepthStencil(DepthTexture* depth_stencil, const Rect2D& rect, float clear_depth)
+	void CommandList::ClearDepthStencil(Texture* depth_stencil, const Rect2D& rect, float clear_depth)
 	{
 		auto dsv_handle = depth_stencil->GetDSVHandle();
 		m_rhi->ClearDepthStencil(dsv_handle.heap->GetRHI(), dsv_handle.index, rect, clear_depth, 0);
@@ -117,36 +111,21 @@ namespace Alpha
 		m_rhi->SetPrimitiveTopology(topology);
 	}
 
-	void CommandList::SetVertexBuffer(RingBuffer* rb, UInt32 slot)
+	void CommandList::SetVertexBuffer(Buffer* rb, UInt32 slot)
 	{
 		m_rhi->SetVertexBuffer(rb->GetRHI(), slot);
 	}
 
-	void CommandList::SetIndexBuffer(RingBuffer* rb, ERHIIndexFormat format)
+	void CommandList::SetIndexBuffer(Buffer* rb, ERHIIndexFormat format)
 	{
 		m_rhi->SetIndexBuffer(rb->GetRHI(), format);
 	}
 
-	void CommandList::SetGraphicsDescriptorTable(DescriptorTable* table, UInt32 slot)
-	{
-		DescriptorHandle handle = table->GetHandle();
-		m_rhi->SetGraphicsTable(handle.heap->GetRHI(), handle.index, slot);
-	}
-
-	void CommandList::SetGraphicsDescriptorTable(const DescriptorHandle& handle, UInt32 slot)
-	{
-		m_rhi->SetGraphicsTable(handle.heap->GetRHI(), handle.index, slot);
-	}
-
-	void CommandList::SetComputeDescriptorTable(DescriptorTable* table, UInt32 slot)
-	{
-		DescriptorHandle handle = table->GetHandle();
-		m_rhi->SetComputeTable(handle.heap->GetRHI(), handle.index, slot);
-	}
-
 	void CommandList::SetGraphicsSamplerState(SamplerState* state, UInt32 slot)
 	{
-		SetGraphicsDescriptorTable(state->GetSamplerHandle(), slot);
+		auto sampler_handle = state->GetSamplerHandle();
+
+		m_rhi->SetGraphicsTable(sampler_handle.heap->GetRHI(), sampler_handle.index, slot);
 	}
 
 	void CommandList::SetGraphcisSRV(Buffer* buffer, UInt32 slot)
@@ -159,32 +138,32 @@ namespace Alpha
 		m_rhi->SetComputeSRV(buffer->GetRHI(), slot, 0);
 	}
 
-	void CommandList::SetGraphcisSRV(RingBuffer* buffer, uint64_t offset, UInt32 slot)
+	void CommandList::SetGraphcisSRV(Buffer* buffer, UInt64 offset, UInt32 slot)
 	{
 		m_rhi->SetGraphicsSRV(buffer->GetRHI(), slot, offset);
 	}
 
-	void CommandList::SetGraphcisUAV(StructuredBuffer* buffer, UInt32 slot)
+	void CommandList::SetGraphcisUAV(Buffer* buffer, UInt32 slot)
 	{
 		m_rhi->SetGraphicsUAV(buffer->GetRHI(), slot);
 	}
 
-	void CommandList::SetComputeUAV(StructuredBuffer* buffer, UInt32 slot)
+	void CommandList::SetComputeUAV(Buffer* buffer, UInt32 slot)
 	{
 		m_rhi->SetComputeUAV(buffer->GetRHI(), slot);
 	}
 
-	void CommandList::SetGraphicsCBV(ConstantBuffer* buffer, UInt32 slot)
+	void CommandList::SetGraphicsCBV(Buffer* buffer, UInt32 slot)
 	{
 		m_rhi->SetGraphicsCBV(buffer->GetRHI(), slot, 0);
 	}
 
-	void CommandList::SetGraphicsCBV(RingBuffer* buffer, uint64_t offset, UInt32 slot)
+	void CommandList::SetGraphicsCBV(Buffer* buffer, UInt64 offset, UInt32 slot)
 	{
 		m_rhi->SetGraphicsCBV(buffer->GetRHI(), slot, offset);
 	}
 
-	void CommandList::SetComputeCBV(RingBuffer* buffer, uint64_t offset, UInt32 slot)
+	void CommandList::SetComputeCBV(Buffer* buffer, UInt64 offset, UInt32 slot)
 	{
 		m_rhi->SetComputeCBV(buffer->GetRHI(), slot, offset);
 	}
@@ -200,16 +179,16 @@ namespace Alpha
 		m_rhi->CopyBuffer(src->GetRHI(), dst->GetRHI());
 	}
 
-	void CommandList::CopyBufferRegion(Buffer* src, uint64_t src_offset, Buffer* dst)
+	void CommandList::CopyBufferRegion(Buffer* src, UInt64 src_offset, Buffer* dst, UInt64 dst_offset, UInt64 size)
 	{
-		m_rhi->CopyBufferRegion(src->GetRHI(), src_offset, dst->GetRHI());
+		m_rhi->CopyBufferRegion(src->GetRHI(), src_offset, dst->GetRHI(), dst_offset, size);
 	}
 
 	void CommandList::CopyTexture(Texture* src, Texture* dst)
 	{
 	}
 
-	void CommandList::CopyTextureRegion(Buffer* src, uint64_t src_offset, Texture* dst)
+	void CommandList::CopyTextureRegion(Buffer* src, UInt64 src_offset, Texture* dst)
 	{
 		m_rhi->CopyTextureRegion(src->GetRHI(), src_offset, dst->GetRHI());
 	}

@@ -30,10 +30,10 @@ namespace Alpha
 		virtual void ClearRenderTarget(RHIDescriptorHeap* rtv_heap, UInt32 rtv_index, const Rect2D& rect, const float* clear_color) = 0;
 		virtual void ClearDepthStencil(RHIDescriptorHeap* dsv_heap, UInt32 dsv_index, const Rect2D& rect, float depth, uint8_t stencil) = 0;
 		virtual void CopyTexture(RHITexture* src, RHITexture* dst) = 0;
-		virtual void CopyTextureRegion(RHIBuffer* src, uint64_t src_offset, RHITexture* dst) = 0;
+		virtual void CopyTextureRegion(RHIBuffer* src, UInt64 src_offset, RHITexture* dst) = 0;
 
 		virtual void CopyBuffer(RHIBuffer* src, RHIBuffer* dst) = 0;
-		virtual void CopyBufferRegion(RHIBuffer* src, uint64_t src_offset, RHIBuffer* dst) = 0;
+		virtual void CopyBufferRegion(RHIBuffer* src, UInt64 src_offset, RHIBuffer* dst, UInt64 dst_offset, UInt64 size) = 0;
 
 		virtual void SetVertexBuffer(RHIBuffer* vb, UInt32 slot) = 0;
 
@@ -49,11 +49,11 @@ namespace Alpha
 		virtual void SetGraphicsUAV(RHIBuffer* buffer, UInt32 slot) = 0;
 		virtual void SetComputeUAV(RHIBuffer* buffer, UInt32 slot) = 0;
 
-		virtual void SetGraphicsSRV(RHIBuffer* buffer, UInt32 slot, uint64_t offset) = 0;
-		virtual void SetComputeSRV(RHIBuffer* buffer, UInt32 slot, uint64_t offset) = 0;
+		virtual void SetGraphicsSRV(RHIBuffer* buffer, UInt32 slot, UInt64 offset) = 0;
+		virtual void SetComputeSRV(RHIBuffer* buffer, UInt32 slot, UInt64 offset) = 0;
 
-		virtual void SetGraphicsCBV(RHIBuffer* buffer, UInt32 slot, uint64_t offset) = 0;
-		virtual void SetComputeCBV(RHIBuffer* buffer, UInt32 slot, uint64_t offset) = 0;
+		virtual void SetGraphicsCBV(RHIBuffer* buffer, UInt32 slot, UInt64 offset) = 0;
+		virtual void SetComputeCBV(RHIBuffer* buffer, UInt32 slot, UInt64 offset) = 0;
 
 		virtual void SetViewport(const Viewport& viewport) = 0;
 		virtual void SetScissorRect(const Rect2D& rect) = 0;

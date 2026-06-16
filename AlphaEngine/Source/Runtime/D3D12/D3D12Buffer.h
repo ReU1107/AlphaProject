@@ -22,8 +22,6 @@ namespace Alpha
 		uint8_t* Map(uint64_t read_begin, uint64_t read_end) final;
 
 		void Unmap(uint64_t written_begin, uint64_t written_end) final;
-
-		void Upload(void* map_ptr, void* data, uint64_t size, uint64_t offset) final;
 		
 		uint64_t GetGPUAddress() const final;
 

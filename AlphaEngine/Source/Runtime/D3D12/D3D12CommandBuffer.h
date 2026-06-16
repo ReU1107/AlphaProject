@@ -27,10 +27,10 @@ namespace Alpha
 
 
 		void CopyTexture(RHITexture* src, RHITexture* dst) final;
-		void CopyTextureRegion(RHIBuffer* src, uint64_t src_offset, RHITexture* dst) final;
+		void CopyTextureRegion(RHIBuffer* src, UInt64 src_offset, RHITexture* dst) final;
 
 		void CopyBuffer(RHIBuffer* src, RHIBuffer* dst) final;
-		void CopyBufferRegion(RHIBuffer* src, uint64_t src_offset, RHIBuffer* dst) final;
+		void CopyBufferRegion(RHIBuffer* src, UInt64 src_offset, RHIBuffer* dst, UInt64 dst_offset, UInt64 size) final;
 
 		void Begin(UInt32) final;
 
@@ -58,11 +58,11 @@ namespace Alpha
 		void SetGraphicsUAV(RHIBuffer* buffer, UInt32 slot) final;
 		void SetComputeUAV(RHIBuffer* buffer, UInt32 slot) final;
 
-		void SetGraphicsSRV(RHIBuffer* buffer, UInt32 slot, uint64_t offset) final;
-		void SetComputeSRV(RHIBuffer* buffer, UInt32 slot, uint64_t offset) final;
+		void SetGraphicsSRV(RHIBuffer* buffer, UInt32 slot, UInt64 offset) final;
+		void SetComputeSRV(RHIBuffer* buffer, UInt32 slot, UInt64 offset) final;
 
-		void SetGraphicsCBV(RHIBuffer* buffer, UInt32 slot, uint64_t offset) final;
-		void SetComputeCBV(RHIBuffer* buffer, UInt32 slot, uint64_t offset) final;
+		void SetGraphicsCBV(RHIBuffer* buffer, UInt32 slot, UInt64 offset) final;
+		void SetComputeCBV(RHIBuffer* buffer, UInt32 slot, UInt64 offset) final;
 
 		void TransitionBarrier(RHIResource** resources, UInt32 resource_num, ERHIResourceState after) final;
 

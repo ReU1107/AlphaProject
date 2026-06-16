@@ -18,8 +18,8 @@ namespace Alpha
 	{
 		UInt64 stride{ 4 };
 		UInt64 size{ 1 };
-		ERHIBufferAccess access{ ERHIBufferAccess::Static };
-		ERHIBufferBindFlags flags{ ERHIBufferBindFlags::ShaderResource };
+		ERHIResourceAccessType access{ ERHIResourceAccessType::Static };
+		ERHIResourceBindFlags flags{ ERHIResourceBindFlags::ShaderResource };
 
 	};
 
@@ -27,15 +27,12 @@ namespace Alpha
 	{
 		UInt32 width{ 2 };				// 幅
 		UInt32 height{ 2 };				// 高さ
-		union {
-			UInt32 array_count{ 1 };
-			UInt32 depth;
-		};
+		UInt32 depth{ 1 };				// 配列数と同じ
 		UInt32 mip_level{ 1 };			// ミップマップレベル
 		UInt32 multi_sample_count{ 1 };	// マルチサンプルカウント
 		UInt32 multi_sample_quality{ 0 };	// マルチサンプルクオリティ
 		ERHIResourceDimension dimension{ ERHIResourceDimension::Tex2D };
-		ERHIResourceFlags flags{ ERHIResourceFlags::None };			// フラグ
+		ERHIResourceBindFlags flags{ ERHIResourceBindFlags::None };			// フラグ
 		ERHIResourceFormat format{ ERHIResourceFormat::RGBAUnorm };			// フォーマット
 		
 		Vector4 clear_value_color{ 0.0f,0.0f,0.0f,1.0f };
@@ -111,8 +108,6 @@ namespace Alpha
 		RHIResource* resource{ nullptr };
 		RHIBuffer* counter{ nullptr };
 		ERHIResourceViewType type{ ERHIResourceViewType::Unknown };
-		ERHIResourceViewFlags flags{};
-		UInt32 buffer_stride{ 0 };			// 
 		UInt32 heap_index{ 0 };
 	};
 

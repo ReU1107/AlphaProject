@@ -4,25 +4,6 @@
 
 namespace Alpha::Renderer
 {
-	struct StaticVertex
-	{
-		float3 position{ float3::Zero };
-		float3 normal{ float3::YAxis };
-		float2 texcoord{ float2::Zero };
-		color4 color{ color4::White };
-	};
-
-
-	struct SkeletalVertex
-	{
-		float3 position{ float3::Zero };
-		float3 normal{ float3::YAxis };
-		float2 texcoord{ float2::Zero };
-		uint4 bone_index{ uint4::Zero };
-		float4 bone_weight{ float4::Zero };
-
-	};
-
 	// PBRに合わせる
 	struct MaterialData
 	{

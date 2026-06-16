@@ -6,12 +6,12 @@ namespace Alpha
 	class RenderCore;
 	class CommandList;
 
-	class RingBuffer;
+	class Buffer;
 
 	struct RenderContext
 	{
 		CommandList* command_list{ nullptr };
-		RingBuffer* transient_buffer{ nullptr };
+		Buffer* transient_buffer{ nullptr };
 
 		uint64_t current_camera_offset{ 0 };
 

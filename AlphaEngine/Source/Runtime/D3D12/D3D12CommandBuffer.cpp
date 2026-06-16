@@ -130,7 +130,7 @@ namespace Alpha
 	{
 	}
 
-	void D3D12CommandBuffer::CopyTextureRegion(RHIBuffer* src, uint64_t src_offset, RHITexture* dst)
+	void D3D12CommandBuffer::CopyTextureRegion(RHIBuffer* src, UInt64 src_offset, RHITexture* dst)
 	{
 		auto* d3d_dst = static_cast<D3D12Texture*>(dst);
 		auto* d3d_src = static_cast<D3D12Buffer*>(src);
@@ -162,12 +162,12 @@ namespace Alpha
 		m_list->CopyResource(dst_native, src_native);
 	}
 
-	void D3D12CommandBuffer::CopyBufferRegion(RHIBuffer* src, uint64_t src_offset, RHIBuffer* dst)
+	void D3D12CommandBuffer::CopyBufferRegion(RHIBuffer* src, UInt64 src_offset, RHIBuffer* dst, UInt64 dst_offset, UInt64 size)
 	{
 		auto src_native = static_cast<ID3D12Resource1*>(src->GetNative());
 		auto dst_native = static_cast<ID3D12Resource1*>(dst->GetNative());
 
-		m_list->CopyBufferRegion(dst_native, 0, src_native, src_offset, dst->GetSize());
+		m_list->CopyBufferRegion(dst_native, dst_offset, src_native, src_offset, size);
 	}
 
 	void D3D12CommandBuffer::Begin(UInt32 index)
@@ -319,7 +319,7 @@ namespace Alpha
 		m_list->SetComputeRootUnorderedAccessView(slot, address);
 	}
 
-	void D3D12CommandBuffer::SetGraphicsSRV(RHIBuffer* buffer, UInt32 slot, uint64_t offset)
+	void D3D12CommandBuffer::SetGraphicsSRV(RHIBuffer* buffer, UInt32 slot, UInt64 offset)
 	{
 		D3D12_GPU_VIRTUAL_ADDRESS address = buffer->GetGPUAddress();
 		address += offset;
@@ -327,7 +327,7 @@ namespace Alpha
 		m_list->SetGraphicsRootShaderResourceView(slot, address);
 	}
 
-	void D3D12CommandBuffer::SetComputeSRV(RHIBuffer* buffer, UInt32 slot, uint64_t offset)
+	void D3D12CommandBuffer::SetComputeSRV(RHIBuffer* buffer, UInt32 slot, UInt64 offset)
 	{
 		D3D12_GPU_VIRTUAL_ADDRESS address = buffer->GetGPUAddress();
 		address += offset;
@@ -335,7 +335,7 @@ namespace Alpha
 		m_list->SetComputeRootShaderResourceView(slot, address);
 	}
 
-	void D3D12CommandBuffer::SetGraphicsCBV(RHIBuffer* buffer, UInt32 slot, uint64_t offset)
+	void D3D12CommandBuffer::SetGraphicsCBV(RHIBuffer* buffer, UInt32 slot, UInt64 offset)
 	{
 		D3D12_GPU_VIRTUAL_ADDRESS address = buffer->GetGPUAddress();
 		address += offset;
@@ -343,7 +343,7 @@ namespace Alpha
 		m_list->SetGraphicsRootConstantBufferView(slot, address);
 	}
 
-	void D3D12CommandBuffer::SetComputeCBV(RHIBuffer* buffer, UInt32 slot, uint64_t offset)
+	void D3D12CommandBuffer::SetComputeCBV(RHIBuffer* buffer, UInt32 slot, UInt64 offset)
 	{
 		D3D12_GPU_VIRTUAL_ADDRESS address = buffer->GetGPUAddress();
 		address += offset;

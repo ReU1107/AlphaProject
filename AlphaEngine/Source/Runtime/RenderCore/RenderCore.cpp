@@ -7,16 +7,11 @@
 #include "Timeline.h"
 
 #include "DescriptorHeap.h"
-#include "DescriptorTable.h"
 #include "GPUDataTransfer.h"
 
-#include "Buffer/RingBuffer.h"
-#include "Buffer/StructuredBuffer.h"
-#include "Buffer/ConstantBuffer.h"
-#include "Buffer/ByteAddressBuffer.h"
+#include "Buffer.h"
 
-#include "Texture/RenderTexture.h"
-#include "Texture/DepthTexture.h"
+#include "Texture.h"
 
 #include "SamplerState.h"
 
@@ -61,28 +56,27 @@ namespace Alpha
 
 		m_timeline = CreateTimeline();
 
-		m_swap_chain_rtv = CreateDescriptorHeap(args.back_buffer_count, ERHIDescriptorType::RTV);
-		m_swap_chain_dsv = CreateDescriptorHeap(1, ERHIDescriptorType::DSV);
+		m_rtv_heap = CreateDescriptorHeap(args.max_render_target_num, ERHIDescriptorType::RTV);
+		m_dsv_heap = CreateDescriptorHeap(args.max_depth_stencil_num, ERHIDescriptorType::DSV);
 
 		// SwapChainのバッファ数分の RenderTextureを作成
 		for (UInt32 i = 0; i < args.back_buffer_count; ++i)
 		{
-			auto render_texture = std::make_unique<RenderTexture>();
+			auto render_texture = std::make_unique<Texture>();
 			{
-				RenderTexture::Args desc = {
-					.base = {
-						.rhi = m_rhi.get(),
-					},
-					.rtv_heap = m_swap_chain_rtv.get(),
+				Texture::Args desc = {
+					.rhi = m_rhi.get(),
+					.rtv_heap = m_rtv_heap.get(),
+					.bind_flags = ERHIResourceBindFlags::RenderTarget,
 					.swap_chain = m_swap_chain.get(),
 					.buffer_index = i,
 				};
-				render_texture->InitializeFromSwapChain(desc);
+				render_texture->Initialize(desc);
 			}
 			m_back_buffer.push_back(std::move(render_texture));
 		}
 
-		m_depth_texture = CreateDepthTexture(m_swap_chain_dsv.get(), args.width, args.height, ERHIResourceFormat::Depth24Stencil8);
+		m_depth_texture = CreateTexture(args.width, args.height, ERHIResourceBindFlags::DepthStencil, ERHIResourceFormat::Depth24Stencil8);
 
 		m_gpu_data_transfer = std::make_unique<GPUDataTransfer>();
 		{
@@ -93,8 +87,8 @@ namespace Alpha
 			m_gpu_data_transfer->Initialize(desc);
 		}
 
-		m_bindless_heap = CreateDescriptorHeap(args.bindless_num, ERHIDescriptorType::SRV_UAV_CBV);
-		m_sampler_heap = CreateDescriptorHeap(8, ERHIDescriptorType::Sampler);
+		m_resource_heap = CreateDescriptorHeap(args.max_resource_num, ERHIDescriptorType::SRV_UAV_CBV);
+		m_sampler_heap = CreateDescriptorHeap(args.max_sampler_num, ERHIDescriptorType::Sampler);
 
 		m_preset_samplers.resize(+ESamplerPresetType::Count);
 
@@ -104,11 +98,11 @@ namespace Alpha
 		m_preset_samplers[+ESamplerPresetType::AnisoWrap]	= CreateSamplerState(ERHIFilter::Anisotropic, ERHIAddressMode::Wrap);
 		m_preset_samplers[+ESamplerPresetType::Shadow]		= CreateSamplerState(ERHIFilter::ComparisonLinear, ERHIAddressMode::Border);
 
-		m_transient_buffer = CreateRingBuffer(args.transient_buffer_size);
+		m_transient_buffer = CreateBuffer(4, args.transient_buffer_size, EBufferPresetType::Upload);
+		m_transient_allocator.Initialize(args.transient_buffer_size);
 
 		m_width = args.width;
-		m_height = args.height;
-		
+		m_height = args.height;		
 		return true;
 	}
 
@@ -122,8 +116,8 @@ namespace Alpha
 		m_back_buffer.clear();
 		m_depth_texture.reset();
 
-		m_swap_chain_rtv.reset();
-		m_swap_chain_dsv.reset();
+		m_dsv_heap.reset();
+		m_rtv_heap.reset();
 
 		m_swap_chain.reset();
 		m_timeline.reset();
@@ -169,7 +163,7 @@ namespace Alpha
 		return timeline;
 	}
 
-	TUnique<DescriptorHeap> RenderCore::CreateDescriptorHeap(uint64_t num, ERHIDescriptorType type)
+	TUnique<DescriptorHeap> RenderCore::CreateDescriptorHeap(UInt64 num, ERHIDescriptorType type)
 	{
 		auto heap = std::make_unique<DescriptorHeap>();
 		DescriptorHeap::Args args = {
@@ -182,88 +176,67 @@ namespace Alpha
 		return heap;
 	}
 
-	TUnique<ConstantBuffer> RenderCore::CreateConstantBuffer(uint64_t stride, uint64_t element_num, void* initial_data)
+	TUnique<Buffer> RenderCore::CreateBuffer(UInt64 stride, UInt64 size, EBufferPresetType type)
 	{
-		auto buffer = std::make_unique<ConstantBuffer>();
-		ConstantBuffer::Args desc = {
-			.base = {
-				.rhi = m_rhi.get(),
-				.stride = stride,
-				.element_count = element_num,
-			}
+		Buffer::Args desc = {
+			.rhi = m_rhi.get(),
+			.resource_heap = m_resource_heap.get(),
+			.stride = stride,
+			.size = size,
 		};
+
+		switch (type)
+		{
+		case Alpha::EBufferPresetType::Constant:
+			desc.access_type = ERHIResourceAccessType::Dynamic;
+			desc.size = Alignment(desc.size, 256);
+
+			break;
+		case Alpha::EBufferPresetType::Upload:
+			desc.access_type = ERHIResourceAccessType::Dynamic;
+			desc.size = Alignment(desc.size, 4);
+
+			break;
+		case Alpha::EBufferPresetType::ROByteAddress:
+			desc.access_type = ERHIResourceAccessType::Static;
+			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
+			desc.bind_flags |= ERHIResourceBindFlags::Raw;
+			desc.stride = 4; // ByteAddressBufferは4バイト固定
+			break;
+		case Alpha::EBufferPresetType::ROStructured:
+			desc.access_type = ERHIResourceAccessType::Static;
+			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
+
+			break;
+		case Alpha::EBufferPresetType::RWByteAddress:
+			desc.access_type = ERHIResourceAccessType::Static;
+			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
+			desc.bind_flags |= ERHIResourceBindFlags::UnorderedAccess; // UAV追加
+			desc.bind_flags |= ERHIResourceBindFlags::Raw;
+			desc.stride = 4; // ByteAddressBufferは4バイト固定
+			break;
+		case Alpha::EBufferPresetType::RWStructured:
+			desc.access_type = ERHIResourceAccessType::Static;
+			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
+			desc.bind_flags |= ERHIResourceBindFlags::UnorderedAccess; // UAV追加
+			break;
+		case Alpha::EBufferPresetType::Readback:
+			desc.access_type = ERHIResourceAccessType::Staging;
+			break;
+		default:
+			ALPHA_LOG_INFO(L"未定義のバッファプリセットタイプが指定されました");
+			break;
+		}
+
+		auto buffer = std::make_unique<Buffer>();
 		buffer->Initialize(desc);
 
-		if (initial_data)
-			buffer->WriteData(initial_data);
 		return buffer;
 	}
 
-	TUnique<StructuredBuffer> RenderCore::CreateStructuredBuffer(uint64_t stride, uint64_t element_count, EResourceAccessFlags flags)
+	void RenderCore::UploadBuffer(Buffer* buffer, UInt64 offset, void* data, UInt64 data_size)
 	{
-		auto buffer = std::make_unique<StructuredBuffer>();
-
-		StructuredBuffer::Args args = {
-			.base = {
-				.rhi = m_rhi.get(),
-				.stride = stride,
-				.element_count = element_count,
-			},
-			.access_flags = flags,
-		};
-		buffer->Initialize(args);
-
-		return buffer;
-	}
-
-	TUnique<ByteAddressBuffer> RenderCore::CreateByteAddressBuffer(uint64_t element_count, EResourceAccessFlags flags)
-	{
-		auto buffer = std::make_unique<ByteAddressBuffer>();
-
-		ByteAddressBuffer::Args args = {
-			.base = {
-				.rhi = m_rhi.get(),
-				.stride = 4,	// 4バイトは確定
-				.element_count = element_count,
-			},
-			.access_flags = flags,
-		};
-		buffer->Initialize(args);
-
-		return buffer;
-	}
-
-	TUnique<RingBuffer> RenderCore::CreateRingBuffer(uint64_t size)
-	{
-		auto buffer = std::make_unique<RingBuffer>();
-
-		RingBuffer::Args args = {
-			.base = {
-				.rhi = m_rhi.get(),
-				.stride = size,
-				.element_count = 1,
-			},
-		};
-		buffer->Initialize(args);
-
-		return buffer;
-	}
-
-	TUnique<RingBuffer> RenderCore::CreateRingBuffer(uint64_t stride, uint64_t element_num)
-	{
-		auto buffer = std::make_unique<RingBuffer>();
-
-		RingBuffer::Args args = {
-			.base = {
-				.rhi = m_rhi.get(),
-				.stride = stride,
-				.element_count = element_num,
-			},
-			.alignment = 4,
-		};
-		buffer->Initialize(args);
-
-		return buffer;
+		m_gpu_data_transfer->AddBufferRegion(buffer, offset, data, data_size);
 	}
 
 	TUnique<SamplerState> RenderCore::CreateSamplerState(ERHIFilter filter, ERHIAddressMode address)
@@ -284,63 +257,24 @@ namespace Alpha
 		return sampler;
 	}
 
-	TUnique<Texture> RenderCore::CreateTexture(UInt32 width, UInt32 height, ERHIResourceFormat format, void* initial_data)
+	TUnique<Texture> RenderCore::CreateTexture(UInt32 width, UInt32 height, ERHIResourceBindFlags flags, ERHIResourceFormat format, ERHIResourceDimension dimension, UInt32 array_size)
 	{
 		auto texture = std::make_unique<Texture>();
 
 		Texture::Args args = {
 			.rhi = m_rhi.get(),
-			.srv_heap = GetBindlessHeap(),
+			.resource_heap = m_resource_heap.get(),
+			.rtv_heap = m_rtv_heap.get(),
+			.dsv_heap = m_dsv_heap.get(),
 			.width = width,
 			.height = height,
+			.depth = array_size,
 			.format = format,
-			.dimension = ERHIResourceDimension::Tex2D,
+			.dimension = dimension,
+			.bind_flags = flags,
 		};
 
 		texture->Initialize(args);
-		if(initial_data)
-			m_gpu_data_transfer->AddTexture(texture.get(), initial_data);
-
-		return texture;
-	}
-
-	TUnique<RenderTexture> RenderCore::CreateRenderTexture(DescriptorHeap* heap, UInt32 width, UInt32 height, ERHIResourceFormat format)
-	{
-		auto texture = std::make_unique<RenderTexture>();
-
-		RenderTexture::Args args = {
-			.base = {
-				.rhi = m_rhi.get(),
-				.width = width,
-				.height = height,
-				.format = format,
-				.dimension = ERHIResourceDimension::Tex2D,
-			},
-			.rtv_heap = heap,
-		};
-
-		texture->Initialize(args);
-
-		return texture;
-	}
-
-	TUnique<DepthTexture> RenderCore::CreateDepthTexture(DescriptorHeap* heap, UInt32 width, UInt32 height, ERHIResourceFormat format)
-	{
-		auto texture = std::make_unique<DepthTexture>();
-
-		DepthTexture::Args args = {
-			.base = {
-				.rhi = m_rhi.get(),
-				.width = width,
-				.height = height,
-				.format = format,
-				.dimension = ERHIResourceDimension::Tex2D,
-			},
-			.dsv_heap = heap,
-		};
-
-		texture->Initialize(args);
-
 		return texture;
 	}
 
@@ -355,18 +289,6 @@ namespace Alpha
 		shader->Initialize(desc);
 
 		return shader;
-	}
-
-	TUnique<DescriptorTable> RenderCore::CreateDescriptorTable(DescriptorHeap* heap, std::function<void(DescriptorTable&)> config_func)
-	{
-		auto table = std::make_unique<DescriptorTable>();
-
-		if (config_func)
-			config_func(*table);
-
-		table->Build(m_rhi.get(), heap);
-
-		return table;
 	}
 
 	TUnique<PipelineLayout> RenderCore::CreatePipelineLayout(std::function<void(PipelineLayout&)> config_func)
@@ -401,13 +323,13 @@ namespace Alpha
 		return pipeline;
 	}
 
-	RenderTexture* RenderCore::GetCurrentRenderTarget() const
+	Texture* RenderCore::GetCurrentRenderTarget() const
 	{
 		auto current_index = m_swap_chain->GetCurrentBackBufferIndex();
 		return m_back_buffer[current_index].get();
 	}
 
-	DepthTexture* RenderCore::GetDepthTexture() const
+	Texture* RenderCore::GetDepthTexture() const
 	{
 		return m_depth_texture.get();
 	}
@@ -440,7 +362,7 @@ namespace Alpha
 
 		m_command_list->SetScissorRect(0, 0, m_width, m_height);
 
-		m_transient_buffer->Reset();
+		m_transient_allocator.Reset();
 	}
 
 	void RenderCore::EndFrame()

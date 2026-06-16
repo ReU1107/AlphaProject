@@ -6,7 +6,6 @@ namespace Alpha
 {
 	class ConstantBuffer;
 	struct DescriptorHandle;
-	class DescriptorTable;
 }
 
 namespace Alpha::Renderer

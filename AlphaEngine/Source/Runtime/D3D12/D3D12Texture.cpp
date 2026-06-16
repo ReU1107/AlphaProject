@@ -50,38 +50,27 @@ namespace
 		return DXGI_FORMAT_R8G8B8A8_UINT;
 	}
 
-	D3D12_RESOURCE_FLAGS ConvertD3D12ResourceFlags(Alpha::ERHIResourceFlags flags)
+	D3D12_RESOURCE_FLAGS ConvertD3D12ResourceFlags(Alpha::ERHIResourceBindFlags flags)
 	{
 		D3D12_RESOURCE_FLAGS resourceFlags = D3D12_RESOURCE_FLAG_NONE;
 
-		if (EnumHasFlag(flags, Alpha::ERHIResourceFlags::AllowRenderTarget))
+		if (EnumHasFlag(flags, Alpha::ERHIResourceBindFlags::RenderTarget))
 		{
 			resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 		}
-		if (EnumHasFlag(flags, Alpha::ERHIResourceFlags::AllowDepthStencil))
+		if (EnumHasFlag(flags, Alpha::ERHIResourceBindFlags::DepthStencil))
 		{
 			resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 		}
-		if (EnumHasFlag(flags, Alpha::ERHIResourceFlags::AllowUnorderedAccess))
+		if (EnumHasFlag(flags, Alpha::ERHIResourceBindFlags::UnorderedAccess))
 		{
 			resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 		}
-		if (EnumHasFlag(flags, Alpha::ERHIResourceFlags::DenyShaderResource))
+		if (!EnumHasFlag(flags, Alpha::ERHIResourceBindFlags::ShaderResource))
 		{
 			resourceFlags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
 		}
-		if (EnumHasFlag(flags, Alpha::ERHIResourceFlags::AllowCrossAdapter))
-		{
-			resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_CROSS_ADAPTER;
-		}
-		if (EnumHasFlag(flags, Alpha::ERHIResourceFlags::AllowSimultaneousAccess))
-		{
-			resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS;
-		}
-		if (EnumHasFlag(flags, Alpha::ERHIResourceFlags::DecodeReferenceOnly))
-		{
-			resourceFlags |= D3D12_RESOURCE_FLAG_VIDEO_DECODE_REFERENCE_ONLY;
-		}
+
 		return resourceFlags;
 	}
 
@@ -138,7 +127,7 @@ namespace Alpha
 			resource_desc.Alignment = 0;
 			resource_desc.Width = desc.width;
 			resource_desc.Height = desc.height;
-			resource_desc.DepthOrArraySize = desc.array_count;
+			resource_desc.DepthOrArraySize = desc.depth;
 			resource_desc.MipLevels = desc.mip_level;
 			resource_desc.Format = format;
 			resource_desc.SampleDesc.Count = desc.multi_sample_count;
@@ -159,13 +148,13 @@ namespace Alpha
 			D3D12_CLEAR_VALUE clear_value = {};
 			clear_value.Format = format;
 
-			if (EnumHasFlag(desc.flags, ERHIResourceFlags::AllowDepthStencil))
+			if (EnumHasFlag(desc.flags, ERHIResourceBindFlags::DepthStencil))
 			{
 				clear_value.DepthStencil.Depth = desc.clear_value_depth;
 				clear_value.DepthStencil.Stencil = desc.clear_value_stencil;
 				hr = device->CreateCommittedResource(&prop, D3D12_HEAP_FLAG_NONE, &resource_desc, D3D12_RESOURCE_STATE_COMMON, &clear_value, IID_PPV_ARGS(&m_resource));
 			}
-			else if (EnumHasFlag(desc.flags, ERHIResourceFlags::AllowRenderTarget))
+			else if (EnumHasFlag(desc.flags, ERHIResourceBindFlags::RenderTarget))
 			{
 				clear_value.Color[0] = desc.clear_value_color[0];
 				clear_value.Color[1] = desc.clear_value_color[1];
@@ -177,6 +166,10 @@ namespace Alpha
 			{
 				hr = device->CreateCommittedResource(&prop, D3D12_HEAP_FLAG_NONE, &resource_desc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&m_resource));
 		
+				/*device->CreatePlacedResource();
+				device->CreateReservedResource();
+				がちがちに最適化するならここら辺を使うことになるのかな？
+				*/
 				// コピー用のデータ用意(RT,DSはいらない)
 				UInt32 subresource_num = resource_desc.MipLevels * resource_desc.DepthOrArraySize;
 

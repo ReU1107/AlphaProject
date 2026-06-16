@@ -1,6 +1,9 @@
 ﻿#pragma once
 #include "Types.h"
 #include "SmartPtr.h"
+
+#include "Allocator/LinearAllocator.h"
+
 #include "String/String.h"
 
 #include "Container/Array.h"

@@ -175,16 +175,12 @@
     <ClCompile Include="Source\Runtime\D3D12\D3D12SwapChain.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12Texture.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12Timeline.cpp" />
+    <ClCompile Include="Source\Runtime\RenderCore\DescriptorHandle.cpp" />
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2Device.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\Buffer.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\ByteAddressBuffer.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\ConstantBuffer.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\RingBuffer.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\StructuredBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\RenderCore\Buffer.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\CommandList.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\CommandQueue.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\DescriptorHeap.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\DescriptorTable.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\GPUDataTransfer.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\GPUResource.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\IndirectCommandSignature.cpp" />
@@ -197,9 +193,7 @@
     <ClCompile Include="Source\Runtime\RenderCore\SamplerState.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\Shader.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\SwapChain.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Texture\DepthTexture.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Texture\RenderTexture.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Texture\Texture.cpp" />
+    <ClCompile Include="Source\Runtime\RenderCore\Texture.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\Timeline.cpp" />
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2Dynamic.cpp" />
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2Effect.cpp" />
@@ -209,6 +203,8 @@
     <ClCompile Include="Test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\Allocator\Allocator.h" />
+    <ClInclude Include="Source\Core\Allocator\LinearAllocator.h" />
     <ClInclude Include="Source\Core\Assertion.h" />
     <ClInclude Include="Source\Core\Common.h" />
     <ClInclude Include="Source\Core\Component.h" />
@@ -250,6 +246,7 @@
     <ClInclude Include="Source\Runtime\AHI\Declarations.h" />
     <ClInclude Include="Source\Runtime\AHI\Definitions.h" />
     <ClInclude Include="Source\Runtime\AHI\Types.h" />
+    <ClInclude Include="Source\Runtime\Audio\AudioSource.h" />
     <ClInclude Include="Source\Runtime\Audio\DistortionEffect.h" />
     <ClInclude Include="Source\Runtime\Audio\Wave.h" />
     <ClInclude Include="Source\Runtime\Audio\AudioSystem.h" />
@@ -271,17 +268,13 @@
     <ClInclude Include="Source\Runtime\D3D12\D3D12Util.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12WorkGraphPipeline.h" />
     <ClInclude Include="Source\Runtime\Scene\Scene.h" />
+    <ClInclude Include="Source\Runtime\Scene\SceneObject.h" />
     <ClInclude Include="Source\Runtime\XAudio2\XAudio2Device.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\Buffer.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\ByteAddressBuffer.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\ConstantBuffer.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\RingBuffer.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\StructuredBuffer.h" />
+    <ClInclude Include="Source\Runtime\RenderCore\Buffer.h" />
     <ClInclude Include="Source\Runtime\RenderCore\CommandList.h" />
     <ClInclude Include="Source\Runtime\RenderCore\CommandQueue.h" />
     <ClInclude Include="Source\Runtime\RenderCore\DescriptorHandle.h" />
     <ClInclude Include="Source\Runtime\RenderCore\DescriptorHeap.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\DescriptorTable.h" />
     <ClInclude Include="Source\Runtime\RenderCore\GPUDataTransfer.h" />
     <ClInclude Include="Source\Runtime\RenderCore\GPUResource.h" />
     <ClInclude Include="Source\Runtime\RenderCore\IndirectCommandSignature.h" />
@@ -293,13 +286,10 @@
     <ClInclude Include="Source\Runtime\RenderCore\Pipeline\VertexLayout.h" />
     <ClInclude Include="Source\Runtime\RenderCore\RenderCore.h" />
     <ClInclude Include="Source\Runtime\RenderCore\RenderHardwareInterface.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Resources.h" />
     <ClInclude Include="Source\Runtime\RenderCore\SamplerState.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Shader.h" />
     <ClInclude Include="Source\Runtime\RenderCore\SwapChain.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Texture\DepthTexture.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Texture\RenderTexture.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Texture\Texture.h" />
+    <ClInclude Include="Source\Runtime\RenderCore\Texture.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Timeline.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Types.h" />
     <ClInclude Include="Source\Runtime\RHI\Declarations.h" />
