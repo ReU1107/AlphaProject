@@ -6,7 +6,6 @@ namespace Alpha
 {
 	class RenderCore;
 	class DescriptorHeap;
-	class RenderTexture;
 
 	struct RenderTarget
 	{

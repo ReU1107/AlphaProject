@@ -1,19 +1,21 @@
 ﻿#include "D3D12DescriptorHeap.h"
 #include "RHI/Definitions.h"
 #include "RHI/RHIResource.h"
+#include "RHI/RHIBuffer.h"
 
 #if RHI_D3D12
 
 namespace
 {
-	static D3D12_DESCRIPTOR_HEAP_TYPE GetD3D12DescriptorHeapType(Alpha::ERHIDescriptorType type)
+	using namespace Alpha;
+	static D3D12_DESCRIPTOR_HEAP_TYPE GetD3D12DescriptorHeapType(ERHIDescriptorType type)
 	{
 		switch (type)
 		{
-		case Alpha::ERHIDescriptorType::SRV_UAV_CBV : return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		case Alpha::ERHIDescriptorType::RTV			: return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		case Alpha::ERHIDescriptorType::DSV			: return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-		case Alpha::ERHIDescriptorType::Sampler		: return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+		case ERHIDescriptorType::SRV_UAV_CBV	: return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+		case ERHIDescriptorType::RTV			: return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+		case ERHIDescriptorType::DSV			: return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+		case ERHIDescriptorType::Sampler		: return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
 		default:
 			break;
 		}
@@ -21,15 +23,15 @@ namespace
 	}
 
 
-	static bool CheckType(Alpha::ERHIResourceViewType view_type, Alpha::ERHIDescriptorType heap_type)
+	static bool CheckType(ERHIResourceViewType view_type, ERHIDescriptorType heap_type)
 	{
 		switch (view_type)
 		{
-		case Alpha::ERHIResourceViewType::ShaderResourceView	: return (heap_type == Alpha::ERHIDescriptorType::SRV_UAV_CBV);
-		case Alpha::ERHIResourceViewType::UnorderedAccessView	: return (heap_type == Alpha::ERHIDescriptorType::SRV_UAV_CBV);
-		case Alpha::ERHIResourceViewType::ConstantBufferView	: return (heap_type == Alpha::ERHIDescriptorType::SRV_UAV_CBV);
-		case Alpha::ERHIResourceViewType::RenderTargetView		: return (heap_type == Alpha::ERHIDescriptorType::RTV);
-		case Alpha::ERHIResourceViewType::DepthStencilView		: return (heap_type == Alpha::ERHIDescriptorType::DSV);
+		case ERHIResourceViewType::ShaderResourceView	: return (heap_type == ERHIDescriptorType::SRV_UAV_CBV);
+		case ERHIResourceViewType::UnorderedAccessView	: return (heap_type == ERHIDescriptorType::SRV_UAV_CBV);
+		case ERHIResourceViewType::ConstantBufferView	: return (heap_type == ERHIDescriptorType::SRV_UAV_CBV);
+		case ERHIResourceViewType::RenderTargetView		: return (heap_type == ERHIDescriptorType::RTV);
+		case ERHIResourceViewType::DepthStencilView		: return (heap_type == ERHIDescriptorType::DSV);
 		default:
 			break;
 		}
@@ -37,29 +39,29 @@ namespace
 		return false;
 	}
 
-	static Alpha::String GetViewTypeName(Alpha::ERHIResourceViewType view_type)
+	static String GetViewTypeName(ERHIResourceViewType view_type)
 	{
 		switch (view_type)
 		{
-		case Alpha::ERHIResourceViewType::ShaderResourceView	: return L"SRV";
-		case Alpha::ERHIResourceViewType::UnorderedAccessView	: return L"UAV";
-		case Alpha::ERHIResourceViewType::ConstantBufferView	: return L"CBV";
-		case Alpha::ERHIResourceViewType::RenderTargetView		: return L"RTV";
-		case Alpha::ERHIResourceViewType::DepthStencilView		: return L"DSV";
+		case ERHIResourceViewType::ShaderResourceView	: return L"SRV";
+		case ERHIResourceViewType::UnorderedAccessView	: return L"UAV";
+		case ERHIResourceViewType::ConstantBufferView	: return L"CBV";
+		case ERHIResourceViewType::RenderTargetView		: return L"RTV";
+		case ERHIResourceViewType::DepthStencilView		: return L"DSV";
 		default:
 			break;
 		}
 		return L"Unknown";
 	}
 
-	static Alpha::String GetHeapTypeName(Alpha::ERHIDescriptorType heap_type)
+	static String GetHeapTypeName(ERHIDescriptorType heap_type)
 	{
 		switch (heap_type)
 		{
-		case Alpha::ERHIDescriptorType::SRV_UAV_CBV : return L"SRV_UAV_CBV";
-		case Alpha::ERHIDescriptorType::RTV			: return L"RTV";
-		case Alpha::ERHIDescriptorType::DSV			: return L"DSV";
-		case Alpha::ERHIDescriptorType::Sampler		: return L"Sampler";
+		case ERHIDescriptorType::SRV_UAV_CBV	: return L"SRV_UAV_CBV";
+		case ERHIDescriptorType::RTV			: return L"RTV";
+		case ERHIDescriptorType::DSV			: return L"DSV";
+		case ERHIDescriptorType::Sampler		: return L"Sampler";
 		default:
 			break;
 		}
@@ -163,7 +165,7 @@ namespace
 		device->CreateDepthStencilView(resource, &view_desc, handle);
 	}
 
-	static void CreateShaderResourceView(ID3D12Device7* device, ID3D12Resource1* resource, D3D12_CPU_DESCRIPTOR_HANDLE handle, UINT resource_stride, Alpha::ERHIResourceViewFlags flags)
+	static void CreateShaderResourceView(ID3D12Device7* device, ID3D12Resource1* resource, D3D12_CPU_DESCRIPTOR_HANDLE handle, UINT resource_stride, ERHIResourceBindFlags flags)
 	{
 		auto resource_desc = resource->GetDesc();
 		auto stride = resource_stride; // バッファ用
@@ -171,7 +173,7 @@ namespace
 		D3D12_SHADER_RESOURCE_VIEW_DESC view_desc = {};
 		view_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-		if (Alpha::EnumHasFlag(flags, Alpha::ERHIResourceViewFlags::RayTracingAccelerationStructure))
+		if (EnumHasFlag(flags, ERHIResourceBindFlags::RayTracingAS))
 		{
 			// レイトレーシング用
 			view_desc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
@@ -213,7 +215,7 @@ namespace
 				view_desc.Buffer.FirstElement = 0;
 				view_desc.Buffer.NumElements = (UINT)resource_desc.Width / stride;
 				// ByteAddressBufferを使用する場合はこちら
-				if (Alpha::EnumHasFlag(flags, Alpha::ERHIResourceViewFlags::ByteAddressBuffer))
+				if (EnumHasFlag(flags, ERHIResourceBindFlags::Raw))
 				{
 					view_desc.Buffer.StructureByteStride = 0;
 					view_desc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
@@ -301,14 +303,10 @@ namespace
 	}
 
 
-	static void CreateUnorderedAccessView(ID3D12Device7* device, ID3D12Resource1* resource, ID3D12Resource1* counter_resource, D3D12_CPU_DESCRIPTOR_HANDLE handle, UINT resource_stride, Alpha::ERHIResourceViewFlags flags)
+	static void CreateUnorderedAccessView(ID3D12Device7* device, ID3D12Resource1* resource, ID3D12Resource1* counter_resource, D3D12_CPU_DESCRIPTOR_HANDLE handle, UINT resource_stride, ERHIResourceBindFlags flags)
 	{
 		auto resource_desc = resource->GetDesc();
 		auto stride = resource_stride; // バッファ用
-		if (Alpha::EnumHasFlag(flags, Alpha::ERHIResourceViewFlags::ByteAddressBuffer))
-		{
-			stride = 4;
-		}
 		D3D12_UNORDERED_ACCESS_VIEW_DESC view_desc = {};
 		view_desc.Format = resource_desc.Format;
 		switch (resource_desc.Dimension)
@@ -320,7 +318,7 @@ namespace
 			view_desc.Buffer.NumElements = (UINT)resource_desc.Width / stride;
 
 			// ByteAddressBufferを使用する場合はこちら
-			if (Alpha::EnumHasFlag(flags, Alpha::ERHIResourceViewFlags::ByteAddressBuffer))
+			if (EnumHasFlag(flags, ERHIResourceBindFlags::Raw))
 			{
 				view_desc.Buffer.StructureByteStride = 0;
 				view_desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
@@ -442,16 +440,22 @@ namespace Alpha
 		D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetCPUHandle(desc.heap_index);
 		D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle = GetGPUHandle(desc.heap_index);
 
+		auto buffer = desc.resource->As<RHIBuffer>();
+		UINT resource_stride = 4;
+		if (buffer)
+		{
+			resource_stride = buffer->GetStride();
+		}
+
 		auto resource = static_cast<ID3D12Resource1*>(desc.resource->GetNative());
 		ID3D12Resource1* counter_resource = nullptr;
-		UINT resource_stride = desc.buffer_stride;
 
 		switch (desc.type)
 		{
 		case ERHIResourceViewType::Unknown:
 			break;
 		case ERHIResourceViewType::ShaderResourceView:
-			CreateShaderResourceView(device, resource, cpu_handle, resource_stride, desc.flags);
+			CreateShaderResourceView(device, resource, cpu_handle, resource_stride, desc.resource->GetFlags());
 			break;
 		case ERHIResourceViewType::RenderTargetView:
 			CreateRenderTargetView(device, resource, cpu_handle);
@@ -460,7 +464,7 @@ namespace Alpha
 			CreateDepthStencilView(device, resource, cpu_handle);
 			break;
 		case ERHIResourceViewType::UnorderedAccessView:
-			CreateUnorderedAccessView(device, resource, counter_resource, cpu_handle, resource_stride, desc.flags);
+			CreateUnorderedAccessView(device, resource, counter_resource, cpu_handle, resource_stride, desc.resource->GetFlags());
 			break;
 		case ERHIResourceViewType::ConstantBufferView:
 			//CreateConstantBufferView(device, resource, cpu_handle, offset, size);

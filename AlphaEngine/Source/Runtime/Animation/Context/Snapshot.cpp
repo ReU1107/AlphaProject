@@ -11,9 +11,9 @@ namespace Alpha::Animation
             auto& lhs_tf = lhs.bone_transforms[i];
             auto& rhs_tf = rhs.bone_transforms[i];
 
-            bone_transforms[i].position = MathF::VectorLerp(lhs_tf.position, rhs_tf.position, alpha);
-            bone_transforms[i].quaternion = MathF::QuaternionSlerp(lhs_tf.quaternion, rhs_tf.quaternion, alpha);
-            bone_transforms[i].scale = MathF::VectorLerp(lhs_tf.scale, rhs_tf.scale, alpha);
+            bone_transforms[i].position = VectorLerp(lhs_tf.position, rhs_tf.position, alpha);
+            bone_transforms[i].quaternion = QuaternionSlerp(lhs_tf.quaternion, rhs_tf.quaternion, alpha);
+            bone_transforms[i].scale = VectorLerp(lhs_tf.scale, rhs_tf.scale, alpha);
         }
 
 	}

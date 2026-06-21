@@ -6,7 +6,7 @@ namespace Alpha
 {
 	// 列挙を基本型にキャスト
 	template<class T>
-	inline std::underlying_type_t<T> CovertEnumClassToBaseType(T e)
+	constexpr inline std::underlying_type_t<T> CovertEnumClassToBaseType(T e)
 	{
 		return static_cast<std::underlying_type_t<T>>(e);
 	}
@@ -15,11 +15,11 @@ namespace Alpha
 
 
 #define EnumClassFlags(Flag) \
-inline Flag operator |(Flag lhs, Flag rhs)	{ return static_cast<Flag>(CovertEnumClassToBaseType(lhs) | CovertEnumClassToBaseType(rhs)); }\
-inline Flag operator ^(Flag lhs, Flag rhs)	{ return static_cast<Flag>(CovertEnumClassToBaseType(lhs) ^ CovertEnumClassToBaseType(rhs)); }\
-inline bool operator &(Flag lhs, Flag rhs)	{ return CovertEnumClassToBaseType(lhs) & CovertEnumClassToBaseType(rhs); }\
-inline Flag operator |=(Flag& lhs, Flag rhs){ lhs = lhs | rhs;return lhs; }\
-inline Flag operator ^=(Flag& lhs, Flag rhs){ lhs = lhs ^ rhs;return lhs; }
+constexpr inline Flag operator |(Flag lhs, Flag rhs)	{ return static_cast<Flag>(CovertEnumClassToBaseType(lhs) | CovertEnumClassToBaseType(rhs)); }\
+constexpr inline Flag operator ^(Flag lhs, Flag rhs)	{ return static_cast<Flag>(CovertEnumClassToBaseType(lhs) ^ CovertEnumClassToBaseType(rhs)); }\
+constexpr inline bool operator &(Flag lhs, Flag rhs)	{ return CovertEnumClassToBaseType(lhs) & CovertEnumClassToBaseType(rhs); }\
+constexpr inline Flag operator |=(Flag& lhs, Flag rhs){ lhs = lhs | rhs;return lhs; }\
+constexpr inline Flag operator ^=(Flag& lhs, Flag rhs){ lhs = lhs ^ rhs;return lhs; }
 
 	// ビットにフラグが立っているか(EnumClassFlags必須)
 	template<typename EnumClass>

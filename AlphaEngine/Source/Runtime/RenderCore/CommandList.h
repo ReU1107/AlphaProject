@@ -12,18 +12,11 @@ namespace Alpha
 	class ComputePipeline;
 
 	class DescriptorHeap;
-	class DescriptorTable;
 	struct DescriptorHandle;
 
 	class GPUResource;
 	class Buffer;
-	class ByteAddressBuffer;
-	class StructuredBuffer;
-	class ConstantBuffer;
-	class RingBuffer;
 	class Texture;
-	class RenderTexture;
-	class DepthTexture;
 	class SamplerState;
 
 
@@ -59,43 +52,41 @@ namespace Alpha
 		void SetGraphicsPipeline(GraphicsPipeline* pipeline);
 		void SetComputePipeline(ComputePipeline* pipeline);
 
-		void SetRenderTarget(RenderTexture* render_target, DepthTexture* depth_stencil);
-		void SetRenderTargets(RenderTexture** render_targets, UInt32 num, DepthTexture* depth_stencil);
+		void SetRenderTarget(Texture* render_target, Texture* depth_stencil);
+		void SetRenderTargets(Texture** render_targets, UInt32 num, Texture* depth_stencil);
 
-		void ClearRenderTarget(RenderTexture* render_target, const Rect2D& rect, const Color4& clear_color);
+		void ClearRenderTarget(Texture* render_target, const Rect2D& rect, const Color4& clear_color);
 
-		void ClearDepthStencil(DepthTexture* depth_stencil, const Rect2D& rect, float clear_depth);
+		void ClearDepthStencil(Texture* depth_stencil, const Rect2D& rect, float clear_depth);
 
 		void SetPrimitiveTopology(ERHIPrimitiveTopology topology);
 
-		void SetVertexBuffer(RingBuffer* rb, UInt32 slot);
+		void SetVertexBuffer(Buffer* rb, UInt32 slot);
 
-		void SetIndexBuffer(RingBuffer* rb, ERHIIndexFormat format);
+		void SetIndexBuffer(Buffer* rb, ERHIIndexFormat format);
 
-		void SetGraphicsDescriptorTable(DescriptorTable* table, UInt32 slot);
-		void SetGraphicsDescriptorTable(const DescriptorHandle& handle, UInt32 slot);
-		void SetComputeDescriptorTable(DescriptorTable* table, UInt32 slot);
-
+		// こいつらはバインドレス経由じゃなく従来の方法のパターン用
+		void SetGraphicsTexture(Texture* texture, UInt32 slot);
 		void SetGraphicsSamplerState(SamplerState* state, UInt32 slot);
 
 		void SetGraphcisSRV(Buffer* buffer, UInt32 slot);
 		void SetComputeSRV(Buffer* buffer, UInt32 slot);
-		void SetGraphcisSRV(RingBuffer* buffer, uint64_t offset, UInt32 slot);
+		void SetGraphcisSRV(Buffer* buffer, UInt64 offset, UInt32 slot);
 
-		void SetGraphcisUAV(StructuredBuffer* buffer, UInt32 slot);
-		void SetComputeUAV(StructuredBuffer* buffer, UInt32 slot);
+		void SetGraphcisUAV(Buffer* buffer, UInt32 slot);
+		void SetComputeUAV(Buffer* buffer, UInt32 slot);
 
-		void SetGraphicsCBV(ConstantBuffer* buffer, UInt32 slot);
-		void SetGraphicsCBV(RingBuffer* buffer, uint64_t offset, UInt32 slot);
-		void SetComputeCBV(RingBuffer* buffer, uint64_t offset, UInt32 slot);
+		void SetGraphicsCBV(Buffer* buffer, UInt32 slot);
+		void SetGraphicsCBV(Buffer* buffer, UInt64 offset, UInt32 slot);
+		void SetComputeCBV(Buffer* buffer, UInt64 offset, UInt32 slot);
 
 		void Transition(GPUResource* resource, ERHIResourceState after);
 
 		void CopyBuffer(Buffer* src, Buffer* dst);
-		void CopyBufferRegion(Buffer* src, uint64_t src_offset, Buffer* dst);
+		void CopyBufferRegion(Buffer* src, UInt64 src_offset, Buffer* dst, UInt64 dst_offset, UInt64 size);
 
 		void CopyTexture(Texture* src, Texture* dst);
-		void CopyTextureRegion(Buffer* src, uint64_t src_offset, Texture* dst);
+		void CopyTextureRegion(Buffer* src, UInt64 src_offset, Texture* dst);
 		//void CopyTextureRegion(Texture* src, const RHIRect& src_rect, Texture* dst, const RHIRect& dst_rect);
 
 		void UAVBarrier(Buffer* buffer);

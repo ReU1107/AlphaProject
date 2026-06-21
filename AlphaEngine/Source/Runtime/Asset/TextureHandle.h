@@ -7,8 +7,8 @@ namespace Alpha
 	class TextureHandle : public AssetHandle
 	{
 	private:
-		uint32_t m_width{ 0 };
-		uint32_t m_height{ 0 };
+		UInt32 m_width{ 0 };
+		UInt32 m_height{ 0 };
 
 		ERHIResourceFormat m_format{ ERHIResourceFormat::RGBAUnorm };
 
@@ -21,17 +21,17 @@ namespace Alpha
 
 		AssetType GetType() const final { return AssetType::Texture; }
 
-		void SetWidth(uint32_t width) { m_width = width; }
-		void SetHeight(uint32_t height) { m_height = height; }
+		void SetWidth(UInt32 width) { m_width = width; }
+		void SetHeight(UInt32 height) { m_height = height; }
 
 		void SetFormat(ERHIResourceFormat format) { m_format = format; }
 
-		void SetPixels(const uint8_t* pixels)
+		void SetPixels(const UInt8* pixels)
 		{
 			if (!pixels)
 				return;
 
-			size_t size = static_cast<size_t>(m_width) * m_height * 4;
+			USize size = static_cast<USize>(m_width) * m_height * 4;
 
 			m_pixels.assign(pixels, pixels + size);
 		}
@@ -42,8 +42,8 @@ namespace Alpha
 		ERHIResourceFormat GetFormat() const { return m_format; }
 
 
-		const uint8_t* GetPixels() const { return m_pixels.data(); }
-		uint8_t* GetPixels() { return m_pixels.data(); }
+		const UInt8* GetPixels() const { return m_pixels.data(); }
+		UInt8* GetPixels() { return m_pixels.data(); }
 
 		void Accept(IVisitor* visitor) override {}
 

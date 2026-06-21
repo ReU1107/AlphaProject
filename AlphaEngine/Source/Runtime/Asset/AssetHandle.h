@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Core/Types.h"
+#include "Core/Common.h"
 #include "Core/Object.h"
 #include <atomic>
 #include <concepts>
@@ -14,6 +14,7 @@ namespace Alpha
 		Texture,
 		Material,
 		Particle,
+		Skeleton,
 	};
 
 	class AssetHandle : public Object

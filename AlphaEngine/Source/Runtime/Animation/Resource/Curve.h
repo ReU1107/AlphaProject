@@ -1,6 +1,6 @@
 ﻿#pragma once
+#include "Core/Common.h"
 #include "Keyframe.h"
-#include "Core/Types.h"
 
 namespace Alpha::Animation
 {

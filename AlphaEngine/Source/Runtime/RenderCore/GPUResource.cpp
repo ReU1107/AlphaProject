@@ -10,4 +10,9 @@ namespace Alpha
 	{
 		return m_rhi.get();
 	}
+
+	ERHIResourceBindFlags GPUResource::GetFlags() const
+	{
+		return m_rhi->GetFlags();
+	}
 }

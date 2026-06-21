@@ -2,9 +2,9 @@
 #include "RenderCore/RenderCore.h"
 #include "RenderCore/CommandList.h"
 #include "RenderCore/Shader.h"
+#include "RenderCore/Buffer.h"
 #include "RenderCore/Pipeline/PipelineLayout.h"
 #include "RenderCore/Pipeline/GraphicsPipeline.h"
-#include "RenderCore/Buffer/RingBuffer.h"
 
 #include "Core/Math/MathF.h"
 
@@ -14,7 +14,7 @@ namespace Alpha
 { 
 	bool DebugRenderer::Initialize(const Args& args)
 	{
-		m_line_buffer = args.render_core->CreateRingBuffer(sizeof(LineVertex) , args.max_line_num * 2);
+		m_line_buffer = args.render_core->CreateBuffer(sizeof(LineVertex), args.max_line_num * 2, EBufferPresetType::Upload);
 
 		m_lines.reserve(args.max_line_num);
 
@@ -63,8 +63,8 @@ namespace Alpha
 	void DebugRenderer::DrawGizmo(const Vector3& position, const Vector3& dir, const Color4& color, float thickness)
 	{
 		const Vector3 z_axis = dir;
-		const Vector3 x_axis = MathF::VectorNormalize(MathF::Vector3Orthogonal(z_axis));
-		const Vector3 y_axis = MathF::Vector3Cross(z_axis, x_axis);
+		const Vector3 x_axis = VectorNormalize(Vector3Orthogonal(z_axis));
+		const Vector3 y_axis = Vector3Cross(z_axis, x_axis);
 
 		DrawLine(position, position + z_axis * 2.0f, color);
 		DrawLine(position, position + x_axis * 2.0f, color);
@@ -74,8 +74,8 @@ namespace Alpha
 	void DebugRenderer::DrawGizmo(const Vector3& position, const Vector3& dir, float thickness)
 	{
 		const Vector3 z_axis = dir;
-		const Vector3 x_axis = MathF::VectorNormalize(MathF::Vector3Orthogonal(z_axis));
-		const Vector3 y_axis = MathF::Vector3Cross(z_axis, x_axis);
+		const Vector3 x_axis = VectorNormalize(Vector3Orthogonal(z_axis));
+		const Vector3 y_axis = Vector3Cross(z_axis, x_axis);
 
 		DrawLine(position, position + z_axis * 2.0f, Color4::Blue);
 		DrawLine(position, position + x_axis * 2.0f, Color4::Red);

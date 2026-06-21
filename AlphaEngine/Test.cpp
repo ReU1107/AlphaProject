@@ -14,6 +14,13 @@
 #include "Source/Runtime/RenderCore/RenderHardwareInterface.h"
 #include "Source/Runtime/RenderCore/Module.h"
 
+#include "Source/Runtime/Renderer/GUISystem.h"
+#include "Source/Runtime/Renderer/RenderContext.h"
+
+#include "Source/Runtime/Animation/Module.h"
+
+#include "ThirdParty/imgui/imgui.h"
+
 #include "RHI/Definitions.h"
 
 using Microsoft::WRL::ComPtr;
@@ -36,6 +43,52 @@ int main()
     render_core_args.transient_buffer_size = 1_MB;
     RenderCore::Startup(render_core_args);
 
+    GUISystem::Args gui_args = {
+        .render_core = RenderCore::GetPtr(),
+    };
+    GUISystem::Startup(gui_args);
+
+    RenderCore::Get().PostInitialize();
+
+
+    while (WindowSystem::Get().ProcessMessages() && !WindowSystem::Get().ShouldClose())
+    {
+        RenderCore::Get().BeginFrame();
+        RenderContext ctx = {};
+        ctx.command_list = RenderCore::Get().GetCommandList();
+        ctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
+        GUISystem::Get().BeginFrame();
+
+
+        ImGui::Begin("Debug Window");
+        ImGui::Text("Hello, AlphaEngine!");
+        if (ImGui::Button("Click Me"))
+        {
+            // ボタンが押された時の処理
+        }
+        ImGui::End();
+
+        GUISystem::Get().EndFrame();
+
+        GUISystem::Get().Flush(ctx);
+
+        RenderCore::Get().EndFrame();
+    }
+
+    GUISystem::Shutdown();
+
+    RenderCore::Shutdown();
+
+    WindowSystem::Shutdown();
+
+    system("pause");
+    return 0;
+}
+
+
+/*
+* Workgraphテストコード
+* 
 	auto shader = RenderCore::Get().CreateShader(L"Asset/TestWork.hlsl", ERHIShaderType::Library);
     auto s = static_cast<D3D12Shader*>(shader->GetRHI());
 
@@ -51,8 +104,6 @@ int main()
     auto d = static_cast<D3D12Dynamic*>(RenderCore::Get().GetRHI()->GetDynamic());
 
     auto device = d->GetDevice()->GetDevice();
-
-
     // 1. DXILライブラリの設定（コンパイル済みシェーダーを登録）
     D3D12_DXIL_LIBRARY_DESC dxilLibDesc = {};
     dxilLibDesc.DXILLibrary = { s->GetBytecodePointer(), s->GetBytecodeLength() }; // コンパイルしたデータ
@@ -101,11 +152,11 @@ int main()
 
     std::cout << "Backing Memory Required: " << memReqs.MaxSizeInBytes << " bytes" << std::endl;
 
-    auto backing = RenderCore::Get().CreateStructuredBuffer(1, memReqs.MaxSizeInBytes, EResourceAccessFlags::Write);
+    auto backing = RenderCore::Get().CreateBuffer(1, memReqs.MaxSizeInBytes, EBufferPresetType::RWStructured);
 
-    auto result_write = RenderCore::Get().CreateStructuredBuffer(sizeof(uint32_t), 1, EResourceAccessFlags::Write);
+    auto result_write = RenderCore::Get().CreateBuffer(sizeof(uint32_t), sizeof(uint32_t), EBufferPresetType::RWStructured);
 
-    auto result = RenderCore::Get().CreateStructuredBuffer(sizeof(uint32_t), 1, EResourceAccessFlags::CPURead);
+    auto result = RenderCore::Get().CreateBuffer(sizeof(uint32_t), sizeof(uint32_t), EBufferPresetType::Readback);
     auto handle = RenderCore::Get().GetBindlessHeap()->Allocate();
 
     RHIResourceViewDesc dsv_desc = {};
@@ -167,8 +218,4 @@ int main()
     std::cout << "Result from Work Graph: " << *pUintData << std::endl;
 
 
-    result->GetRHI()->Unmap(0, sizeof(MyData));
-
-    system("pause");
-    return 0;
-}
+*/

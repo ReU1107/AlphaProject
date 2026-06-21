@@ -6,11 +6,17 @@
 namespace Alpha
 {
 	SamplerState::SamplerState() = default;
-	SamplerState::~SamplerState() = default;
+	SamplerState::~SamplerState()
+	{
+		if(m_handle.IsActive())
+		{
+			m_handle.Free();
+		}
+	}
 
 	bool SamplerState::Initialize(const Args& args)
 	{
-		m_handle = args.sampler_heap->Allocate();
+		m_handle = args.sampler_heap->Allocate(ERHIResourceViewType::SamplerView);
 
 		RHISamplerStateDesc desc = {};
 		desc.descriptor_heap = m_handle.heap->GetRHI();

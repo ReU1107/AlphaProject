@@ -8,37 +8,39 @@ namespace
 {
 	using namespace Alpha;
 
-	static D3D12_HEAP_TYPE GetD3D12HeapType(ERHIBufferAccess access)
+	static D3D12_HEAP_TYPE GetD3D12HeapType(ERHIResourceAccessType access)
 	{
 		switch (access) 
 		{
-		case ERHIBufferAccess::Dynamic: return D3D12_HEAP_TYPE_UPLOAD;
-		case ERHIBufferAccess::Staging: return D3D12_HEAP_TYPE_READBACK;
-		default:						return D3D12_HEAP_TYPE_DEFAULT;
+		case ERHIResourceAccessType::Static	: return D3D12_HEAP_TYPE_DEFAULT;
+		case ERHIResourceAccessType::Dynamic: return D3D12_HEAP_TYPE_UPLOAD;
+		case ERHIResourceAccessType::Staging: return D3D12_HEAP_TYPE_READBACK;
+		default: return D3D12_HEAP_TYPE_DEFAULT;
 		}
 	}
 
-	static D3D12_RESOURCE_FLAGS GetD3D12ResourceFlags(ERHIBufferBindFlags bind)
+	static D3D12_RESOURCE_FLAGS GetD3D12ResourceFlags(ERHIResourceBindFlags bind)
 	{
 		D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
-		if (EnumHasFlag(bind, ERHIBufferBindFlags::UnorderedAccess))
+		if (EnumHasFlag(bind, ERHIResourceBindFlags::UnorderedAccess))
 			flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 		return flags;
 	}
 
-	static D3D12_RESOURCE_STATES GetD3D12ResourceStates(ERHIBufferAccess access)
+	static D3D12_RESOURCE_STATES GetD3D12ResourceStates(ERHIResourceAccessType access)
 	{
 		switch (access) 
 		{
-		case ERHIBufferAccess::Dynamic: return D3D12_RESOURCE_STATE_GENERIC_READ;
-		case ERHIBufferAccess::Staging: return D3D12_RESOURCE_STATE_COPY_DEST;
+		case ERHIResourceAccessType::Static	: return D3D12_RESOURCE_STATE_COMMON;
+		case ERHIResourceAccessType::Dynamic: return D3D12_RESOURCE_STATE_GENERIC_READ;
+		case ERHIResourceAccessType::Staging: return D3D12_RESOURCE_STATE_COPY_DEST;
 		default:						return D3D12_RESOURCE_STATE_COMMON;
 		}
 	}
 
-	static ERHIResourceState GetRHIResourceState(ERHIBufferAccess access)
+	static ERHIResourceState GetRHIResourceState(ERHIResourceAccessType access)
 	{
-		if (access == ERHIBufferAccess::Dynamic)
+		if (access == ERHIResourceAccessType::Dynamic)
 		{
 			return ERHIResourceState::GenericRead;
 		}
@@ -93,7 +95,7 @@ namespace Alpha
 		}
 		SetSize(desc.size);
 		SetStride(desc.stride);
-		SetAccess(desc.access);
+		SetAccessType(desc.access);
 		SetFlags(desc.flags);
 
 		SetState(GetRHIResourceState(desc.access));
@@ -150,13 +152,6 @@ namespace Alpha
 	uint64_t D3D12Buffer::GetGPUAddress() const
 	{
 		return m_resource->GetGPUVirtualAddress();
-	}
-
-	void D3D12Buffer::Upload(void* map_ptr, void* data, uint64_t size, uint64_t offset)
-	{
-		uint8_t* dst = static_cast<uint8_t*>(map_ptr);
-
-		memcpy(dst, data, size);
 	}
 }
 

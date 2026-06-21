@@ -25,7 +25,7 @@ namespace Alpha
 		Unknown,
 		ShaderResourceView,			// SRV
 		UnorderedAccessView,		// UAV
-		ConstantBufferView,			// CBV
+		ConstantBufferView,			// CBV	// 廃止するかも理由定数バッファを送る時はrootconstantsだけで統一するのもありかなって
 		RenderTargetView,			// RTV
 		DepthStencilView,			// DSV
 		SamplerView,				// Sampler
@@ -89,6 +89,16 @@ namespace Alpha
 		RayTracing,
 	};
 
+	enum class ERHIPrimitiveTopology
+	{
+		Umdefined = 0,
+		PointList = 1,
+		LineList = 2,
+		LineStrip = 3,
+		TriangleList = 4,
+		TriangleStrip = 5,
+	};
+
 	enum class ERHIResourceDimension
 	{
 		Unknown,	// テクスチャタイプが初期化されていないか、不明です。
@@ -100,39 +110,6 @@ namespace Alpha
 		Cube,		// キューブマップ テクスチャ。
 		Tex2DArray,	// 2D配列テクスチャ(Texture2DArray)。
 		CubeArray,	// Cubemap array texture(CubemapArray).
-	};
-
-	enum class ERHIResourceViewFlags
-	{
-		None = 0x0,
-		ByteAddressBuffer				= 1 << 0,	// バイトアドレスバッファとして使用
-		RayTracingAccelerationStructure = 1 << 1,	// レイトレーシング加速構造体として使用
-	};
-
-	EnumClassFlags(ERHIResourceViewFlags);
-
-	enum class ERHIResourceFlags
-	{
-		None					= 0,		// なし
-		AllowRenderTarget		= 1 << 0,	// 描画先指定許可
-		AllowDepthStencil		= 1 << 1,	// 深度、ステンシル書き込み許可
-		AllowUnorderedAccess	= 1 << 2,	// コンピュートシェーダーのアクセス許可
-		DenyShaderResource		= 1 << 3,	// シェーダーリソース指定不許可
-		AllowCrossAdapter		= 1 << 4,	// 別々のアダプターでの使用許可
-		AllowSimultaneousAccess = 1 << 5,	// 
-		DecodeReferenceOnly		= 1 << 6,	// 
-	};
-
-	EnumClassFlags(ERHIResourceFlags);
-
-	enum class ERHIPrimitiveTopology
-	{
-		Umdefined = 0,
-		PointList = 1,
-		LineList = 2,
-		LineStrip = 3,
-		TriangleList = 4,
-		TriangleStrip = 5,
 	};
 
 	enum class ERHIResourceState
@@ -163,22 +140,25 @@ namespace Alpha
 
 	EnumClassFlags(ERHIResourceState);
 
-	enum class ERHIBufferAccess
+	enum class ERHIResourceAccessType
 	{
 		Static,   // GPU専用 (DEFAULT heap)
 		Dynamic,  // CPUからアクセス可能 (UPLOAD heap / ConstantBuffer的)
 		Staging,  // 読み戻し用 (READBACK heap)
 	};
 
-	enum class ERHIBufferBindFlags
+	enum class ERHIResourceBindFlags
 	{
 		None = 0,
 		ShaderResource	= 1 << 0, // 基本これ
 		UnorderedAccess = 1 << 1, // RWならこれ
 		Raw				= 1 << 2, // ByteAddressBuffer
+		RenderTarget	= 1 << 3, // 描画先にするならこれ
+		DepthStencil	= 1 << 4, // 深度、ステンシルにするならこれ
+		RayTracingAS	= 1 << 5, // レイトレーシングの加速構造体にするならこれ
 	};
 
-	EnumClassFlags(ERHIBufferBindFlags);
+	EnumClassFlags(ERHIResourceBindFlags);
 
 	enum class ERHIResourceFormat
 	{

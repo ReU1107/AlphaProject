@@ -111,7 +111,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;RHI_D3D12;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)Source\Runtime\;$(ProjectDir)Source\Core\;$(ProjectDir)Source\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source\Runtime\;$(ProjectDir)Source\Core\;$(ProjectDir)Source\;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -159,6 +159,36 @@
     <ClCompile Include="Source\Core\Time\TimeManager.cpp" />
     <ClCompile Include="Source\Core\Window\Win32Window.cpp" />
     <ClCompile Include="Source\Core\Window\WindowSystem.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\AnimationComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\AnimationSystem.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Context\Graph.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Context\IKSolver.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Context\Node.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Context\SkeletalClipInstance.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Context\SkeletonPose.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Context\Snapshot.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Context\State.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Context\StateMachine.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Context\StateTransition.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Resource\Channel.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Resource\Clip.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Resource\Curve.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Resource\IKChain.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Resource\Joint.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Resource\Skeleton.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\Resource\Track.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\AssetManager.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\AudioHandle.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\Importer\PMX\PMXLoader.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\Importer\PMX\PMXParser.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\Importer\VMD\VMDLoader.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\Importer\VMD\VMDParser.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\Importer\WIC\WICLoader.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\MaterialHandle.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\ModelHandle.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\MotionHandle.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\SkeletonHandle.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\TextureHandle.cpp" />
     <ClCompile Include="Source\Runtime\Audio\AudioSystem.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12Buffer.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12CommandBuffer.cpp" />
@@ -175,16 +205,15 @@
     <ClCompile Include="Source\Runtime\D3D12\D3D12SwapChain.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12Texture.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12Timeline.cpp" />
+    <ClCompile Include="Source\Runtime\RenderCore\DescriptorHandle.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\GUISystem.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\GUIVisitor.cpp" />
+    <ClCompile Include="Source\Runtime\RenderCore\TransientBufferAllocator.cpp" />
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2Device.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\Buffer.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\ByteAddressBuffer.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\ConstantBuffer.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\RingBuffer.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Buffer\StructuredBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\RenderCore\Buffer.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\CommandList.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\CommandQueue.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\DescriptorHeap.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\DescriptorTable.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\GPUDataTransfer.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\GPUResource.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\IndirectCommandSignature.cpp" />
@@ -197,9 +226,7 @@
     <ClCompile Include="Source\Runtime\RenderCore\SamplerState.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\Shader.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\SwapChain.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Texture\DepthTexture.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Texture\RenderTexture.cpp" />
-    <ClCompile Include="Source\Runtime\RenderCore\Texture\Texture.cpp" />
+    <ClCompile Include="Source\Runtime\RenderCore\Texture.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\Timeline.cpp" />
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2Dynamic.cpp" />
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2Effect.cpp" />
@@ -207,8 +234,16 @@
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2SourceBus.cpp" />
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2SubmixBus.cpp" />
     <ClCompile Include="Test.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui_demo.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui_draw.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui_tables.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\Allocator\Allocator.h" />
+    <ClInclude Include="Source\Core\Allocator\FreeListAllocator.h" />
+    <ClInclude Include="Source\Core\Allocator\LinearAllocator.h" />
     <ClInclude Include="Source\Core\Assertion.h" />
     <ClInclude Include="Source\Core\Common.h" />
     <ClInclude Include="Source\Core\Component.h" />
@@ -250,6 +285,48 @@
     <ClInclude Include="Source\Runtime\AHI\Declarations.h" />
     <ClInclude Include="Source\Runtime\AHI\Definitions.h" />
     <ClInclude Include="Source\Runtime\AHI\Types.h" />
+    <ClInclude Include="Source\Runtime\Animation\AnimationComponent.h" />
+    <ClInclude Include="Source\Runtime\Animation\AnimationResource.h" />
+    <ClInclude Include="Source\Runtime\Animation\AnimationSystem.h" />
+    <ClInclude Include="Source\Runtime\Animation\Context\ClipInstance.h" />
+    <ClInclude Include="Source\Runtime\Animation\Context\Condition.h" />
+    <ClInclude Include="Source\Runtime\Animation\Context\Graph.h" />
+    <ClInclude Include="Source\Runtime\Animation\Context\IKSolver.h" />
+    <ClInclude Include="Source\Runtime\Animation\Context\Node.h" />
+    <ClInclude Include="Source\Runtime\Animation\Context\ParameterContext.h" />
+    <ClInclude Include="Source\Runtime\Animation\Context\SkeletalClipInstance.h" />
+    <ClInclude Include="Source\Runtime\Animation\Context\SkeletonPose.h" />
+    <ClInclude Include="Source\Runtime\Animation\Context\Snapshot.h" />
+    <ClInclude Include="Source\Runtime\Animation\Context\State.h" />
+    <ClInclude Include="Source\Runtime\Animation\Context\StateMachine.h" />
+    <ClInclude Include="Source\Runtime\Animation\Context\StateTransition.h" />
+    <ClInclude Include="Source\Runtime\Animation\Module.h" />
+    <ClInclude Include="Source\Runtime\Animation\Resource\Channel.h" />
+    <ClInclude Include="Source\Runtime\Animation\Resource\Clip.h" />
+    <ClInclude Include="Source\Runtime\Animation\Resource\Curve.h" />
+    <ClInclude Include="Source\Runtime\Animation\Resource\IKChain.h" />
+    <ClInclude Include="Source\Runtime\Animation\Resource\Joint.h" />
+    <ClInclude Include="Source\Runtime\Animation\Resource\Keyframe.h" />
+    <ClInclude Include="Source\Runtime\Animation\Resource\Skeleton.h" />
+    <ClInclude Include="Source\Runtime\Animation\Resource\Track.h" />
+    <ClInclude Include="Source\Runtime\Asset\AssetHandle.h" />
+    <ClInclude Include="Source\Runtime\Asset\AssetLoader.h" />
+    <ClInclude Include="Source\Runtime\Asset\AssetManager.h" />
+    <ClInclude Include="Source\Runtime\Asset\AudioHandle.h" />
+    <ClInclude Include="Source\Runtime\Asset\Importer\PMX\PMXData.h" />
+    <ClInclude Include="Source\Runtime\Asset\Importer\PMX\PMXLoader.h" />
+    <ClInclude Include="Source\Runtime\Asset\Importer\PMX\PMXParser.h" />
+    <ClInclude Include="Source\Runtime\Asset\Importer\VMD\VMDData.h" />
+    <ClInclude Include="Source\Runtime\Asset\Importer\VMD\VMDLoader.h" />
+    <ClInclude Include="Source\Runtime\Asset\Importer\VMD\VMDParser.h" />
+    <ClInclude Include="Source\Runtime\Asset\Importer\WIC\WICLoader.h" />
+    <ClInclude Include="Source\Runtime\Asset\MaterialHandle.h" />
+    <ClInclude Include="Source\Runtime\Asset\ModelHandle.h" />
+    <ClInclude Include="Source\Runtime\Asset\MotionHandle.h" />
+    <ClInclude Include="Source\Runtime\Asset\ParticleHandle.h" />
+    <ClInclude Include="Source\Runtime\Asset\SkeletonHandle.h" />
+    <ClInclude Include="Source\Runtime\Asset\TextureHandle.h" />
+    <ClInclude Include="Source\Runtime\Audio\AudioSource.h" />
     <ClInclude Include="Source\Runtime\Audio\DistortionEffect.h" />
     <ClInclude Include="Source\Runtime\Audio\Wave.h" />
     <ClInclude Include="Source\Runtime\Audio\AudioSystem.h" />
@@ -270,18 +347,18 @@
     <ClInclude Include="Source\Runtime\D3D12\D3D12Timeline.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12Util.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12WorkGraphPipeline.h" />
+    <ClInclude Include="Source\Runtime\Renderer\GUISystem.h" />
+    <ClInclude Include="Source\Runtime\Renderer\GUIVisitor.h" />
+    <ClInclude Include="Source\Runtime\Renderer\RenderContext.h" />
+    <ClInclude Include="Source\Runtime\RenderCore\TransientBufferAllocator.h" />
     <ClInclude Include="Source\Runtime\Scene\Scene.h" />
+    <ClInclude Include="Source\Runtime\Scene\SceneObject.h" />
     <ClInclude Include="Source\Runtime\XAudio2\XAudio2Device.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\Buffer.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\ByteAddressBuffer.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\ConstantBuffer.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\RingBuffer.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Buffer\StructuredBuffer.h" />
+    <ClInclude Include="Source\Runtime\RenderCore\Buffer.h" />
     <ClInclude Include="Source\Runtime\RenderCore\CommandList.h" />
     <ClInclude Include="Source\Runtime\RenderCore\CommandQueue.h" />
     <ClInclude Include="Source\Runtime\RenderCore\DescriptorHandle.h" />
     <ClInclude Include="Source\Runtime\RenderCore\DescriptorHeap.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\DescriptorTable.h" />
     <ClInclude Include="Source\Runtime\RenderCore\GPUDataTransfer.h" />
     <ClInclude Include="Source\Runtime\RenderCore\GPUResource.h" />
     <ClInclude Include="Source\Runtime\RenderCore\IndirectCommandSignature.h" />
@@ -293,13 +370,10 @@
     <ClInclude Include="Source\Runtime\RenderCore\Pipeline\VertexLayout.h" />
     <ClInclude Include="Source\Runtime\RenderCore\RenderCore.h" />
     <ClInclude Include="Source\Runtime\RenderCore\RenderHardwareInterface.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Resources.h" />
     <ClInclude Include="Source\Runtime\RenderCore\SamplerState.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Shader.h" />
     <ClInclude Include="Source\Runtime\RenderCore\SwapChain.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Texture\DepthTexture.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Texture\RenderTexture.h" />
-    <ClInclude Include="Source\Runtime\RenderCore\Texture\Texture.h" />
+    <ClInclude Include="Source\Runtime\RenderCore\Texture.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Timeline.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Types.h" />
     <ClInclude Include="Source\Runtime\RHI\Declarations.h" />
@@ -327,6 +401,13 @@
     <ClInclude Include="Source\Runtime\XAudio2\XAudio2MasterBus.h" />
     <ClInclude Include="Source\Runtime\XAudio2\XAudio2SourceBus.h" />
     <ClInclude Include="Source\Runtime\XAudio2\XAudio2SubmixBus.h" />
+    <ClInclude Include="ThirdParty\imgui\imconfig.h" />
+    <ClInclude Include="ThirdParty\imgui\imgui.h" />
+    <ClInclude Include="ThirdParty\imgui\imgui_internal.h" />
+    <ClInclude Include="ThirdParty\imgui\imstb_rectpack.h" />
+    <ClInclude Include="ThirdParty\imgui\imstb_textedit.h" />
+    <ClInclude Include="ThirdParty\imgui\imstb_truetype.h" />
+    <ClInclude Include="ThirdParty\std\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

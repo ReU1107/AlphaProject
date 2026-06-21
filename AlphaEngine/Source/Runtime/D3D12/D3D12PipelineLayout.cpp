@@ -105,12 +105,15 @@ namespace Alpha
 		versioned_desc.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
 		versioned_desc.Desc_1_1.NumParameters = (UINT)parameters.size();
 		versioned_desc.Desc_1_1.pParameters = parameters.data();
+		versioned_desc.Desc_1_1.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+
+
 		if (EnumHasFlag(desc.flags, ERHIPipelineLayoutFlags::InputAssembler))
-			versioned_desc.Desc_1_1.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+			versioned_desc.Desc_1_1.Flags |= D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 		if (EnumHasFlag(desc.flags, ERHIPipelineLayoutFlags::Bindless))
 		{
-			versioned_desc.Desc_1_1.Flags =
+			versioned_desc.Desc_1_1.Flags |=
 				D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED |
 				D3D12_ROOT_SIGNATURE_FLAG_SAMPLER_HEAP_DIRECTLY_INDEXED;
 		}

@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Core/Common.h"
 #include "Core/Object.h"
 
 namespace Alpha::Animation

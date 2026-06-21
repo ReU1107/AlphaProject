@@ -90,6 +90,11 @@ namespace Alpha
 		m_assets.insert({ name,handle });
 	}
 
+	String AssetManager::GetWhiteTexturePath() const
+	{
+		return BuildInWhiteTexture;
+	}
+
 	TShared<TextureHandle> AssetManager::GetWhiteTexture() const
 	{
 		return std::static_pointer_cast<TextureHandle>(m_assets.at(BuildInWhiteTexture));

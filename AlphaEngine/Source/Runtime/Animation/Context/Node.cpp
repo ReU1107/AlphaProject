@@ -35,7 +35,7 @@ namespace Alpha::Animation
 
 	void BlendNode::SetAlpha(float alpha)
 	{
-		m_alpha = MathUtil::Clamp(alpha, 0.0f, 1.0f);
+		m_alpha = Clamp(alpha, 0.0f, 1.0f);
 	}
 
 	void BlendNode::Update(float delta_time)

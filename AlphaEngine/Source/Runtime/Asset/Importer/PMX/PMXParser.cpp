@@ -84,43 +84,6 @@ namespace Alpha
 
 	}
 
-	TArray<Renderer::StaticVertex> PMXParser::CreateStaticVertices() const
-	{
-		TArray<Renderer::StaticVertex> vertices(m_vertices.size());
-
-		for (const auto& [i, pmx] : m_vertices | std::views::enumerate)
-		{
-			StaticVertex vertex = {
-				.position = pmx.position,
-				.normal = pmx.normal,
-				.texcoord = pmx.texcoord,
-			};
-			vertices[i] = vertex;
-		}
-
-		return vertices;
-	}
-
-	TArray<Renderer::SkeletalVertex> PMXParser::CreateSkeletalVertices() const
-	{
-		TArray<Renderer::SkeletalVertex> vertices(m_vertices.size());
-
-		for (const auto& [i, pmx] : m_vertices | std::views::enumerate)
-		{
-			SkeletalVertex vertex = {
-				.position = pmx.position,
-				.normal = pmx.normal,
-				.texcoord = pmx.texcoord,
-			};
-			vertex.bone_index = { pmx.boneIndex[0],  pmx.boneIndex[1],  pmx.boneIndex[2],  pmx.boneIndex[3] };
-			vertex.bone_weight = { pmx.boneWeight[0], pmx.boneWeight[1], pmx.boneWeight[2], pmx.boneWeight[3] };
-
-			vertices[i] = vertex;
-		}
-
-		return vertices;
-	}
-
 	TArray<uint32_t> PMXParser::CreateIndices() const
 	{
 		TArray<uint32_t> indices(m_indices.size() * 3);
@@ -151,7 +114,7 @@ namespace Alpha
 			data.base_color = pmx.diffuseCoeff.XYZ();
 			data.opacity = pmx.diffuseCoeff.W();
 			data.metallic = (pmx.sphereFlag == PMXSphereMode::Sph) ? 0.8f : 0.0f;
-			data.roughness = 1.0f - MathUtil::Clamp(pmx.specularity / 100.0f, 0.0f, 1.0f);
+			data.roughness = 1.0f - Clamp(pmx.specularity / 100.0f, 0.0f, 1.0f);
 
 			data.emissive_color = pmx.ambientCoeff.XYZ();
 			data.emissive_intensity = (data.emissive_color.X() > 0.0f || data.emissive_color.Y() > 0.0f || data.emissive_color.Z() > 0.0f) ? 1.0f : 0.0f;
@@ -165,13 +128,15 @@ namespace Alpha
 
 			if (pmx.decalIndex >= 0 && pmx.decalIndex < m_textures.size())
 			{
-				auto handle = AssetManager::Get().Load<TextureHandle>(folder_path + m_textures[pmx.decalIndex].textureFileName);
+				String texture_path = folder_path + m_textures[pmx.decalIndex].textureFileName;
+				material->AddTexturePath(texture_path);
+				auto handle = AssetManager::Get().Load<TextureHandle>(texture_path);
 				handle->SetName(GetName() + m_textures[pmx.decalIndex].textureFileName);
-				material->GetTexture().push_back(handle);
+				//material->GetTexture().push_back(handle);
 			}
 			else 
 			{
-				material->GetTexture().push_back(AssetManager::Get().GetWhiteTexture());
+				material->AddTexturePath(AssetManager::Get().GetWhiteTexturePath());
 			}
 
 			// トーンは一旦なし
@@ -242,7 +207,7 @@ namespace Alpha
 			transform.position = relative_position;
 			
 			joint->SetBindPose(transform);
-			joint->SetOffsetMatrix(MathF::Matrix4x4Inverse(MathF::Matrix4x4Translation(absolute_position)));
+			joint->SetOffsetMatrix(Matrix4x4Inverse(Matrix4x4Translation(absolute_position)));
 
 			if (EnumHasFlag(pmx.boneFlag, PMXBoneFlag::IK))
 			{
@@ -258,8 +223,8 @@ namespace Alpha
 					link.index = pmx_link.linkIndex;
 					uint32_t child_index = (j == 0) ? pmx.ikTargetIndex : pmx.ikLink[j - 1].linkIndex;
 					link.next_index = child_index;
-					link.dir = MathF::VectorNormalize(m_bones[child_index].position - m_bones[link.index].position);
-					link.length = MathF::VectorLength(m_bones[child_index].position - m_bones[link.index].position);
+					link.dir = VectorNormalize(m_bones[child_index].position - m_bones[link.index].position);
+					link.length = VectorLength(m_bones[child_index].position - m_bones[link.index].position);
 
 					if (EnumHasFlag(pmx_link.limitFlag, PMXLimitFlag::ON))
 					{

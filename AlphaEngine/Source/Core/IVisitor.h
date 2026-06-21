@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Core/Types.h"
+#include "Core/String/String.h"
 
 #include <format>
 #include <iostream>

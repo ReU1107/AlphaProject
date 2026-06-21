@@ -14,7 +14,7 @@ namespace Alpha::Animation
 			return;
 
 		// 
-		uint32_t joint_num = source->GetJointNum();
+		UInt32 joint_num = source->GetJointNum();
 		
 		m_local_transforms.resize(joint_num);
 
@@ -31,25 +31,25 @@ namespace Alpha::Animation
 		ResetToBindPose();
 	}
 
-	void SkeletonPose::SetLocalTransform(uint32_t index, const Transform& transformation)
+	void SkeletonPose::SetLocalTransform(UInt32 index, const Transform& transformation)
 	{
 		m_local_transforms[index] = transformation;
 		MarkDirty(index);
 	}
 
-	void SkeletonPose::SetLocalPosition(uint32_t index, const Vector3& location)
+	void SkeletonPose::SetLocalPosition(UInt32 index, const Vector3& location)
 	{
 		m_local_transforms[index].position = location;
 		MarkDirty(index);
 	}
 
-	void SkeletonPose::SetLocalRotation(uint32_t index, const Quaternion& rotation)
+	void SkeletonPose::SetLocalRotation(UInt32 index, const Quaternion& rotation)
 	{
 		m_local_transforms[index].quaternion = rotation;
 		MarkDirty(index);
 	}
 
-	void SkeletonPose::SetLocalScale(uint32_t index, const Vector3& scale)
+	void SkeletonPose::SetLocalScale(UInt32 index, const Vector3& scale)
 	{
 		m_local_transforms[index].scale = scale;
 		MarkDirty(index);
@@ -75,32 +75,32 @@ namespace Alpha::Animation
 
 	void SkeletonPose::ResetToBindPose()
 	{
-		for (uint32_t i = 0; i < m_source->GetJointNum(); ++i)
+		for (UInt32 i = 0; i < m_source->GetJointNum(); ++i)
 		{
 			Transform bind_transform = m_source->GetJoint(i)->GetBindPose();
 			SetLocalTransform(i, bind_transform);
 		}
 	}
 
-	Vector3 SkeletonPose::GetWorldPosition(uint32_t index) const
+	Vector3 SkeletonPose::GetWorldPosition(UInt32 index) const
 	{
 		Calculate(index);
 		return m_world_matrices[index]._4().XYZ();
 	}
 
-	Quaternion SkeletonPose::GetWorldRotation(uint32_t index) const
+	Quaternion SkeletonPose::GetWorldRotation(UInt32 index) const
 	{
 		Calculate(index);
 		Quaternion rotation = Quaternion::Identity;
-		MathF::MatrixDecompose(m_world_matrices[index], nullptr, &rotation, nullptr);
+		MatrixDecompose(m_world_matrices[index], nullptr, &rotation, nullptr);
 		return rotation;
 	}
 
-	Vector3 SkeletonPose::GetWorldScale(uint32_t index) const
+	Vector3 SkeletonPose::GetWorldScale(UInt32 index) const
 	{
 		Calculate(index);
 		Vector3 scale = Vector3::One;
-		MathF::MatrixDecompose(m_world_matrices[index], &scale, nullptr, nullptr);
+		MatrixDecompose(m_world_matrices[index], &scale, nullptr, nullptr);
 		return scale;
 	}
 
@@ -123,18 +123,18 @@ namespace Alpha::Animation
 		return m_world_matrices;
 	}
 
-	Matrix4x4 SkeletonPose::GetProductMatrix(uint32_t index) const
+	Matrix4x4 SkeletonPose::GetProductMatrix(UInt32 index) const
 	{
-		return MathF::MatrixMultiply(m_source->GetJoint(index)->GetOffsetMatrix(), GetWorldMatrix(index));
+		return MatrixMultiply(m_source->GetJoint(index)->GetOffsetMatrix(), GetWorldMatrix(index));
 	}
 
-	Matrix4x4 SkeletonPose::GetWorldMatrix(uint32_t index) const
+	Matrix4x4 SkeletonPose::GetWorldMatrix(UInt32 index) const
 	{
 		Calculate(index);
 		return m_world_matrices[index];
 	}
 
-	void SkeletonPose::MarkDirty(uint32_t index)
+	void SkeletonPose::MarkDirty(UInt32 index)
 	{
 		if (m_dirty_flags[index]) 
 			return;
@@ -148,17 +148,17 @@ namespace Alpha::Animation
 		}
 	}
 
-	void SkeletonPose::Calculate(uint32_t index) const
+	void SkeletonPose::Calculate(UInt32 index) const
 	{
 		if (!m_dirty_flags[index])
 			return;
 
-		Matrix4x4 local_matrix = MathF::Matrix4x4Transformation(m_local_transforms[index]);
+		Matrix4x4 local_matrix = Matrix4x4Transformation(m_local_transforms[index]);
 
 		Joint* parent = m_source->GetJoint(index)->GetParent();
 
 		if (parent)
-			m_world_matrices[index] = MathF::MatrixMultiply(local_matrix, GetWorldMatrix(parent->GetIndex()));
+			m_world_matrices[index] = MatrixMultiply(local_matrix, GetWorldMatrix(parent->GetIndex()));
 		else
 			m_world_matrices[index] = local_matrix;
 

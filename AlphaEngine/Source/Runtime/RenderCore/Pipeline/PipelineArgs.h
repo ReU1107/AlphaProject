@@ -8,7 +8,6 @@ namespace Alpha
 {
 	class RenderHardwareInterface;
 	class Shader;
-	class RenderTexture;
 	class PipelineLayout;
 
 

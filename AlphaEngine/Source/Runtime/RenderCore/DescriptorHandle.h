@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Core/Types.h"
+#include "RHI/Types.h"
 
 namespace Alpha
 {
@@ -9,11 +10,13 @@ namespace Alpha
 	{
 		DescriptorHeap* heap{ nullptr };
 		UInt32 index{ 0 };
-		UInt32 num{ 0 };
+		ERHIResourceViewType view_type{ ERHIResourceViewType::Unknown };
 
 		bool IsActive() const
 		{
 			return (heap != nullptr);
 		}
+		// 
+		void Free();
 	};
 }

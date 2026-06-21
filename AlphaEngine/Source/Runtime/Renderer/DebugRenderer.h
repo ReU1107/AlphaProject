@@ -7,7 +7,7 @@ namespace Alpha
 	struct RenderContext;
 
 	class RenderCore;
-	class RingBuffer;
+	class Buffer;
 	class Shader;
 	class PipelineLayout;
 	class GraphicsPipeline;
@@ -29,7 +29,7 @@ namespace Alpha
 		};
 	private:
 		TArray<DebugLine> m_lines{};
-		TUnique<RingBuffer> m_line_buffer{};
+		TUnique<Buffer> m_line_buffer{};
 
 		TUnique<Shader> m_line_vs{};
 		TUnique<Shader> m_line_ps{};

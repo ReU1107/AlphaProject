@@ -15,9 +15,9 @@ namespace
 		switch (stage)
 		{
 		case Alpha::ERHIShaderType::Vertex		: return L"vs_";
-		case Alpha::ERHIShaderType::Pixel		: return L"gs_";
-		case Alpha::ERHIShaderType::Geometry	: return L"hs_";
-		case Alpha::ERHIShaderType::Hull		: return L"ps_";
+		case Alpha::ERHIShaderType::Pixel		: return L"ps_";
+		case Alpha::ERHIShaderType::Geometry	: return L"gs_";
+		case Alpha::ERHIShaderType::Hull		: return L"hs_";
 		case Alpha::ERHIShaderType::Mesh		: return L"cs_";
 		case Alpha::ERHIShaderType::Compute		: return L"cs_";
 		case Alpha::ERHIShaderType::RayTracing	: return L"lib_";
@@ -37,23 +37,19 @@ namespace
 		IDxcUtils* utils = nullptr;
 		IDxcBlobEncoding* source_blob = nullptr;
 		
-		// 1. .exe のあるディレクトリを取得
 		wchar_t exePath[MAX_PATH];
 		GetModuleFileNameW(NULL, exePath, MAX_PATH);
 		std::wstring dir = exePath;
 		dir = dir.substr(0, dir.find_last_of(L"\\/"));
 
-		// 2. DLL のフルパスを作成
 		std::wstring dllPath = dir + L"\\dxcompiler.dll";
 
-		// 3. 確実に「その場所」の DLL を読み込む
 		HMODULE hDxc = LoadLibraryExW(dllPath.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
 		if (!hDxc) {
 			ALPHA_LOG_ERROR(L"DLL not found at: {}", dllPath.c_str());
 			return false;
 		}
 
-		// 2. DLL内の DxcCreateInstance 関数ポインタを直接取得する
 		DxcCreateInstanceProc pDxcCreateInstance =
 			(DxcCreateInstanceProc)GetProcAddress(hDxc, "DxcCreateInstance");
 
@@ -113,16 +109,6 @@ namespace
 			arguments.push_back(path.c_str());
 		}
 
-		std::vector<LPCWSTR> test_args = {
-			L"Asset/TestWork.hlsl",
-			L"-T", L"lib_6_8",
-			L"-HV", L"2021",
-			L"-Od",
-			L"-Zi"
-		};
-
-		//DxcBuffer source_buffer = { hlsl_code, strlen(hlsl_code), DXC_CP_UTF8 };
-
 
 		DxcBuffer source_buffer = {};
 		source_buffer.Ptr = source_blob->GetBufferPointer();
@@ -130,7 +116,7 @@ namespace
 		source_buffer.Encoding = DXC_CP_UTF8;
 
 		IDxcResult* result = nullptr;
-		hr = compiler->Compile(&source_buffer, test_args.data(), (UINT32)test_args.size(), nullptr, IID_PPV_ARGS(&result));
+		hr = compiler->Compile(&source_buffer, arguments.data(), (UINT32)arguments.size(), nullptr, IID_PPV_ARGS(&result));
 		HRESULT hr_status;
 		result->GetStatus(&hr_status);
 		if (FAILED(hr_status)) {

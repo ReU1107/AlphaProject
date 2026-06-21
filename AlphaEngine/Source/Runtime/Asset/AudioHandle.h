@@ -7,7 +7,7 @@ namespace Alpha
 	// 読み込み方法
 	enum class AudioLoadType
 	{
-		c,	// 解凍状態で一括でメモリに格納
+		DecompressOnLoad,	// 解凍状態で一括でメモリに格納
 		CompressedInMemory,	// 圧縮状態
 		Streaming,			// ストリーミング
 	};

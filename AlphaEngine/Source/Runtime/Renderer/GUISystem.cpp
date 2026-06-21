@@ -13,7 +13,6 @@ namespace
 {
 	ImGuiKey VirtualKeyToImGuiKey(WPARAM wParam) 
 	{
-		// コピペで持ってきた
 		switch (wParam) 
 		{
 		case VK_TAB: return ImGuiKey_Tab;
@@ -146,15 +145,36 @@ namespace Alpha
 		int width, height;
 		io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-		m_font_texture = RenderCore::Get().CreateTexture(width, height, ERHIResourceFormat::RGBAUnorm, pixels);
+		m_font_texture = args.render_core->CreateTexture(width, height);
 
-		io.Fonts->SetTexID(m_font_texture->GetSRVIndex() + 1);	// 0で作られると認識してくれないからその対策で+1してる　逆に使用するときに-1を入れてる
+		args.render_core->UploadTexture(m_font_texture.get(), pixels);
 
-		m_vertex_buffer = args.render_core->CreateRingBuffer(sizeof(ImDrawVert), static_cast<uint64_t>(args.max_vertex_num));
-		m_index_buffer = args.render_core->CreateRingBuffer(sizeof(ImDrawIdx), static_cast<uint64_t>(args.max_vertex_num * 6));
+		io.Fonts->SetTexID(m_font_texture.get());
 
-		m_vs = RenderCore::Get().CreateShader(L"Asset/GUIVS.hlsl", ERHIShaderFlags::Vertex);
-		m_ps = RenderCore::Get().CreateShader(L"Asset/GUIPS.hlsl", ERHIShaderFlags::Pixel);
+		m_vertex_buffer = std::make_unique<TransientBufferAllocator>();
+		{
+			TransientBufferAllocator::Args desc = {
+				.render_core = args.render_core,
+				.stride = sizeof(ImDrawVert),
+				.size = sizeof(ImDrawVert) * args.max_vertex_num,
+				.alignment = 4,
+			};
+			m_vertex_buffer->Initialize(desc);
+		}
+
+		m_index_buffer = std::make_unique<TransientBufferAllocator>();
+		{
+			TransientBufferAllocator::Args desc = {
+				.render_core = args.render_core,
+				.stride = sizeof(ImDrawIdx),
+				.size = sizeof(ImDrawIdx) * args.max_vertex_num * 6,
+				.alignment = 4,
+			};
+			m_index_buffer->Initialize(desc);
+		}
+
+		m_vs = RenderCore::Get().CreateShader(L"Asset/GUIVS.hlsl", ERHIShaderType::Vertex);
+		m_ps = RenderCore::Get().CreateShader(L"Asset/GUIPS.hlsl", ERHIShaderType::Pixel);
 
 		m_pipeline_layout = RenderCore::Get().CreatePipelineLayout(
 			[](PipelineLayout& layout)
@@ -165,6 +185,7 @@ namespace Alpha
 				layout.BeginDescriptorTable();
 				layout.AddDescriptorSRV(1, ERHIShaderFlags::Pixel);
 				layout.EndDescriptorTable();
+				layout.SetFlags(ERHIPipelineLayoutFlags::InputAssembler);
 			}
 		);
 
@@ -273,10 +294,8 @@ namespace Alpha
 
 		auto& io = ImGui::GetIO();
 
-		// 1. 画面サイズを指定 (これを忘れるとアサートが出る)
 		io.DisplaySize = ImVec2((float)1920, (float)1080);
 
-		// 必要ならここで内部的に io.DeltaTime などを更新
 		ImGui::NewFrame();
 	}
 
@@ -296,7 +315,7 @@ namespace Alpha
 		m_index_buffer->Reset();
 
 		ctx.command_list->SetGraphicsPipeline(m_pipeline.get());
-		ctx.command_list->SetDescriptorHeap(RenderCore::Get().GetBindlessHeap(), RenderCore::Get().GetSamplerHeap());
+		ctx.command_list->SetDescriptorHeap(RenderCore::Get().GetResourceHeap(), RenderCore::Get().GetSamplerHeap());
 
 
 		float L = draw_data->DisplayPos.x;
@@ -305,14 +324,14 @@ namespace Alpha
 		float B = draw_data->DisplayPos.y + draw_data->DisplaySize.y;
 
 		// プロジェクション行列
-		Matrix4x4 projection = MathF::Matrix4x4OrthographicLH(L, R, T, B, 0.0f, 1.0f);
+		Matrix4x4 projection = Matrix4x4OrthographicLH(L, R, T, B, 0.0f, 1.0f);
 
 		auto constant_offset = ctx.transient_buffer->WriteData(&projection, sizeof(Matrix4x4));
-		ctx.command_list->SetGraphicsCBV(ctx.transient_buffer, constant_offset, 0);
+		ctx.command_list->SetGraphicsCBV(ctx.transient_buffer->GetBuffer(), constant_offset, 0);
 
 		auto* sampler_sate = RenderCore::Get().GetPresetSampler(ESamplerPresetType::LinearClamp);
 
-		ctx.command_list->SetGraphicsDescriptorTable(sampler_sate->GetSamplerHandle(), 1);
+		ctx.command_list->SetGraphicsSamplerState(sampler_sate, 1);
 
 		for (int n = 0; n < draw_data->CmdListsCount; n++)
 		{
@@ -333,16 +352,13 @@ namespace Alpha
 			for (int i = 0; i < cmd_list->CmdBuffer.Size; i++)
 			{
 				const ImDrawCmd* cmd = &cmd_list->CmdBuffer[i];
-				auto id = cmd->GetTexID();
-				uint32_t srv_index = id - 1;		// -1してるところ
+				ImTextureID tex_id = cmd->GetTexID();
+				auto tex = (Texture*)(uintptr_t)tex_id;
 
-				DescriptorHandle handle = {};
-				handle.heap = RenderCore::Get().GetBindlessHeap();
-				handle.index = srv_index;
-				ctx.command_list->SetGraphicsDescriptorTable(handle, 2);
+				ctx.command_list->SetGraphicsTexture(tex, 2);
 
-				ctx.command_list->SetVertexBuffer(m_vertex_buffer.get(), 0);
-				ctx.command_list->SetIndexBuffer(m_index_buffer.get(), ERHIIndexFormat::UInt16);
+				ctx.command_list->SetVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
+				ctx.command_list->SetIndexBuffer(m_index_buffer->GetBuffer(), ERHIIndexFormat::UInt16);
 
 				float clip_min_x = cmd->ClipRect.x - clip_off.x;
 				float clip_min_y = cmd->ClipRect.y - clip_off.y;

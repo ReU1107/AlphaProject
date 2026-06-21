@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Core/Types.h"
+#include "Core/Common.h"
 #include "Core/EnumClassUtil.h"
 
 
@@ -165,8 +165,8 @@ namespace Alpha
 		PMXLimitFlag limitFlag{};			// 角度制限フラグ()
 
 		// 角度制限1
-		Vector3 lowerLimitAngle{ -MathUtil::PI, -MathUtil::PI, -MathUtil::PI };	// 下限(x,y,z)ラジアン角
-		Vector3 upperLimitAngle{ MathUtil::PI, MathUtil::PI, MathUtil::PI };		// 上限(x,y,z)ラジアン角
+		Vector3 lowerLimitAngle{ -PI, -PI, -PI };	// 下限(x,y,z)ラジアン角
+		Vector3 upperLimitAngle{ PI, PI, PI };		// 上限(x,y,z)ラジアン角
 
 	};
 

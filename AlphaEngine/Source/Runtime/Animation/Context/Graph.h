@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Core/Common.h"
 #include "Core/Object.h"
 
 namespace Alpha::Animation
@@ -28,7 +29,7 @@ namespace Alpha::Animation
 
 		BlendNode* MakeBlendNode();
 
-		void SetEntry(uint32_t index);
+		void SetEntry(UInt32 index);
 
 		void Accept(IVisitor* visitor) override;
 
