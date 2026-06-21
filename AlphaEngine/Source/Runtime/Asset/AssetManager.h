@@ -25,6 +25,7 @@ namespace Alpha
 		void RegisterLoader(StringView extension, AssetLoader* loader);
 		void RegisterAsset(StringView name, TShared<AssetHandle> handle);
 
+		String GetWhiteTexturePath() const;
 		TShared<TextureHandle> GetWhiteTexture() const;
 		TShared<TextureHandle> GetBlackTexture() const;
 		TShared<TextureHandle> GetNormalTexture() const;

@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Core/Common.h"
 #include "Core/Object.h"
 #include "Context/Snapshot.h"
 #include "Context/ParameterContext.h"

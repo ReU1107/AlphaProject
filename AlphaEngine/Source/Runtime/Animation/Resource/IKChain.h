@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "Core/Object.h"
-#include "Core/Math/MathUtil.h"
+#include "Core/Common.h"
 
 namespace Alpha::Animation
 {
@@ -18,9 +18,9 @@ namespace Alpha::Animation
 		// 制約軸
 		Vector3 rotation_axis{ Vector3::ZAxis };
 
-		float min_angle{ -MathUtil::PI };
-		float max_angle{ MathUtil::PI };
-		float cone_angle{ MathUtil::PI };
+		float min_angle{ -PI };
+		float max_angle{ PI };
+		float cone_angle{ PI };
 	};
 
 	struct IKLink

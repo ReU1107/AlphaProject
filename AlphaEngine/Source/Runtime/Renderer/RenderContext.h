@@ -6,17 +6,17 @@ namespace Alpha
 	class RenderCore;
 	class CommandList;
 
-	class Buffer;
-
+	class TransientBufferAllocator;
+	
 	struct RenderContext
 	{
 		CommandList* command_list{ nullptr };
-		Buffer* transient_buffer{ nullptr };
+		TransientBufferAllocator* transient_buffer{ nullptr };
 
-		uint64_t current_camera_offset{ 0 };
+		UInt64 current_camera_offset{ 0 };
 
-		uint32_t width{ 0 };
-		uint32_t height{ 0 };
+		UInt32 width{ 0 };
+		UInt32 height{ 0 };
 
 	};
 

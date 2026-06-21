@@ -14,6 +14,13 @@
 #include "Source/Runtime/RenderCore/RenderHardwareInterface.h"
 #include "Source/Runtime/RenderCore/Module.h"
 
+#include "Source/Runtime/Renderer/GUISystem.h"
+#include "Source/Runtime/Renderer/RenderContext.h"
+
+#include "Source/Runtime/Animation/Module.h"
+
+#include "ThirdParty/imgui/imgui.h"
+
 #include "RHI/Definitions.h"
 
 using Microsoft::WRL::ComPtr;
@@ -36,6 +43,52 @@ int main()
     render_core_args.transient_buffer_size = 1_MB;
     RenderCore::Startup(render_core_args);
 
+    GUISystem::Args gui_args = {
+        .render_core = RenderCore::GetPtr(),
+    };
+    GUISystem::Startup(gui_args);
+
+    RenderCore::Get().PostInitialize();
+
+
+    while (WindowSystem::Get().ProcessMessages() && !WindowSystem::Get().ShouldClose())
+    {
+        RenderCore::Get().BeginFrame();
+        RenderContext ctx = {};
+        ctx.command_list = RenderCore::Get().GetCommandList();
+        ctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
+        GUISystem::Get().BeginFrame();
+
+
+        ImGui::Begin("Debug Window");
+        ImGui::Text("Hello, AlphaEngine!");
+        if (ImGui::Button("Click Me"))
+        {
+            // ボタンが押された時の処理
+        }
+        ImGui::End();
+
+        GUISystem::Get().EndFrame();
+
+        GUISystem::Get().Flush(ctx);
+
+        RenderCore::Get().EndFrame();
+    }
+
+    GUISystem::Shutdown();
+
+    RenderCore::Shutdown();
+
+    WindowSystem::Shutdown();
+
+    system("pause");
+    return 0;
+}
+
+
+/*
+* Workgraphテストコード
+* 
 	auto shader = RenderCore::Get().CreateShader(L"Asset/TestWork.hlsl", ERHIShaderType::Library);
     auto s = static_cast<D3D12Shader*>(shader->GetRHI());
 
@@ -51,8 +104,6 @@ int main()
     auto d = static_cast<D3D12Dynamic*>(RenderCore::Get().GetRHI()->GetDynamic());
 
     auto device = d->GetDevice()->GetDevice();
-
-
     // 1. DXILライブラリの設定（コンパイル済みシェーダーを登録）
     D3D12_DXIL_LIBRARY_DESC dxilLibDesc = {};
     dxilLibDesc.DXILLibrary = { s->GetBytecodePointer(), s->GetBytecodeLength() }; // コンパイルしたデータ
@@ -106,69 +157,65 @@ int main()
     auto result_write = RenderCore::Get().CreateBuffer(sizeof(uint32_t), sizeof(uint32_t), EBufferPresetType::RWStructured);
 
     auto result = RenderCore::Get().CreateBuffer(sizeof(uint32_t), sizeof(uint32_t), EBufferPresetType::Readback);
- //   auto handle = RenderCore::Get().GetBindlessHeap()->Allocate();
+    auto handle = RenderCore::Get().GetBindlessHeap()->Allocate();
 
- //   RHIResourceViewDesc dsv_desc = {};
- //   dsv_desc.resource = result_write->GetRHI();
- //   dsv_desc.heap_index = handle.index;
- //   dsv_desc.buffer_stride = result_write->GetStride();
- //   dsv_desc.type = ERHIResourceViewType::UnorderedAccessView;
+    RHIResourceViewDesc dsv_desc = {};
+    dsv_desc.resource = result_write->GetRHI();
+    dsv_desc.heap_index = handle.index;
+    dsv_desc.buffer_stride = result_write->GetStride();
+    dsv_desc.type = ERHIResourceViewType::UnorderedAccessView;
 
- //   handle.heap->GetRHI()->CreateView(dsv_desc);
+    handle.heap->GetRHI()->CreateView(dsv_desc);
 
- //   auto list = RenderCore::Get().GetCommandList();
- //   list->Begin(0);
- //   list->SetDescriptorHeap(RenderCore::Get().GetBindlessHeap(), RenderCore::Get().GetSamplerHeap());
+    auto list = RenderCore::Get().GetCommandList();
+    list->Begin(0);
+    list->SetDescriptorHeap(RenderCore::Get().GetBindlessHeap(), RenderCore::Get().GetSamplerHeap());
 
- //   auto lis = static_cast<D3D12CommandBuffer*>(list->GetRHI());
- //   
- //   D3D12_SET_PROGRAM_DESC setProgram = {};
- //   setProgram.Type = D3D12_PROGRAM_TYPE_WORK_GRAPH;
- //   setProgram.WorkGraph.ProgramIdentifier = pStateObjectProps->GetProgramIdentifier(L"MyParentNode");
- //   setProgram.WorkGraph.BackingMemory = { backing->GetRHI()->GetGPUAddress(), backing->GetSize()};
- //   setProgram.WorkGraph.Flags = D3D12_SET_WORK_GRAPH_FLAG_INITIALIZE;
+    auto lis = static_cast<D3D12CommandBuffer*>(list->GetRHI());
+    
+    D3D12_SET_PROGRAM_DESC setProgram = {};
+    setProgram.Type = D3D12_PROGRAM_TYPE_WORK_GRAPH;
+    setProgram.WorkGraph.ProgramIdentifier = pStateObjectProps->GetProgramIdentifier(L"MyParentNode");
+    setProgram.WorkGraph.BackingMemory = { backing->GetRHI()->GetGPUAddress(), backing->GetSize()};
+    setProgram.WorkGraph.Flags = D3D12_SET_WORK_GRAPH_FLAG_INITIALIZE;
 
-	//lis->GetNative()->SetComputeRootSignature(l->GetNativeHandle());
- //   lis->GetNative()->SetProgram(&setProgram);
+	lis->GetNative()->SetComputeRootSignature(l->GetNativeHandle());
+    lis->GetNative()->SetProgram(&setProgram);
 
- //   struct MyData
- //   {
- //       uint32_t value;
-	//};
- //   MyData inputData = { 42 }; // 初期値
+    struct MyData
+    {
+        uint32_t value;
+	};
+    MyData inputData = { 42 }; // 初期値
 
- //   D3D12_NODE_ID entryNodeID = { L"MyParentNode", 0 };
- //   UINT entryIndex = pWorkGraphProps->GetEntrypointIndex(0, entryNodeID);
+    D3D12_NODE_ID entryNodeID = { L"MyParentNode", 0 };
+    UINT entryIndex = pWorkGraphProps->GetEntrypointIndex(0, entryNodeID);
 
- //   D3D12_DISPATCH_GRAPH_DESC dispatchDesc = {};
- //   dispatchDesc.Mode = D3D12_DISPATCH_MODE_NODE_CPU_INPUT;
- //   dispatchDesc.NodeCPUInput.EntrypointIndex = entryIndex;
- //   dispatchDesc.NodeCPUInput.NumRecords = 1;
- //   dispatchDesc.NodeCPUInput.pRecords = &inputData;
- //   dispatchDesc.NodeCPUInput.RecordStrideInBytes = sizeof(MyData);
- //   list->Transition(backing.get(), ERHIResourceState::UnorderedAccess);
- //   lis->GetNative()->DispatchGraph(&dispatchDesc);
+    D3D12_DISPATCH_GRAPH_DESC dispatchDesc = {};
+    dispatchDesc.Mode = D3D12_DISPATCH_MODE_NODE_CPU_INPUT;
+    dispatchDesc.NodeCPUInput.EntrypointIndex = entryIndex;
+    dispatchDesc.NodeCPUInput.NumRecords = 1;
+    dispatchDesc.NodeCPUInput.pRecords = &inputData;
+    dispatchDesc.NodeCPUInput.RecordStrideInBytes = sizeof(MyData);
+    list->Transition(backing.get(), ERHIResourceState::UnorderedAccess);
+    lis->GetNative()->DispatchGraph(&dispatchDesc);
 
-	//list->UAVBarrier(result_write.get());
- //   list->Transition(result_write.get(), ERHIResourceState::CopySource);
- //   list->Transition(result.get(), ERHIResourceState::CopyDestination);
- //   list->CopyBuffer(result_write.get(), result.get());
+	list->UAVBarrier(result_write.get());
+    list->Transition(result_write.get(), ERHIResourceState::CopySource);
+    list->Transition(result.get(), ERHIResourceState::CopyDestination);
+    list->CopyBuffer(result_write.get(), result.get());
 
- //   list->End();
+    list->End();
 
- //   RenderCore::Get().GetCommandQueue()->Execute(list);
-	//RenderCore::Get().GetCommandQueue()->Signal(RenderCore::Get().GetTimeline());
+    RenderCore::Get().GetCommandQueue()->Execute(list);
+	RenderCore::Get().GetCommandQueue()->Signal(RenderCore::Get().GetTimeline());
 
-	//RenderCore::Get().GetTimeline()->WaitCPU();
+	RenderCore::Get().GetTimeline()->WaitCPU();
 
- //   auto data = result->GetRHI()->Map(0, sizeof(MyData));
+    auto data = result->GetRHI()->Map(0, sizeof(MyData));
 
- //   uint32_t* pUintData = reinterpret_cast<uint32_t*>(data);
- //   std::cout << "Result from Work Graph: " << *pUintData << std::endl;
+    uint32_t* pUintData = reinterpret_cast<uint32_t*>(data);
+    std::cout << "Result from Work Graph: " << *pUintData << std::endl;
 
 
- //   result->GetRHI()->Unmap(0, sizeof(MyData));
-
-    system("pause");
-    return 0;
-}
+*/

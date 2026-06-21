@@ -16,7 +16,7 @@ namespace Alpha::Animation
 		// カーブの中で一番長いやつに合わせる
 		for (auto& curve : m_curves)
 		{
-			end_time = MathUtil::Max(end_time, curve->GetEndTime());
+			end_time = Max(end_time, curve->GetEndTime());
 		}
 
 		return end_time;
@@ -221,6 +221,6 @@ namespace Alpha::Animation
 		float z = m_curves[2]->Evaluate(time);
 		float w = m_curves[3]->Evaluate(time);
 
-		return MathF::QuaternionNormalize(Quaternion(x, y, z, w));
+		return QuaternionNormalize(Quaternion(x, y, z, w));
 	}
 }

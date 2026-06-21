@@ -84,7 +84,7 @@ namespace Alpha
 			if (request.type == UploadType::Texture)
 			{
 				auto texture = static_cast<Texture*>(request.resource);
-				texture->Upload(ptr, request.data);
+				texture->Upload(dest, request.data);
 
 				m_copy_list->Transition(request.resource, ERHIResourceState::Common);
 
@@ -94,7 +94,7 @@ namespace Alpha
 			{
 				auto buffer = static_cast<Buffer*>(request.resource);
 
-				memcpy(ptr, request.data, request.size);
+				memcpy(dest, request.data, request.size);
 
 				m_copy_list->Transition(request.resource, ERHIResourceState::Common);
 

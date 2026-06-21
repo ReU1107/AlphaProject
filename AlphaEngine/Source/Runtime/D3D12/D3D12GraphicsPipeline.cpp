@@ -242,13 +242,14 @@ namespace Alpha
 			}
 
 			// Input Layout
-			semantic_names.reserve(desc.vertex_layout.element_count);
+			semantic_names.resize(desc.vertex_layout.element_count);
+
 			for (UInt32 i = 0; i < desc.vertex_layout.element_count; i++)
 			{
 				const auto& src = desc.vertex_layout.elements[i];
 				auto& dst = input_elements[i];
-				semantic_names.push_back(src.semantic_name.ToUtf8());
-				dst.SemanticName = semantic_names.back().c_str();
+				semantic_names[i] = src.semantic_name.ToUtf8();
+				dst.SemanticName = semantic_names[i].c_str();
 				dst.SemanticIndex = src.semantic_index;
 				dst.Format = GetDXGIFormat(src.format);
 				dst.InputSlot = src.input_slot;

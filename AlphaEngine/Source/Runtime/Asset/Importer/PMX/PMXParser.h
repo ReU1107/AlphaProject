@@ -30,7 +30,6 @@ namespace Alpha
 
 	class MaterialHandle;
 
-
 	class PMXParser
 	{
 	private:
@@ -40,11 +39,11 @@ namespace Alpha
 		PMXModelInformation m_info{};
 		PMXEncoding m_encoding{ PMXEncoding::UTF16 };			// 現在のモデルのエンコード方式
 
-		std::vector<PMXVertex> m_vertices{};
-		std::vector<PMXIndex> m_indices{};
-		std::vector<PMXTexture> m_textures{};
-		std::vector<PMXMaterial> m_materials{};
-		std::vector<PMXBone> m_bones{};
+		TArray<PMXVertex> m_vertices{};
+		TArray<PMXIndex> m_indices{};
+		TArray<PMXTexture> m_textures{};
+		TArray<PMXMaterial> m_materials{};
+		TArray<PMXBone> m_bones{};
 
 
 	public:
@@ -60,11 +59,7 @@ namespace Alpha
 
 		String GetName() const { return m_info.name; }
 		
-		TArray<Vector3> CreatePositionVertices() const;
-		TArray<Vector3> CreateNormalVertices() const;
-		TArray<Vector2> CreateTexcoordVertices() const;
-		TArray<UVector4> CreateBoneIndexVertices() const;
-		TArray<Vector4> CreateBoneWeightVertices() const;
+		const TArray<PMXVertex>& GetPMXVertices() const { return m_vertices; }
 
 		TArray<uint32_t> CreateIndices() const;
 

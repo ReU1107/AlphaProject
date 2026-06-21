@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Core/Common.h"
 #include "Core/IO/BinaryReader.h"
 #include "VMDData.h"
 

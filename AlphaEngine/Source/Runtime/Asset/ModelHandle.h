@@ -10,6 +10,7 @@ namespace Alpha
 	}
 
 	class MaterialHandle;
+	// handleって名前なだけで別に管理はしていませｎ
 	struct SubMeshHandle
 	{
 		UInt32 material_index{};
@@ -42,11 +43,21 @@ namespace Alpha
 
 		bool IsSkeletal() const { return (m_mesh_type == Renderer::EMeshType::Skeletal); }
 
+		void SetBaseVeretices(TArray<Vector3>&& positions, TArray<Vector3>&& normals, TArray<Vector2>&& texcoords);
+		void SetSkeletalVertices(TArray<UVector4>&& bone_indices, TArray<Vector4>&& bone_weights, TUnique<Animation::Skeleton>&& skeleton);
 
-		TArray<Vector3>& GetPositions() { return m_positions; }
+		void SetIndices(TArray<UInt32>&& indices);
 
+		void SetMaterials(TSharedArray<MaterialHandle>&& materials);
+		void SetSubMeshes(TArray<SubMeshHandle>&& sub_meshes);
 
-		TArray<UInt32>& GetIndices() { return m_indices; }
+		const TArray<Vector3>& GetPositions() const { return m_positions; }
+		const TArray<Vector3>& GetNormals() const { return m_normals; }
+		const TArray<Vector2>& GetTexcoords() const { return m_texcoords; }
+
+		const TArray<UVector4>& GetBoneIndices() const { return m_bone_indices; }
+		const TArray<Vector4>& GetBoneWeights() const { return m_bone_weights; }
+		const TArray<UInt32>& GetIndices() const { return m_indices; }
 
 		const TSharedArray<MaterialHandle>& GetMaterialHandles() const { return m_materials; }
 

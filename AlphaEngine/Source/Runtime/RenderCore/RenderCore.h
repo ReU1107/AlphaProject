@@ -34,6 +34,7 @@ namespace Alpha
 	class ComputePipeline;
 
 	class GPUDataTransfer;
+	class TransientBufferAllocator;
 
 	class RenderCore : public Subsystem<RenderCore>
 	{
@@ -57,8 +58,7 @@ namespace Alpha
 		TUniqueArray<SamplerState> m_preset_samplers{};
 
 		TUnique<GPUDataTransfer> m_gpu_data_transfer{};
-		TUnique<Buffer> m_transient_buffer{};
-		LinearAllocator m_transient_allocator{};
+		TUnique<TransientBufferAllocator> m_transient_allocator{};
 
 		UInt32 m_width{ 0 };
 		UInt32 m_height{ 0 };
@@ -108,6 +108,8 @@ namespace Alpha
 			ERHIResourceDimension dimension = ERHIResourceDimension::Tex2D,
 			UInt32 array_size = 1);
 
+		void UploadTexture(Texture* texture, void* pixels);
+
 		TUnique<Shader> CreateShader(const std::wstring& file_path, ERHIShaderType shader_type);
 
 		TUnique<PipelineLayout> CreatePipelineLayout(std::function<void(PipelineLayout&)> config_func);
@@ -130,7 +132,7 @@ namespace Alpha
 
 		SamplerState* GetPresetSampler(ESamplerPresetType type) { return m_preset_samplers[+type].get(); }
 
-		Buffer* GetTransientBuffer() const { return m_transient_buffer.get(); }
+		TransientBufferAllocator* GetTransientAllocator() const { return m_transient_allocator.get(); }
 
 		UInt32 GetWidth() const { return m_width; }
 		UInt32 GetHeight() const { return m_height; }
@@ -139,7 +141,7 @@ namespace Alpha
 
 		bool PostInitialize();
 
-		void BegineFrame();
+		void BeginFrame();
 
 		void EndFrame();
 	};

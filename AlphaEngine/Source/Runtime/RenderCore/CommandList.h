@@ -65,6 +65,8 @@ namespace Alpha
 
 		void SetIndexBuffer(Buffer* rb, ERHIIndexFormat format);
 
+		// こいつらはバインドレス経由じゃなく従来の方法のパターン用
+		void SetGraphicsTexture(Texture* texture, UInt32 slot);
 		void SetGraphicsSamplerState(SamplerState* state, UInt32 slot);
 
 		void SetGraphcisSRV(Buffer* buffer, UInt32 slot);

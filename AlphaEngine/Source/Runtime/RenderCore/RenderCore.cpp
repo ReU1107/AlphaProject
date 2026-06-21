@@ -7,7 +7,6 @@
 #include "Timeline.h"
 
 #include "DescriptorHeap.h"
-#include "GPUDataTransfer.h"
 
 #include "Buffer.h"
 
@@ -21,6 +20,9 @@
 #include "Pipeline/PipelineLayout.h"
 #include "Pipeline/GraphicsPipeline.h"
 #include "Pipeline/ComputePipeline.h"
+
+#include "GPUDataTransfer.h"
+#include "TransientBufferAllocator.h"
 
 #include "Core/Math/Vector.h"
 #include "Core/Literal.h"
@@ -98,8 +100,15 @@ namespace Alpha
 		m_preset_samplers[+ESamplerPresetType::AnisoWrap]	= CreateSamplerState(ERHIFilter::Anisotropic, ERHIAddressMode::Wrap);
 		m_preset_samplers[+ESamplerPresetType::Shadow]		= CreateSamplerState(ERHIFilter::ComparisonLinear, ERHIAddressMode::Border);
 
-		m_transient_buffer = CreateBuffer(4, args.transient_buffer_size, EBufferPresetType::Upload);
-		m_transient_allocator.Initialize(args.transient_buffer_size);
+		m_transient_allocator = std::make_unique<TransientBufferAllocator>();
+		{
+			TransientBufferAllocator::Args desc = {
+				.render_core = this,
+				.stride = 4,
+				.size = args.transient_buffer_size,
+			};
+			m_transient_allocator->Initialize(desc);
+		}
 
 		m_width = args.width;
 		m_height = args.height;		
@@ -110,7 +119,7 @@ namespace Alpha
 	{
 		m_preset_samplers.clear();
 
-		m_transient_buffer.reset();
+		m_transient_allocator.reset();
 		m_gpu_data_transfer.reset();
 
 		m_back_buffer.clear();
@@ -278,6 +287,11 @@ namespace Alpha
 		return texture;
 	}
 
+	void RenderCore::UploadTexture(Texture* texture, void* pixels)
+	{
+		m_gpu_data_transfer->AddTexture(texture, pixels);
+	}
+
 	TUnique<Shader> RenderCore::CreateShader(const std::wstring& file_path, ERHIShaderType shader_type)
 	{
 		auto shader = std::make_unique<Shader>();
@@ -341,7 +355,7 @@ namespace Alpha
 		return true;
 	}
 
-	void RenderCore::BegineFrame()
+	void RenderCore::BeginFrame()
 	{
 		m_timeline->WaitCPU();
 
@@ -362,7 +376,7 @@ namespace Alpha
 
 		m_command_list->SetScissorRect(0, 0, m_width, m_height);
 
-		m_transient_allocator.Reset();
+		m_transient_allocator->Reset();
 	}
 
 	void RenderCore::EndFrame()

@@ -89,7 +89,7 @@ namespace Alpha::Animation
 			rhs_pose.bone_transforms.resize(512);
 			m_next_state->OnEvaluate(&rhs_pose);
 
-			float alpha = MathUtil::InverseLerp(0.0f, m_transition_duration, m_elapsed_time);
+			float alpha = InverseLerp(0.0f, m_transition_duration, m_elapsed_time);
 			
 			// Pose同士の補間
 			out_pose->Blend(lhs_pose, rhs_pose, alpha);

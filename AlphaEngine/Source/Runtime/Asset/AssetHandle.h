@@ -14,6 +14,7 @@ namespace Alpha
 		Texture,
 		Material,
 		Particle,
+		Skeleton,
 	};
 
 	class AssetHandle : public Object

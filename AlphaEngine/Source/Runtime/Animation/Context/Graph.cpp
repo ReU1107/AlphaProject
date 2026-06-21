@@ -32,7 +32,7 @@ namespace Alpha::Animation
 		return static_cast<BlendNode*>(m_nodes.back().get());
 	}
 
-	void Graph::SetEntry(uint32_t index)
+	void Graph::SetEntry(UInt32 index)
 	{
 		if (index >= m_nodes.size())
 			return;

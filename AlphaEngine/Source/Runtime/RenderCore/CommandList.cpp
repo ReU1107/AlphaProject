@@ -121,6 +121,13 @@ namespace Alpha
 		m_rhi->SetIndexBuffer(rb->GetRHI(), format);
 	}
 
+	void CommandList::SetGraphicsTexture(Texture* texture, UInt32 slot)
+	{
+		auto texture_handle = texture->GetSRVHandle();
+
+		m_rhi->SetGraphicsTable(texture_handle.heap->GetRHI(), texture_handle.index, slot);
+	}
+
 	void CommandList::SetGraphicsSamplerState(SamplerState* state, UInt32 slot)
 	{
 		auto sampler_handle = state->GetSamplerHandle();

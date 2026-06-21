@@ -17,4 +17,6 @@
 #include "Texture.h"
 #include "Timeline.h"
 
+#include "TransientBufferAllocator.h"
+
 #include "Types.h"

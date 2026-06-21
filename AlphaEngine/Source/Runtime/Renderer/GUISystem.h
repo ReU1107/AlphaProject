@@ -1,13 +1,13 @@
 ﻿#pragma once
+#include "Core/Common.h"
 #include "Core/Subsystem.h"
-#include "Core/Types.h"
 
 namespace Alpha
 {
 	struct RenderContext;
 
 	class RenderCore;
-	class RingBuffer;
+	class TransientBufferAllocator;
 	class Texture;
 	class Shader;
 	class PipelineLayout;
@@ -16,8 +16,8 @@ namespace Alpha
 	class GUISystem : public Subsystem<GUISystem>
 	{
 	private:
-		TUnique<RingBuffer> m_vertex_buffer{};
-		TUnique<RingBuffer> m_index_buffer{};
+		TUnique<TransientBufferAllocator> m_vertex_buffer{};
+		TUnique<TransientBufferAllocator> m_index_buffer{};
 		TUnique<Texture> m_font_texture{};
 
 		TUnique<Shader> m_vs{};

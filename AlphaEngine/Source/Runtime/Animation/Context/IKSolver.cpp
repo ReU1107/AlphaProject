@@ -40,7 +40,7 @@ namespace Alpha::Animation
         for (uint32_t iter = 0; iter < m_iteration_count; ++iter)
         {
             // 目標地点との距離が十分近ければ終了
-            if (MathF::VectorLengthSq(positions.back() - target_pos) < MathUtil::Epsilon) 
+            if (VectorLengthSq(positions.back() - target_pos) < Epsilon) 
                 break;
 
             // エンドポイントをターゲットポジションに移動
@@ -52,7 +52,7 @@ namespace Alpha::Animation
                 const auto& link = chain->GetLink(i);
                 float length = link.length;
                 // i + 1 と i番目の直線上に射影
-                Vector3 solved_dir = MathF::VectorNormalize(positions[i] - positions[i + 1]);
+                Vector3 solved_dir = VectorNormalize(positions[i] - positions[i + 1]);
                 Vector3 dir = solved_dir;
 
                 positions[i] = positions[i + 1] + dir * length;
@@ -70,7 +70,7 @@ namespace Alpha::Animation
                 * iが右足(足の付け根)としたら
                 * i+1は膝
                 */
-                Vector3 solved_dir = MathF::VectorNormalize(positions[i + 1] - positions[i]);
+                Vector3 solved_dir = VectorNormalize(positions[i + 1] - positions[i]);
                 Vector3 dir = solved_dir;
 
                 if (link.constraint.mode == EConstraintMode::Hinge)
@@ -79,22 +79,22 @@ namespace Alpha::Animation
                     if (i > 0)
                     {
                         const auto& prev_link = chain->GetLink(i - 1);
-                        Vector3 prev_dir = MathF::VectorNormalize(positions[i] - positions[i - 1]);
+                        Vector3 prev_dir = VectorNormalize(positions[i] - positions[i - 1]);
                         // 「バインド時の親の向き」から「今の親の向き」への回転を求める
-                        parent_rot = MathF::QuaternionRotationFromTo(prev_link.dir, prev_dir);
+                        parent_rot = QuaternionRotationFromTo(prev_link.dir, prev_dir);
                     }
 
-                    Vector3 hinge_axis = MathF::Vector3TransformDir(link.constraint.rotation_axis, parent_rot);
-                    Vector3 base_dir = MathF::Vector3TransformDir(link.dir, parent_rot);
+                    Vector3 hinge_axis = Vector3TransformDir(link.constraint.rotation_axis, parent_rot);
+                    Vector3 base_dir = Vector3TransformDir(link.dir, parent_rot);
 
                     // 平面に射影
-                    dir = MathF::VectorNormalize(solved_dir - (MathF::VectorDot(solved_dir, hinge_axis) * hinge_axis));
+                    dir = VectorNormalize(solved_dir - (VectorDot(solved_dir, hinge_axis) * hinge_axis));
 
-                    float angle = MathUtil::ATan2(MathF::VectorDot(MathF::Vector3Cross(base_dir, dir), hinge_axis), MathF::VectorDot(base_dir, dir));
-                    float clamped_angle = MathUtil::Clamp(angle, link.constraint.min_angle, link.constraint.max_angle);
+                    float angle = ATan2(VectorDot(Vector3Cross(base_dir, dir), hinge_axis), VectorDot(base_dir, dir));
+                    float clamped_angle = Clamp(angle, link.constraint.min_angle, link.constraint.max_angle);
 
                     // 改めてclampした値で初期状態から回転させる
-                    dir = MathF::Vector3TransformDir(base_dir, MathF::QuaternionRotationAxis(hinge_axis, clamped_angle));
+                    dir = Vector3TransformDir(base_dir, QuaternionRotationAxis(hinge_axis, clamped_angle));
                 }
 
                 positions[i + 1] = positions[i] + dir * length;
@@ -114,11 +114,11 @@ namespace Alpha::Animation
         for (const auto& [i, link] : chain->GetLinks() | std::views::enumerate | std::views::reverse)
         {
         
-            Vector3 old_dir = MathF::VectorNormalize(old_positions[i + 1] - old_positions[i]);
+            Vector3 old_dir = VectorNormalize(old_positions[i + 1] - old_positions[i]);
 
-            Vector3 new_dir = MathF::VectorNormalize(positions[i + 1] - positions[i]);
+            Vector3 new_dir = VectorNormalize(positions[i + 1] - positions[i]);
 
-            Quaternion delta_rot = MathF::QuaternionRotationFromTo(old_dir, new_dir);
+            Quaternion delta_rot = QuaternionRotationFromTo(old_dir, new_dir);
 
             Quaternion new_world_rot = delta_rot;
 
@@ -127,7 +127,7 @@ namespace Alpha::Animation
             if (parent)
             {
                 Quaternion parent_world_rot = pose->GetWorldRotation(parent->GetIndex());
-                local_rot = MathF::QuaternionInverse(parent_world_rot) * new_world_rot;
+                local_rot = QuaternionInverse(parent_world_rot) * new_world_rot;
             }
             else
             {

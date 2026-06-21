@@ -84,46 +84,6 @@ namespace Alpha
 
 	}
 
-	TArray<Vector3> PMXParser::CreatePositionVertices() const
-	{
-
-		for (const auto& [i, pmx] : m_vertices | std::views::enumerate)
-		{
-			SkeletalVertex vertex = {
-				.position = pmx.position,
-				.normal = pmx.normal,
-				.texcoord = pmx.texcoord,
-			};
-			vertex.bone_index = { pmx.boneIndex[0],  pmx.boneIndex[1],  pmx.boneIndex[2],  pmx.boneIndex[3] };
-			vertex.bone_weight = { pmx.boneWeight[0], pmx.boneWeight[1], pmx.boneWeight[2], pmx.boneWeight[3] };
-
-			vertices[i] = vertex;
-		}
-
-
-		return TArray<Vector3>();
-	}
-
-	TArray<Vector3> PMXParser::CreateNormalVertices() const
-	{
-		return TArray<Vector3>();
-	}
-
-	TArray<Vector2> PMXParser::CreateTexcoordVertices() const
-	{
-		return TArray<Vector2>();
-	}
-
-	TArray<UVector4> PMXParser::CreateBoneIndexVertices() const
-	{
-		return TArray<UVector4>();
-	}
-
-	TArray<Vector4> PMXParser::CreateBoneWeightVertices() const
-	{
-		return TArray<Vector4>();
-	}
-
 	TArray<uint32_t> PMXParser::CreateIndices() const
 	{
 		TArray<uint32_t> indices(m_indices.size() * 3);
@@ -168,13 +128,15 @@ namespace Alpha
 
 			if (pmx.decalIndex >= 0 && pmx.decalIndex < m_textures.size())
 			{
-				auto handle = AssetManager::Get().Load<TextureHandle>(folder_path + m_textures[pmx.decalIndex].textureFileName);
+				String texture_path = folder_path + m_textures[pmx.decalIndex].textureFileName;
+				material->AddTexturePath(texture_path);
+				auto handle = AssetManager::Get().Load<TextureHandle>(texture_path);
 				handle->SetName(GetName() + m_textures[pmx.decalIndex].textureFileName);
-				material->GetTexture().push_back(handle);
+				//material->GetTexture().push_back(handle);
 			}
 			else 
 			{
-				material->GetTexture().push_back(AssetManager::Get().GetWhiteTexture());
+				material->AddTexturePath(AssetManager::Get().GetWhiteTexturePath());
 			}
 
 			// トーンは一旦なし

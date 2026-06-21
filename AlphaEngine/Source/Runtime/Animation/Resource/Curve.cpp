@@ -53,8 +53,8 @@ namespace Alpha::Animation
 		switch (interpolation)
 		{
 		case Interpolation::Step	: return lhs_value;
-		case Interpolation::Linear	: return MathUtil::Lerp(lhs_value, rhs_value, t);
-		case Interpolation::Cubic	: return MathUtil::Lerp(lhs_value, rhs_value, t);
+		case Interpolation::Linear	: return Lerp(lhs_value, rhs_value, t);
+		case Interpolation::Cubic	: return Lerp(lhs_value, rhs_value, t);
 		default:
 			break;
 		}

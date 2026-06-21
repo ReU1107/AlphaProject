@@ -8,6 +8,7 @@ namespace Alpha
     class MaterialHandle;
     class TextureHandle;
     class Buffer;
+    class Texture;
 }
 
 namespace Alpha::Renderer
@@ -15,7 +16,6 @@ namespace Alpha::Renderer
     class StaticMesh;
     class SkeletalMesh;
     class Material;
-    class Texture2D;
 
 
     class ResourceManager : public Subsystem<ResourceManager>
@@ -25,7 +25,7 @@ namespace Alpha::Renderer
 
         TMap<UInt64, TShared<Material>> m_material_cache{};
 
-        TMap<UInt64, TShared<Texture2D>> m_texture_cache{};
+        TMap<UInt64, TShared<Texture>> m_texture_cache{};
 
         TUnique<Buffer> m_base_position_pool{ nullptr };
         TUnique<Buffer> m_base_normal_pool{ nullptr };
@@ -70,7 +70,7 @@ namespace Alpha::Renderer
 
         TShared<SkeletalMesh> GetSkeletalMesh(TShared<ModelHandle> handle);
         TShared<Material> GetMaterial(TShared<MaterialHandle> handle);
-        TShared<Texture2D> GetTexture(TShared<TextureHandle> handle);
+        TShared<Texture> GetTexture(TShared<TextureHandle> handle);
 
     };
 }
