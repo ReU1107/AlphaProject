@@ -22,6 +22,7 @@ namespace Alpha
 		~D3D12CommandBuffer();
 
 		bool Initialize(const RHICommandBufferDesc& desc) final;
+		void SetName(StringView name) final;
 
 		ID3D12CommandList* GetNativeHandle() const { return m_list.Get(); }
 

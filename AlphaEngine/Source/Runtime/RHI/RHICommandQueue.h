@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Core/Types.h"
+#include "Core/Common.h"
 #include "Declarations.h"
 
 namespace Alpha
@@ -18,6 +18,8 @@ namespace Alpha
 		virtual void Signal(RHITimeline* timeline_, uint64_t value) = 0;
 
 		virtual void Wait(RHITimeline* timeline_, uint64_t value) = 0;
+
+		virtual void SetName(StringView name) = 0;
 	};
 
 }

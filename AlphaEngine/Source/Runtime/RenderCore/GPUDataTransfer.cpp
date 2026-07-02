@@ -30,9 +30,9 @@ namespace Alpha
 
 	void GPUDataTransfer::Initialize(const Args& args)
 	{
-		m_copy_queue = args.render_core->CreateCommandQueue(ERHICommandType::Copy);
+		m_copy_queue = args.render_core->CreateCommandQueue(L"GPUDataTransfer::CopyQueue", ERHICommandType::Copy);
 
-		m_copy_list = args.render_core->CreateCommandList(ERHICommandType::Copy);
+		m_copy_list = args.render_core->CreateCommandList(L"GPUDataTransfer::CopyList", ERHICommandType::Copy);
 
 		m_copy_fence = args.render_core->CreateTimeline();
 
@@ -43,7 +43,7 @@ namespace Alpha
 
 	}
 
-	void GPUDataTransfer::AddBufferRegion(Buffer* buffer, UInt64 offset, void* data, UInt64 size)
+	void GPUDataTransfer::AddBufferRegion(Buffer* buffer, UInt64 offset, const void* data, UInt64 size)
 	{
 		UploadRequest request = {};
 		request.type = UploadType::Buffer;
@@ -55,7 +55,7 @@ namespace Alpha
 		m_requests.push_back(request);
 	}
 
-	void GPUDataTransfer::AddTexture(Texture* texture, void* data)
+	void GPUDataTransfer::AddTexture(Texture* texture, const void* data)
 	{
 		UploadRequest request = {};
 		request.type = UploadType::Texture;

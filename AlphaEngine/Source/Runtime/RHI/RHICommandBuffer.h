@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Core/Types.h"
+#include "Core/Common.h"
 #include "Types.h"
 #include "Declarations.h"
 
@@ -12,6 +12,8 @@ namespace Alpha
 		virtual ~RHICommandBuffer(){}
 
 		virtual bool Initialize(const RHICommandBufferDesc& desc) = 0;
+
+		virtual void SetName(StringView name) = 0;
 
 		virtual void Begin(UInt32) = 0;
 

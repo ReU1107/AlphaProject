@@ -1,10 +1,5 @@
 ﻿#include "DebugRenderer.h"
-#include "RenderCore/RenderCore.h"
-#include "RenderCore/CommandList.h"
-#include "RenderCore/Shader.h"
-#include "RenderCore/Buffer.h"
-#include "RenderCore/Pipeline/PipelineLayout.h"
-#include "RenderCore/Pipeline/GraphicsPipeline.h"
+#include "RenderCore/Module.h"
 
 #include "Core/Math/MathF.h"
 
@@ -14,12 +9,22 @@ namespace Alpha
 { 
 	bool DebugRenderer::Initialize(const Args& args)
 	{
-		m_line_buffer = args.render_core->CreateBuffer(sizeof(LineVertex), args.max_line_num * 2, EBufferPresetType::Upload);
+
+		m_line_buffer = std::make_unique<TransientBufferAllocator>();
+		{
+			TransientBufferAllocator::Args desc = {
+				.render_core = args.render_core,
+				.stride = sizeof(LineVertex),
+				.size = sizeof(LineVertex) * args.max_line_num * 2,
+				.alignment = 4,
+			};
+			m_line_buffer->Initialize(desc);
+		}
 
 		m_lines.reserve(args.max_line_num);
 
-		m_line_vs = args.render_core->CreateShader(L"Asset/LineVS.hlsl", ERHIShaderFlags::Vertex);
-		m_line_ps = args.render_core->CreateShader(L"Asset/LinePS.hlsl", ERHIShaderFlags::Pixel);
+		m_line_vs = args.render_core->CreateShader(L"Asset/LineVS.hlsl", ERHIShaderType::Vertex);
+		m_line_ps = args.render_core->CreateShader(L"Asset/LinePS.hlsl", ERHIShaderType::Pixel);
 
 		m_line_pipeline_layout = args.render_core->CreatePipelineLayout([](PipelineLayout& layout) {
 				layout.AddRootCBV(1);
@@ -101,7 +106,7 @@ namespace Alpha
 		uint64_t vertex_size = sizeof(LineVertex) * vertex_num;
 
 		uint64_t offset = 0;
-		auto vertices = reinterpret_cast<LineVertex*>(m_line_buffer->Allocate(vertex_size, 4, &offset));
+		auto vertices = reinterpret_cast<LineVertex*>(m_line_buffer->Allocate(vertex_size, &offset));
 
 
 		for (auto& line : m_lines)
@@ -117,9 +122,9 @@ namespace Alpha
 
 		ctx.command_list->SetGraphicsPipeline(m_line_pipelie.get());
 		
-		ctx.command_list->SetGraphicsCBV(ctx.transient_buffer, ctx.current_camera_offset, 0);
+		ctx.command_list->SetGraphicsCBV(ctx.transient_buffer->GetBuffer(), ctx.current_camera_offset, 0);
 
-		ctx.command_list->SetVertexBuffer(m_line_buffer.get(), 0);
+		ctx.command_list->SetVertexBuffer(m_line_buffer->GetBuffer(), 0);
 		ctx.command_list->Draw(static_cast<uint32_t>(vertex_num), 1, 0, 0);
 
 

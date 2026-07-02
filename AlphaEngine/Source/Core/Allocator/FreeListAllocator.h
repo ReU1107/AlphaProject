@@ -32,6 +32,7 @@ namespace Alpha
 
             // 最初はプール全体が1つの空きブロック
             m_free_blocks.push_back({ 0, total_size });
+            return true;
         }
 
         Allocation Allocate(UInt64 size, UInt64 alignment)

@@ -29,7 +29,7 @@ namespace Alpha
 
 		bool Initialize(const RHITextureDesc& desc) final;
 
-		void Upload(void* map_ptr, void* data) final;
+		void Upload(void* map_ptr, const void* data) final;
 
 		const D3D12SubresourceLayout& GetLayout(UInt32 index) const { return m_layouts[index]; }
 

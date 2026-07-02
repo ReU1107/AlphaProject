@@ -221,5 +221,10 @@ namespace Alpha
 	{
 		m_rhi->Dispatch(group_count_x, group_count_y, group_count_z);
 	}
+
+	void CommandList::SetName(StringView name)
+	{
+		m_rhi->SetName(name);
+	}
 }
 

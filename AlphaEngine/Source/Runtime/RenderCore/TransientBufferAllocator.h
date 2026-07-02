@@ -14,6 +14,7 @@ namespace Alpha
 		TUnique<Buffer> m_buffer{ nullptr };
 		UInt8* m_map_ptr{ nullptr };
 		UInt64 m_current_offset{ 0 };
+		UInt64 m_alignment{ 4 };
 
 	public:
 		TransientBufferAllocator();
@@ -31,9 +32,16 @@ namespace Alpha
 
 		void Initialize(const Args& args);
 
-		UInt64 WriteData(const void* data, UInt64 size);
+		template<typename T>
+		UInt64 WriteData(const T* data)
+		{
+			UInt64 offset = 0;
+			T* dest = reinterpret_cast<T*>(Allocate(sizeof(T), &offset));
+			std::memcpy(dest, data, sizeof(T));
+			return offset;
+		}
 
-		UInt8* Allocate(UInt64 size, UInt64 alignment, UInt64* out_offset);
+		UInt8* Allocate(UInt64 size, UInt64* out_offset);
 
 		Buffer* GetBuffer() const;
 

@@ -18,7 +18,7 @@ namespace
 		case Alpha::ERHIShaderType::Pixel		: return L"ps_";
 		case Alpha::ERHIShaderType::Geometry	: return L"gs_";
 		case Alpha::ERHIShaderType::Hull		: return L"hs_";
-		case Alpha::ERHIShaderType::Mesh		: return L"cs_";
+		case Alpha::ERHIShaderType::Mesh		: return L"ms_";
 		case Alpha::ERHIShaderType::Compute		: return L"cs_";
 		case Alpha::ERHIShaderType::RayTracing	: return L"lib_";
 		case Alpha::ERHIShaderType::Library		: return L"lib_";

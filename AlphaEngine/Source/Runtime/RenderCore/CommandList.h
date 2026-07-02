@@ -97,6 +97,7 @@ namespace Alpha
 
 		void Dispatch(UInt32 group_count_x, UInt32 group_count_y, UInt32 group_count_z);
 
+		void SetName(StringView name);
 	};
 
 }

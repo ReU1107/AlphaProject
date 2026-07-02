@@ -25,6 +25,7 @@ namespace Alpha
 		{
 			RenderHardwareInterface* rhi{ nullptr };
 			ERHICommandType type{ ERHICommandType::Direct };
+			String name{};
 			// 追加の初期化パラメーターをここに記述できます
 		};
 
@@ -42,6 +43,8 @@ namespace Alpha
 		void Wait(Timeline* timeline);
 		void Wait(Timeline* timeline, UInt64 wait_value);
 
+
+		void SetName(StringView name);
 	};
 }
 /*

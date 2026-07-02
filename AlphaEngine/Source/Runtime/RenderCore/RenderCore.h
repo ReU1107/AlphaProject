@@ -89,15 +89,15 @@ namespace Alpha
 
 		void Finalize();
 
-		TUnique<CommandQueue> CreateCommandQueue(ERHICommandType type);
-		TUnique<CommandList> CreateCommandList(ERHICommandType type);
+		TUnique<CommandQueue> CreateCommandQueue(StringView name, ERHICommandType type);
+		TUnique<CommandList> CreateCommandList(StringView name, ERHICommandType type);
 		TUnique<Timeline> CreateTimeline();
 
 		TUnique<DescriptorHeap> CreateDescriptorHeap(UInt64 num, ERHIDescriptorType type);
 
 		TUnique<Buffer> CreateBuffer(UInt64 stride, UInt64 size, EBufferPresetType type);
 
-		void UploadBuffer(Buffer* buffer, UInt64 offset, void* data, UInt64 data_size);
+		void UploadBuffer(Buffer* buffer, UInt64 offset, const void* data, UInt64 data_size);
 
 		TUnique<SamplerState> CreateSamplerState(ERHIFilter filter, ERHIAddressMode address);
 

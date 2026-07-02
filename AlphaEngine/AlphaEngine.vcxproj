@@ -206,6 +206,9 @@
     <ClCompile Include="Source\Runtime\D3D12\D3D12Texture.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12Timeline.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\DescriptorHandle.cpp" />
+    <ClCompile Include="Source\Runtime\RenderCore\PersistentBufferAllocator.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\Camera.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\DebugRenderer.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\GUISystem.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\GUIVisitor.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\TransientBufferAllocator.cpp" />
@@ -239,6 +242,26 @@
     <ClCompile Include="ThirdParty\imgui\imgui_draw.cpp" />
     <ClCompile Include="ThirdParty\imgui\imgui_tables.cpp" />
     <ClCompile Include="ThirdParty\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\allocator.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\clusterizer.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\indexanalyzer.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\indexcodec.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\indexgenerator.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\meshletcodec.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\meshletutils.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\opacitymap.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\overdrawoptimizer.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\partition.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\quantization.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\rasterizer.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\simplifier.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\spatialorder.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\stripifier.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\tangentspace.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\vcacheoptimizer.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\vertexcodec.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\vertexfilter.cpp" />
+    <ClCompile Include="ThirdParty\meshoptimizer\vfetchoptimizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Allocator\Allocator.h" />
@@ -322,6 +345,7 @@
     <ClInclude Include="Source\Runtime\Asset\Importer\WIC\WICLoader.h" />
     <ClInclude Include="Source\Runtime\Asset\MaterialHandle.h" />
     <ClInclude Include="Source\Runtime\Asset\ModelHandle.h" />
+    <ClInclude Include="Source\Runtime\Asset\Module.h" />
     <ClInclude Include="Source\Runtime\Asset\MotionHandle.h" />
     <ClInclude Include="Source\Runtime\Asset\ParticleHandle.h" />
     <ClInclude Include="Source\Runtime\Asset\SkeletonHandle.h" />
@@ -347,6 +371,9 @@
     <ClInclude Include="Source\Runtime\D3D12\D3D12Timeline.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12Util.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12WorkGraphPipeline.h" />
+    <ClInclude Include="Source\Runtime\RenderCore\PersistentBufferAllocator.h" />
+    <ClInclude Include="Source\Runtime\Renderer\Camera.h" />
+    <ClInclude Include="Source\Runtime\Renderer\DebugRenderer.h" />
     <ClInclude Include="Source\Runtime\Renderer\GUISystem.h" />
     <ClInclude Include="Source\Runtime\Renderer\GUIVisitor.h" />
     <ClInclude Include="Source\Runtime\Renderer\RenderContext.h" />
@@ -407,6 +434,7 @@
     <ClInclude Include="ThirdParty\imgui\imstb_rectpack.h" />
     <ClInclude Include="ThirdParty\imgui\imstb_textedit.h" />
     <ClInclude Include="ThirdParty\imgui\imstb_truetype.h" />
+    <ClInclude Include="ThirdParty\meshoptimizer\meshoptimizer.h" />
     <ClInclude Include="ThirdParty\std\stb_image.h" />
   </ItemGroup>
   <ItemGroup>

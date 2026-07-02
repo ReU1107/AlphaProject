@@ -18,10 +18,14 @@ namespace Alpha
 		PipelineLayout* pipeline_layout;
 
 		Shader* vertex_shader{ nullptr };
-		Shader* pixel_shader{ nullptr };
 		Shader* geometry_shader{ nullptr };
 		Shader* hull_shader{ nullptr };
 		Shader* domain_shader{ nullptr };
+
+		Shader* task_shader{ nullptr };
+		Shader* mesh_shader{ nullptr };
+
+		Shader* pixel_shader{ nullptr };
 
 		UInt32 render_target_count{ 0 };
 		TFixedArray<ERHIResourceFormat, 8> render_targets{};
