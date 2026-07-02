@@ -18,5 +18,6 @@
 #include "Timeline.h"
 
 #include "TransientBufferAllocator.h"
+#include "PersistentBufferAllocator.h"
 
 #include "Types.h"

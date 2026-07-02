@@ -126,6 +126,11 @@ namespace Alpha
 		return true;
 	}
 
+	void D3D12CommandBuffer::SetName(StringView name)
+	{
+		m_list->SetName(name.c_str());
+	}
+
 	void D3D12CommandBuffer::CopyTexture(RHITexture* src, RHITexture* dst)
 	{
 	}
@@ -291,6 +296,7 @@ namespace Alpha
 		default:
 			break;
 		}
+
 	}
 
 	void D3D12CommandBuffer::SetGraphicsTable(RHIDescriptorHeap* heap, UInt32 index, UInt32 slot)

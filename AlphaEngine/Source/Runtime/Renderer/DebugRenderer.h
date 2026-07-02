@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Core/Types.h"
+#include "Core/Common.h"
 #include "Core/Subsystem.h"
 
 namespace Alpha
@@ -7,7 +7,7 @@ namespace Alpha
 	struct RenderContext;
 
 	class RenderCore;
-	class Buffer;
+	class TransientBufferAllocator;
 	class Shader;
 	class PipelineLayout;
 	class GraphicsPipeline;
@@ -29,7 +29,7 @@ namespace Alpha
 		};
 	private:
 		TArray<DebugLine> m_lines{};
-		TUnique<Buffer> m_line_buffer{};
+		TUnique<TransientBufferAllocator> m_line_buffer{};
 
 		TUnique<Shader> m_line_vs{};
 		TUnique<Shader> m_line_ps{};

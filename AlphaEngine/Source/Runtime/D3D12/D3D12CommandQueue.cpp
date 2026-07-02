@@ -90,6 +90,11 @@ namespace Alpha
 		m_queue->Wait(timeline->GetNativeHandle(), value);
 	}
 
+	void D3D12CommandQueue::SetName(StringView name)
+	{
+		m_queue->SetName(name.c_str());
+	}
+
 }
 
 #endif

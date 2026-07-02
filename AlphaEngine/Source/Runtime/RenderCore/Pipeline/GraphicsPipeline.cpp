@@ -30,6 +30,12 @@ namespace Alpha
 		if (args.pixel_shader)
 			desc.pixel_shader = args.pixel_shader->GetRHI();
 		
+		if (args.mesh_shader)
+			desc.mesh_shader = args.mesh_shader->GetRHI();
+
+		if (args.task_shader)
+			desc.task_shader = args.task_shader->GetRHI();
+
 		for (UInt32 i = 0; i < args.render_target_count; ++i)
 		{
 			desc.render_targets[i] = args.render_targets[i];

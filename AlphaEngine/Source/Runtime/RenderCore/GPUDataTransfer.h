@@ -24,7 +24,7 @@ namespace Alpha
 		UploadType type{ UploadType::Buffer };
 		GPUResource* resource{ nullptr };				// 転送先バッファ
 		UInt64 offset{ 0 };						// 転送先オフセット（Bufferの要素単位、Textureのサブリソース単位）
-		void* data{ nullptr };					// 転送するデータ
+		const void* data{ nullptr };					// 転送するデータ
 		
 		UInt64 size{ 0 };						// 転送するデータのサイズ（Bufferの場合はバイト単位、Textureの場合はサブリソース全体のサイズ）
 	};
@@ -51,8 +51,8 @@ namespace Alpha
 
 		void Initialize(const Args& args);
 
-		void AddBufferRegion(Buffer* buffer, UInt64 offset, void* data, UInt64 size);
-		void AddTexture(Texture* texture, void* data);
+		void AddBufferRegion(Buffer* buffer, UInt64 offset, const void* data, UInt64 size);
+		void AddTexture(Texture* texture, const void* data);
 
 		bool HasUpload() const { return !m_requests.empty(); }
 

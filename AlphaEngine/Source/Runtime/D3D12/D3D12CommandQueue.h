@@ -25,6 +25,8 @@ namespace Alpha
 
 		void Wait(RHITimeline* timeline_, UINT64 value) final;
 
+		void SetName(StringView name) final;
+
 		ID3D12CommandQueue* GetNativeHandle() const { return m_queue.Get(); }
 
 	};

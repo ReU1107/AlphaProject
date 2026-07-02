@@ -19,7 +19,7 @@ namespace Alpha
 
 		virtual UInt32 GetSubresourceNum() = 0;
 
-		virtual void Upload(void* map_ptr, void* data) = 0;
+		virtual void Upload(void* map_ptr, const void* data) = 0;
 
 		uint64_t GetUploadSize() const { return m_total_upload_size; }
 

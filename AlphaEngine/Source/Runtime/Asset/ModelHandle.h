@@ -2,6 +2,8 @@
 #include "AssetHandle.h"
 #include "Renderer/Definitions.h"
 
+#include <meshoptimizer/meshoptimizer.h>
+
 namespace Alpha
 {
 	namespace Animation
@@ -36,6 +38,13 @@ namespace Alpha
 		Renderer::EMeshType m_mesh_type{};
 
 	public:
+		// meshletテスト用
+		std::vector<meshopt_Meshlet> m_global_meshlets{};
+		std::vector<unsigned int>    m_global_meshlet_vertices{};
+		std::vector<UInt32>   m_global_meshlet_triangles{};
+
+
+	public:
 		~ModelHandle();
 		static AssetType Type() { return AssetType::Model; }
 
@@ -50,6 +59,8 @@ namespace Alpha
 
 		void SetMaterials(TSharedArray<MaterialHandle>&& materials);
 		void SetSubMeshes(TArray<SubMeshHandle>&& sub_meshes);
+
+		void Optimize();
 
 		const TArray<Vector3>& GetPositions() const { return m_positions; }
 		const TArray<Vector3>& GetNormals() const { return m_normals; }

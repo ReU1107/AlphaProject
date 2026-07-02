@@ -7,7 +7,6 @@
 #include "Resource/StaticMesh.h"
 #include "Resource/SkeletalMesh.h"
 #include "Resource/Material.h"
-#include "Resource/Texture2D.h"
 
 #include "RenderCore/Module.h"
 
@@ -19,25 +18,41 @@ namespace Alpha
 
 	bool ResourceManager::Initialize(const Args& args)
 	{
-		m_base_position_pool = RenderCore::Get().CreateBuffer(sizeof(Vector3), args.base_position_pool_size, EBufferPresetType::ROByteAddress);
-		m_base_normal_pool = RenderCore::Get().CreateBuffer(sizeof(Vector3), args.base_normal_pool_size, EBufferPresetType::ROByteAddress);
-		m_texcoord_pool = RenderCore::Get().CreateBuffer(sizeof(Vector2), args.texcoord_pool_size, EBufferPresetType::ROByteAddress);
-		
-		m_bone_indices_pool = RenderCore::Get().CreateBuffer(sizeof(UVector4), args.bone_indices_pool_size, EBufferPresetType::ROByteAddress);
-		m_bone_weights_pool = RenderCore::Get().CreateBuffer(sizeof(Vector4), args.bone_weights_pool_size, EBufferPresetType::ROByteAddress);
+		m_base_position_pool = std::make_unique<PersistentBufferAllocator>();
+		{
+			m_base_position_pool->Initialize(sizeof(Vector3), args.base_position_pool_size, EBufferPresetType::ROByteAddress);
+		}
+		m_base_normal_pool = std::make_unique<PersistentBufferAllocator>();
+		{
+			m_base_normal_pool->Initialize(sizeof(Vector3), args.base_normal_pool_size, EBufferPresetType::ROByteAddress);
+		}
 
-		m_bone_matrices_pool = RenderCore::Get().CreateBuffer(sizeof(Matrix4x4), args.bone_matrices_pool_size, EBufferPresetType::ROByteAddress);
+		//m_texcoord_pool = RenderCore::Get().CreateBuffer(sizeof(Vector2), args.texcoord_pool_size, EBufferPresetType::ROByteAddress);
+		//
+		//m_bone_indices_pool = RenderCore::Get().CreateBuffer(sizeof(UVector4), args.bone_indices_pool_size, EBufferPresetType::ROByteAddress);
+		//m_bone_weights_pool = RenderCore::Get().CreateBuffer(sizeof(Vector4), args.bone_weights_pool_size, EBufferPresetType::ROByteAddress);
 
-		m_deformed_position_pool = RenderCore::Get().CreateBuffer(sizeof(Vector3), args.deformed_position_pool_size, EBufferPresetType::RWByteAddress);
-		m_deformed_normal_pool = RenderCore::Get().CreateBuffer(sizeof(Vector3), args.deformed_normal_pool_size, EBufferPresetType::RWByteAddress);
+		//m_bone_matrices_pool = RenderCore::Get().CreateBuffer(sizeof(Matrix4x4), args.bone_matrices_pool_size, EBufferPresetType::ROByteAddress);
 
-		m_index_pool = RenderCore::Get().CreateBuffer(sizeof(UInt32), args.index_pool_size, EBufferPresetType::ROByteAddress);
+		//m_deformed_position_pool = RenderCore::Get().CreateBuffer(sizeof(Vector3), args.deformed_position_pool_size, EBufferPresetType::RWByteAddress);
+		//m_deformed_normal_pool = RenderCore::Get().CreateBuffer(sizeof(Vector3), args.deformed_normal_pool_size, EBufferPresetType::RWByteAddress);
+
+		m_index_pool = std::make_unique<PersistentBufferAllocator>();
+		{
+			m_index_pool->Initialize(sizeof(UInt32), args.index_pool_size, EBufferPresetType::ROByteAddress);
+		}
 
 		return true;
 	}
 
 	void ResourceManager::Finalize()
 	{
+
+		auto handle = m_base_position_pool->GetBuffer()->GetSRVHandle();
+
+		handle.index;
+
+
 	}
 
 	TShared<Renderer::SkeletalMesh> ResourceManager::GetSkeletalMesh(TShared<ModelHandle> handle)
@@ -57,13 +72,18 @@ namespace Alpha
 
 		auto render_core = RenderCore::GetPtr();
 
-		RenderCore::Get().UploadBuffer(m_base_position_pool.get(), handle->GetPositions().data(), );
+		{
+			UInt64 offset = 0;
+			UInt64 size = handle->GetPositions().size() * sizeof(Vector3);
+			m_base_position_pool->Allocate(size, &offset);
 
-		mesh->SetVertexBuffer(render_core->CreateVertexBuffer(sizeof(SkeletalVertex), vertices.size(), vertices.data()));
+			RenderCore::Get().UploadBuffer(m_base_position_pool->GetBuffer(), offset, handle->GetPositions().data(), size);
+
+			// このoffsetをmeshに管理させる
+
+		}
 
 		auto& indices = handle->GetIndices();
-
-		mesh->SetIndexBuffer(render_core->CreateIndexBuffer(sizeof(uint32_t), indices.size(), indices.data()));
 
 		auto& materials = handle->GetMaterialHandles();
 		for (auto& sub_handle : handle->GetSubMeshHandles())
@@ -127,7 +147,7 @@ namespace Alpha
 		return material;
 	}
 	
-	TShared<Texture2D> Renderer::ResourceManager::GetTexture(TShared<TextureHandle> handle)
+	TShared<Texture> Renderer::ResourceManager::GetTexture(TShared<TextureHandle> handle)
 	{
 		auto found = m_texture_cache.find(handle->GetID());
 		if (found != m_texture_cache.cend())

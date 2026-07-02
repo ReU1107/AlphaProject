@@ -199,7 +199,7 @@ namespace Alpha
 		return true;
 	}
 
-	void D3D12Texture::Upload(void* map_ptr, void* data)
+	void D3D12Texture::Upload(void* map_ptr, const void* data)
 	{
 		uint8_t* dst_base = static_cast<uint8_t*>(map_ptr);
 		const uint8_t* src_base = static_cast<const uint8_t*>(data);

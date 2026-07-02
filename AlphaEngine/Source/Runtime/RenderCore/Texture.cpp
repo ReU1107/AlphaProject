@@ -77,7 +77,7 @@ namespace Alpha
 		return m_rhi->As<RHITexture>();
 	}
 
-	void Texture::Upload(void* map_ptr, void* data)
+	void Texture::Upload(void* map_ptr, const void* data)
 	{
 		m_rhi->As<RHITexture>()->Upload(map_ptr, data);
 	}

@@ -20,8 +20,6 @@ namespace Alpha
         // サイズとアライメントを指定して、切り出された「バイトオフセット」を返す
         bool Allocate(UInt64 size, UInt64 alignment, UInt64* out_offset) 
         {
-            UInt64 alignment_size = Alignment(size, alignment);
-
             // アライメント調整（4バイトや256バイト境界に整列）
             UInt64 aligned_size = Alignment(size, alignment);
             UInt64 aligned_offset = Alignment(m_current_offset, alignment);

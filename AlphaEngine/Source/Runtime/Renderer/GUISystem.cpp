@@ -286,7 +286,15 @@ namespace Alpha
 
 	void GUISystem::Finalize()
 	{
+		ImGui::DestroyContext();
 
+		m_pipeline.reset();
+		m_pipeline_layout.reset();
+		m_vs.reset();
+		m_ps.reset();
+		m_vertex_buffer.reset();
+		m_index_buffer.reset();
+		m_font_texture.reset();
 	}
 
 	void GUISystem::BeginFrame()
@@ -326,7 +334,7 @@ namespace Alpha
 		// プロジェクション行列
 		Matrix4x4 projection = Matrix4x4OrthographicLH(L, R, T, B, 0.0f, 1.0f);
 
-		auto constant_offset = ctx.transient_buffer->WriteData(&projection, sizeof(Matrix4x4));
+		auto constant_offset = ctx.transient_buffer->WriteData<matrix4x4>(&projection);
 		ctx.command_list->SetGraphicsCBV(ctx.transient_buffer->GetBuffer(), constant_offset, 0);
 
 		auto* sampler_sate = RenderCore::Get().GetPresetSampler(ESamplerPresetType::LinearClamp);
@@ -339,12 +347,12 @@ namespace Alpha
 
 			uint64_t vertex_offset = 0;
 			uint64_t vertex_byte_size = cmd_list->VtxBuffer.Size * sizeof(ImDrawVert);
-			auto vertex_ptr = m_vertex_buffer->Allocate(vertex_byte_size, 4, &vertex_offset);
+			auto vertex_ptr = m_vertex_buffer->Allocate(vertex_byte_size, &vertex_offset);
 			memcpy(vertex_ptr, cmd_list->VtxBuffer.Data, vertex_byte_size);
 
 			uint64_t index_offset = 0;
 			uint64_t index_byte_size = cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx);
-			auto index_ptr = m_index_buffer->Allocate(index_byte_size, 4, &index_offset);
+			auto index_ptr = m_index_buffer->Allocate(index_byte_size, &index_offset);
 			memcpy(index_ptr, cmd_list->IdxBuffer.Data, index_byte_size);
 
 			ImVec2 clip_off = draw_data->DisplayPos;

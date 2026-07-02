@@ -39,8 +39,8 @@ namespace Alpha
 		RHI::Args rhi_args = {};
 		m_rhi->Initialize(rhi_args);
 
-		m_command_queue = CreateCommandQueue(ERHICommandType::Direct);
-		m_command_list = CreateCommandList(ERHICommandType::Direct);
+		m_command_queue = CreateCommandQueue(L"RenderCore::GraphicsQueue", ERHICommandType::Direct);
+		m_command_list = CreateCommandList(L"RenderCore::GraphicsList", ERHICommandType::Direct);
 
 		m_swap_chain = std::make_unique<SwapChain>();
 		{
@@ -106,6 +106,7 @@ namespace Alpha
 				.render_core = this,
 				.stride = 4,
 				.size = args.transient_buffer_size,
+				.alignment = 256,
 			};
 			m_transient_allocator->Initialize(desc);
 		}
@@ -122,11 +123,18 @@ namespace Alpha
 		m_transient_allocator.reset();
 		m_gpu_data_transfer.reset();
 
+		for (auto& buffer : m_back_buffer)
+		{
+			buffer.reset();
+		}
+
 		m_back_buffer.clear();
 		m_depth_texture.reset();
 
+		m_sampler_heap.reset();
 		m_dsv_heap.reset();
 		m_rtv_heap.reset();
+		m_resource_heap.reset();
 
 		m_swap_chain.reset();
 		m_timeline.reset();
@@ -138,7 +146,7 @@ namespace Alpha
 		m_rhi.reset();
 	}
 
-	TUnique<CommandQueue> RenderCore::CreateCommandQueue(ERHICommandType type)
+	TUnique<CommandQueue> RenderCore::CreateCommandQueue(StringView name, ERHICommandType type)
 	{
 		auto queue = std::make_unique<CommandQueue>();
 		CommandQueue::Args args = {
@@ -146,10 +154,11 @@ namespace Alpha
 			.type = type,
 		};
 		queue->Initialize(args);
+		queue->SetName(name);
 		return queue;
 	}
 
-	TUnique<CommandList> RenderCore::CreateCommandList(ERHICommandType type)
+	TUnique<CommandList> RenderCore::CreateCommandList(StringView name, ERHICommandType type)
 	{
 		auto list = std::make_unique<CommandList>();
 		CommandList::Args args = {
@@ -157,6 +166,7 @@ namespace Alpha
 			.type = type,
 		};
 		list->Initialize(args);
+		list->SetName(name);
 
 		return list;
 	}
@@ -243,7 +253,7 @@ namespace Alpha
 		return buffer;
 	}
 
-	void RenderCore::UploadBuffer(Buffer* buffer, UInt64 offset, void* data, UInt64 data_size)
+	void RenderCore::UploadBuffer(Buffer* buffer, UInt64 offset, const void* data, UInt64 data_size)
 	{
 		m_gpu_data_transfer->AddBufferRegion(buffer, offset, data, data_size);
 	}

@@ -41,7 +41,7 @@ namespace Alpha
 
 		RHITexture* GetRHI() const;
 
-		void Upload(void* map_ptr, void* data);
+		void Upload(void* map_ptr, const void* data);
 
 		UInt64 GetSize() const;
 

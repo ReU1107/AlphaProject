@@ -1,15 +1,28 @@
-﻿#include "PooledBuffer.h"
+﻿#include "PersistentBufferAllocator.h"
 #include "RenderCore/RenderCore.h"
-
+#include "RenderCore/Buffer.h"
 namespace Alpha
 {
-	bool PooledBuffer::Initialize(UInt64 stride, UInt64 total_size, EBufferPresetType preset)
+    PersistentBufferAllocator::~PersistentBufferAllocator() = default;
+
+    bool PersistentBufferAllocator::Initialize(const Args& args)
     {
-        m_buffer = RenderCore::Get().CreateBuffer(stride, total_size, preset);
-        if (!m_buffer) 
+        m_buffer = args.render_core->CreateBuffer(args.alignment, args.max_size, args.preset);
+        if (!m_buffer)
             return false;
 
-        m_allocator.Initialize(total_size);
+        m_allocator.Initialize(args.max_size);
+
+        m_alignment = args.alignment;  // 
+
+        return true;
+    }
+
+    bool PersistentBufferAllocator::Allocate(UInt32 num, UInt64* out_offset)
+    {
+        UInt64 size = num * m_alignment;
+        FreeListAllocator::Allocation alloc = m_allocator.Allocate(size, m_alignment);
+        *out_offset = alloc.offset;
 
         return true;
     }

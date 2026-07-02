@@ -18,28 +18,22 @@ namespace Alpha
 		m_buffer = args.render_core->CreateBuffer(args.stride, args.size, EBufferPresetType::Upload);
 
 		m_map_ptr = m_buffer->GetMappedPtr();
-
+		m_alignment = args.alignment;
 	}
 
-	UInt64 TransientBufferAllocator::WriteData(const void* data, UInt64 size)
+	UInt8* TransientBufferAllocator::Allocate(UInt64 size, UInt64* out_offset)
 	{
-		UInt64 alignment_size = Alignment(size, 256);
+		UInt64 aligned_offset = Alignment(m_current_offset, m_alignment);
 
-		memcpy(m_map_ptr + m_current_offset, data, alignment_size);
+		UInt64 aligned_size = Alignment(size, m_alignment);
 
-		UInt64 offset = m_current_offset;
-		m_current_offset += alignment_size;
+		*out_offset = aligned_offset;
 
-		return offset;
-	}
+		UInt8* dest = m_map_ptr + aligned_offset;
+		// alignmentしたサイズ分までは結局使うので安全のために0クリアだけしておく
+		std::memset(dest, 0, aligned_size);
 
-	UInt8* TransientBufferAllocator::Allocate(UInt64 size, UInt64 alignment, UInt64* out_offset)
-	{
-		UInt64 alignment_size = Alignment(size, alignment);
-		*out_offset = m_current_offset;
-
-		UInt8* dest = m_map_ptr + m_current_offset;
-		m_current_offset += alignment_size;
+		m_current_offset = aligned_size + aligned_offset;
 
 		return dest;
 	}

@@ -8,10 +8,10 @@ namespace Alpha
 {
 	Matrix4x4 Camera::GetViewProjectionMatrix() const
 	{
-		m_view_matrix = MathF::Matrix4x4LookAtLH(m_position, Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
-		m_projection_matrix = MathF::Matrix4x4PerspectiveFovLH(m_fov, m_aspect_ratio, m_near_plane, m_far_plane);
+		m_view_matrix = Matrix4x4LookAtLH(m_position, Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
+		m_projection_matrix = Matrix4x4PerspectiveFovLH(m_fov, m_aspect_ratio, m_near_plane, m_far_plane);
 
-		return MathF::MatrixMultiply(m_view_matrix, m_projection_matrix);
+		return MatrixMultiply(m_view_matrix, m_projection_matrix);
 	}
 }
 /*

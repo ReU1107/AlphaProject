@@ -14,6 +14,7 @@ namespace Alpha
 		RHICommandQueueDesc desc = {};
 		desc.type = args.type;
 		m_rhi = args.rhi->CreateCommandQueue(desc);
+
 	}
 
 	RHICommandQueue* CommandQueue::GetRHI() const
@@ -54,5 +55,10 @@ namespace Alpha
 	void CommandQueue::Wait(Timeline* timeline, UInt64 signal_value)
 	{
 		m_rhi->Wait(timeline->GetRHI(), signal_value);
+	}
+
+	void CommandQueue::SetName(StringView name)
+	{
+		m_rhi->SetName(name);
 	}
 }
