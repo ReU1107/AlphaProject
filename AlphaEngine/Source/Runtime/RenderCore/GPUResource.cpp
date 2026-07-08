@@ -15,4 +15,9 @@ namespace Alpha
 	{
 		return m_rhi->GetFlags();
 	}
+
+	void GPUResource::SetName(StringView name)
+	{
+		m_rhi->SetName(name);
+	}
 }

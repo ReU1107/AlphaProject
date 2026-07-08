@@ -109,18 +109,14 @@ namespace Alpha
 			auto material = std::make_shared<MaterialHandle>();
 			material->SetName(GetName() + pmx.name);
 
-			auto& data = material->GetData();
-
+			auto& data = material->GetData();			
 			data.base_color = pmx.diffuseCoeff.XYZ();
 			data.opacity = pmx.diffuseCoeff.W();
 			data.metallic = (pmx.sphereFlag == PMXSphereMode::Sph) ? 0.8f : 0.0f;
 			data.roughness = 1.0f - Clamp(pmx.specularity / 100.0f, 0.0f, 1.0f);
-
 			data.emissive_color = pmx.ambientCoeff.XYZ();
 			data.emissive_intensity = (data.emissive_color.X() > 0.0f || data.emissive_color.Y() > 0.0f || data.emissive_color.Z() > 0.0f) ? 1.0f : 0.0f;
-
 			data.specular_tint = pmx.specularCoeff.XYZ();
-
 			data.occlusion = 1.0f;
 			data.refraction_index = 1.5f;
 
@@ -132,11 +128,7 @@ namespace Alpha
 				material->AddTexturePath(texture_path);
 				auto handle = AssetManager::Get().Load<TextureHandle>(texture_path);
 				handle->SetName(GetName() + m_textures[pmx.decalIndex].textureFileName);
-				//material->GetTexture().push_back(handle);
-			}
-			else 
-			{
-				material->AddTexturePath(AssetManager::Get().GetWhiteTexturePath());
+				handle->SetAttribute(ETextureAttribute::BaseColor);
 			}
 
 			// トーンは一旦なし

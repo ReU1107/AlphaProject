@@ -78,6 +78,8 @@ namespace Alpha
         handle->SetMaterials(std::move(materials));
         handle->SetSubMeshes(std::move(sub_meshes));
 
+        handle->BuildVertexAttributeBuffer();
+
 
         return handle;
     }

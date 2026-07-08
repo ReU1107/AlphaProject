@@ -11,10 +11,10 @@ namespace Alpha
 	{
 	private:
 		Renderer::MaterialData m_data{};
-
 		TArray<String> m_texture_paths{};
 
 		TSharedArray<TextureHandle> m_referenced_textures{};
+
 
 	public:
 		~MaterialHandle();
@@ -31,9 +31,9 @@ namespace Alpha
 
 		void LinkTexture(TShared<TextureHandle> texture) { m_referenced_textures.push_back(texture); }
 
-		TSharedArray<TextureHandle>& GetTexture() { return m_referenced_textures; }
+		TSharedArray<TextureHandle>& GetTextureHandles() { return m_referenced_textures; }
 
-		const TSharedArray<TextureHandle>& GetTexture() const { return m_referenced_textures; }
+		const TSharedArray<TextureHandle>& GetTextureHandles() const { return m_referenced_textures; }
 
 		void Accept(IVisitor* visitor) override {}
 

@@ -30,6 +30,8 @@ namespace Alpha
 
 		virtual void* GetNative() const = 0;
 
+		virtual void SetName(StringView name) = 0;
+
 	};
 
 }

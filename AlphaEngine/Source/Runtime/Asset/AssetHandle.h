@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Core/Common.h"
 #include "Core/Object.h"
+#include "Core/Serialization/ByteWriter.h"
 #include <atomic>
 #include <concepts>
 

@@ -35,14 +35,11 @@ namespace Alpha
 		TArray<SubMeshHandle> m_sub_meshes{};
 
 		TUnique<Animation::Skeleton> m_skeleton{};
-		Renderer::EMeshType m_mesh_type{};
+		EMeshType m_mesh_type{};
 
-	public:
-		// meshletテスト用
-		std::vector<meshopt_Meshlet> m_global_meshlets{};
-		std::vector<unsigned int>    m_global_meshlet_vertices{};
-		std::vector<UInt32>   m_global_meshlet_triangles{};
-
+		ByteWriter m_vertex_attribute_serializer{};
+		UInt32 m_vertex_attribute_stride{ 0 };
+		EVertexAttributeFlags m_vertex_attribute_flags{};
 
 	public:
 		~ModelHandle();
@@ -50,7 +47,7 @@ namespace Alpha
 
 		AssetType GetType() const final { return AssetType::Model; }
 
-		bool IsSkeletal() const { return (m_mesh_type == Renderer::EMeshType::Skeletal); }
+		bool IsSkeletal() const { return (m_mesh_type == EMeshType::Skeletal); }
 
 		void SetBaseVeretices(TArray<Vector3>&& positions, TArray<Vector3>&& normals, TArray<Vector2>&& texcoords);
 		void SetSkeletalVertices(TArray<UVector4>&& bone_indices, TArray<Vector4>&& bone_weights, TUnique<Animation::Skeleton>&& skeleton);
@@ -60,7 +57,7 @@ namespace Alpha
 		void SetMaterials(TSharedArray<MaterialHandle>&& materials);
 		void SetSubMeshes(TArray<SubMeshHandle>&& sub_meshes);
 
-		void Optimize();
+		void BuildVertexAttributeBuffer();
 
 		const TArray<Vector3>& GetPositions() const { return m_positions; }
 		const TArray<Vector3>& GetNormals() const { return m_normals; }
@@ -75,6 +72,10 @@ namespace Alpha
 		const TArray<SubMeshHandle>& GetSubMeshHandles() const { return m_sub_meshes; }
 
 		Animation::Skeleton* GetSkeleton() const;
+
+		const TArray<UInt8>& GetPackData() const { return m_vertex_attribute_serializer.GetData(); }
+		EVertexAttributeFlags GetVertexAttributeFlags() const { return m_vertex_attribute_flags; }
+		UInt32 GetVertexAttributeStride() const { return m_vertex_attribute_stride; }
 
 		void Accept(IVisitor* visitor) override {}
 

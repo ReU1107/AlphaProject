@@ -26,4 +26,12 @@ namespace Alpha
 
         return true;
     }
+
+    bool PersistentBufferAllocator::AllocateBySize(UInt32 size, UInt64* out_offset)
+    {
+        FreeListAllocator::Allocation alloc = m_allocator.Allocate(size, m_alignment);
+        *out_offset = alloc.offset;
+
+        return true;
+    }
 }

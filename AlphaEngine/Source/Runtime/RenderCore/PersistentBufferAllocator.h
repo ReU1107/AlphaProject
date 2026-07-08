@@ -21,7 +21,7 @@ namespace Alpha
         struct Args
         {
             RenderCore* render_core{ nullptr };
-            UInt64 alignment{};
+            UInt64 alignment{ 4 };
             UInt64 max_size{};
             EBufferPresetType preset{ EBufferPresetType::ROByteAddress };
         };
@@ -29,6 +29,8 @@ namespace Alpha
         bool Initialize(const Args& args);
 
         bool Allocate(UInt32 num, UInt64* out_offset);
+
+        bool AllocateBySize(UInt32 size, UInt64* out_offset);
 
         Buffer* GetBuffer() const { return m_buffer.get(); }
     };

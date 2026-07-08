@@ -26,6 +26,9 @@ namespace Alpha
 		uint64_t GetGPUAddress() const final;
 
 		void* GetNative() const final { return m_resource.Get(); }
+
+		void SetName(StringView name) final;
+
 	};
 
 }

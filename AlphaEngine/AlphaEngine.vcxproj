@@ -114,7 +114,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)Source\Runtime\;$(ProjectDir)Source\Core\;$(ProjectDir)Source\;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <FxCompile>
@@ -291,6 +291,8 @@
     <ClInclude Include="Source\Core\Math\Vector.h" />
     <ClInclude Include="Source\Core\Math\Viewport.h" />
     <ClInclude Include="Source\Core\Object.h" />
+    <ClInclude Include="Source\Core\Serialization\ByteReader.h" />
+    <ClInclude Include="Source\Core\Serialization\ByteWriter.h" />
     <ClInclude Include="Source\Core\SmartPtr.h" />
     <ClInclude Include="Source\Core\String\String.h" />
     <ClInclude Include="Source\Core\String\StringUtil.h" />
@@ -374,10 +376,12 @@
     <ClInclude Include="Source\Runtime\RenderCore\PersistentBufferAllocator.h" />
     <ClInclude Include="Source\Runtime\Renderer\Camera.h" />
     <ClInclude Include="Source\Runtime\Renderer\DebugRenderer.h" />
+    <ClInclude Include="Source\Runtime\Renderer\Definitions.h" />
     <ClInclude Include="Source\Runtime\Renderer\GUISystem.h" />
     <ClInclude Include="Source\Runtime\Renderer\GUIVisitor.h" />
     <ClInclude Include="Source\Runtime\Renderer\RenderContext.h" />
     <ClInclude Include="Source\Runtime\RenderCore\TransientBufferAllocator.h" />
+    <ClInclude Include="Source\Runtime\Renderer\Types.h" />
     <ClInclude Include="Source\Runtime\Scene\Scene.h" />
     <ClInclude Include="Source\Runtime\Scene\SceneObject.h" />
     <ClInclude Include="Source\Runtime\XAudio2\XAudio2Device.h" />
