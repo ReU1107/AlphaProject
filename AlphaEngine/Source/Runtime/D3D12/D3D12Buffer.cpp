@@ -153,6 +153,11 @@ namespace Alpha
 	{
 		return m_resource->GetGPUVirtualAddress();
 	}
+
+	void D3D12Buffer::SetName(StringView name)
+	{
+		m_resource->SetName(name.c_str());
+	}
 }
 
 #endif

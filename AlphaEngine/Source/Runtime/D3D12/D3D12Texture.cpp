@@ -226,6 +226,11 @@ namespace Alpha
 
 
 	}
+
+	void D3D12Texture::SetName(StringView name)
+	{
+		m_resource->SetName(name.c_str());
+	}
 }
 
 #endif

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Core/Common.h"
 #include "Core/Object.h"
+#include "Core/Serialization/ByteWriter.h"
 #include <atomic>
 #include <concepts>
 
@@ -15,6 +16,7 @@ namespace Alpha
 		Material,
 		Particle,
 		Skeleton,
+		Shader,
 	};
 
 	class AssetHandle : public Object

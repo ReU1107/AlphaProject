@@ -37,6 +37,7 @@ namespace Alpha
 
 		UInt32 GetSubresourceNum() final { return (UInt32)m_layouts.size(); }
 
+		void SetName(StringView name) final;
 	};
 
 }

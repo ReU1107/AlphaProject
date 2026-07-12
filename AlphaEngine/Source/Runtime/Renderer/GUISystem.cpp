@@ -299,7 +299,6 @@ namespace Alpha
 
 	void GUISystem::BeginFrame()
 	{
-
 		auto& io = ImGui::GetIO();
 
 		io.DisplaySize = ImVec2((float)1920, (float)1080);

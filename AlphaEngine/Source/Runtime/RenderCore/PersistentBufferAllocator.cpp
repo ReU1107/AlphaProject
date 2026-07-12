@@ -18,12 +18,33 @@ namespace Alpha
         return true;
     }
 
-    bool PersistentBufferAllocator::Allocate(UInt32 num, UInt64* out_offset)
+    bool PersistentBufferAllocator::AllocateByNum(UInt32 num, Allocation* allocation)
     {
         UInt64 size = num * m_alignment;
-        FreeListAllocator::Allocation alloc = m_allocator.Allocate(size, m_alignment);
-        *out_offset = alloc.offset;
+        Allocation alloc = m_allocator.Allocate(size, m_alignment);
+
+        if (!alloc.is_valid)
+            return false;
+
+        *allocation = alloc;
 
         return true;
+    }
+
+    bool PersistentBufferAllocator::AllocateBySize(UInt32 size, Allocation* allocation)
+    {
+        Allocation alloc = m_allocator.Allocate(size, m_alignment);
+
+        if (!alloc.is_valid)
+            return false;
+
+        *allocation = alloc;
+
+        return true;
+    }
+
+    void PersistentBufferAllocator::Free(const Allocation& allocation)
+    {
+        m_allocator.Free(allocation);
     }
 }

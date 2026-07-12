@@ -1,20 +1,12 @@
 ﻿#pragma once
 #include "Types.h"
+#include "Allocator.h"
 #include <list>
-
 
 namespace Alpha
 {
     class FreeListAllocator
     {
-    public:
-        struct Allocation
-        {
-            UInt64 offset{ 0 };
-            UInt64 size{ 0 };
-            bool is_valid{ false };
-        };
-
     private:
         struct FreeBlock
         {

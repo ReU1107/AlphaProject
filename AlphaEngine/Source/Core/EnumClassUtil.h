@@ -54,4 +54,58 @@ constexpr inline Flag operator ^=(Flag& lhs, Flag rhs){ lhs = lhs ^ rhs;return l
 	// タイプをビットフラグに変換
 #define EnumFlagsFromType(Flags, Type)\
 inline Flags Type##ToEnumFlags(Type type) { return static_cast<Flags>(1 << CovertEnumClassToBaseType(type)); }
+
+	// こっちに移行させる
+	template <typename Enum>
+	class EnumFlags
+	{
+	public:
+		using Underlying = std::underlying_type_t<Enum>;
+
+		constexpr EnumFlags() noexcept : m_bits(0) {}
+		constexpr EnumFlags(Enum e) noexcept : m_bits(static_cast<Underlying>(1ULL << static_cast<Underlying>(e))) {}
+
+		constexpr EnumFlags& operator|=(EnumFlags rhs) noexcept { m_bits |= rhs.m_bits; return *this; }
+		constexpr EnumFlags operator|(EnumFlags rhs) const noexcept { return EnumFlags(*this) |= rhs; }
+		constexpr EnumFlags& operator&=(EnumFlags rhs) noexcept { m_bits &= rhs.m_bits; return *this; }
+		constexpr EnumFlags operator&(EnumFlags rhs) const noexcept { return EnumFlags(*this) &= rhs; }
+
+		constexpr bool Has(Enum e) const noexcept 
+		{
+			return (m_bits & static_cast<Underlying>(1ULL << static_cast<Underlying>(e))) != 0;
+		}
+		constexpr Underlying GetValue() const noexcept { return m_bits; }
+
+	private:
+		Underlying m_bits = 0;
+	};
+
+	template<typename Enum, typename = std::enable_if_t<std::is_enum_v<Enum>>>
+	constexpr inline std::underlying_type_t<Enum> operator+(Enum e) 
+	{
+		return static_cast<std::underlying_type_t<Enum>>(e);
+	}
+
+	// enum class を添え字にできる型安全な配列
+	template <typename T, typename Enum, size_t N>
+	class EnumArray
+	{
+	public:
+		constexpr T& operator[](Enum e) noexcept 
+		{
+			return m_data[static_cast<std::underlying_type_t<Enum>>(e)];
+		}
+
+		constexpr const T& operator[](Enum e) const noexcept 
+		{
+			return m_data[static_cast<std::underlying_type_t<Enum>>(e)];
+		}
+
+		constexpr std::array<T, N>& GetRaw() noexcept { return m_data; }
+		constexpr const std::array<T, N>& GetRaw() const noexcept { return m_data; }
+
+	private:
+		std::array<T, N> m_data;
+	};
+
 }

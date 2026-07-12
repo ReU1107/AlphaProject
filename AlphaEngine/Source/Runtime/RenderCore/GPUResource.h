@@ -19,6 +19,8 @@ namespace Alpha
 
 		ERHIResourceBindFlags GetFlags() const;
 
+		void SetName(StringView name);
+
 	};
 
 }
