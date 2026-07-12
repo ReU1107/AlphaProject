@@ -187,6 +187,7 @@
     <ClCompile Include="Source\Runtime\Asset\MaterialHandle.cpp" />
     <ClCompile Include="Source\Runtime\Asset\ModelHandle.cpp" />
     <ClCompile Include="Source\Runtime\Asset\MotionHandle.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\ShaderHandle.cpp" />
     <ClCompile Include="Source\Runtime\Asset\SkeletonHandle.cpp" />
     <ClCompile Include="Source\Runtime\Asset\TextureHandle.cpp" />
     <ClCompile Include="Source\Runtime\Audio\AudioSystem.cpp" />
@@ -212,6 +213,7 @@
     <ClCompile Include="Source\Runtime\Renderer\GUISystem.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\GUIVisitor.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\TransientBufferAllocator.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\RenderResourceManager.cpp" />
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2Device.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\Buffer.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\CommandList.cpp" />
@@ -267,6 +269,7 @@
     <ClInclude Include="Source\Core\Allocator\Allocator.h" />
     <ClInclude Include="Source\Core\Allocator\FreeListAllocator.h" />
     <ClInclude Include="Source\Core\Allocator\LinearAllocator.h" />
+    <ClInclude Include="Source\Core\Allocator\SlotAllocator.h" />
     <ClInclude Include="Source\Core\Assertion.h" />
     <ClInclude Include="Source\Core\Common.h" />
     <ClInclude Include="Source\Core\Component.h" />
@@ -350,6 +353,7 @@
     <ClInclude Include="Source\Runtime\Asset\Module.h" />
     <ClInclude Include="Source\Runtime\Asset\MotionHandle.h" />
     <ClInclude Include="Source\Runtime\Asset\ParticleHandle.h" />
+    <ClInclude Include="Source\Runtime\Asset\ShaderHandle.h" />
     <ClInclude Include="Source\Runtime\Asset\SkeletonHandle.h" />
     <ClInclude Include="Source\Runtime\Asset\TextureHandle.h" />
     <ClInclude Include="Source\Runtime\Audio\AudioSource.h" />
@@ -379,8 +383,10 @@
     <ClInclude Include="Source\Runtime\Renderer\Definitions.h" />
     <ClInclude Include="Source\Runtime\Renderer\GUISystem.h" />
     <ClInclude Include="Source\Runtime\Renderer\GUIVisitor.h" />
+    <ClInclude Include="Source\Runtime\Renderer\MeshComponent.h" />
     <ClInclude Include="Source\Runtime\Renderer\RenderContext.h" />
     <ClInclude Include="Source\Runtime\RenderCore\TransientBufferAllocator.h" />
+    <ClInclude Include="Source\Runtime\Renderer\RenderResourceManager.h" />
     <ClInclude Include="Source\Runtime\Renderer\Types.h" />
     <ClInclude Include="Source\Runtime\Scene\Scene.h" />
     <ClInclude Include="Source\Runtime\Scene\SceneObject.h" />

@@ -109,7 +109,7 @@ namespace Alpha
 			auto material = std::make_shared<MaterialHandle>();
 			material->SetName(GetName() + pmx.name);
 
-			auto& data = material->GetData();			
+			auto& data = material->GetProperties();
 			data.base_color = pmx.diffuseCoeff.XYZ();
 			data.opacity = pmx.diffuseCoeff.W();
 			data.metallic = (pmx.sphereFlag == PMXSphereMode::Sph) ? 0.8f : 0.0f;

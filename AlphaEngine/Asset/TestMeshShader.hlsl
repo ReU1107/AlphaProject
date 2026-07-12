@@ -13,7 +13,6 @@ struct VertexOut
 
 };
 
-// C++側の「meshopt_Meshlet」と完全に一致させるHLSL側の定義
 struct MeshoptMeshlet
 {
     uint VertexOffset;
@@ -36,10 +35,10 @@ struct MeshConstants
     uint MeshletTriHeapIndex; // global_meshlet_triangles バッファ
     uint MaterialHeapIndex; // \
     
+    // 別バッファに移す
     uint GlobalVertexPositionOffset;
     uint GlobalVertexAttributeOffset;
     
-    // どこかに移動させるかも
     uint VertexStride; // 
     uint AttributeFlags; // 
     
@@ -85,7 +84,7 @@ float3 GetRandomColor(uint id)
 [OutputTopology("triangle")]
 void main(
     uint gtid : SV_GroupThreadID,
-    uint gid : SV_GroupID, // ★「自分は何番目のMeshletか」をインデックスとして使う
+    uint gid : SV_GroupID, //「自分は何番目のMeshletか」をインデックスとして使う
     out vertices VertexOut balls[MAX_VERTICES],
     out indices uint3 triangles[MAX_PRIMITIVES]
 )
@@ -154,8 +153,6 @@ void main(
         // 座標変換して出力
         balls[gtid].Position = mul(cb.WorldViewProj, float4(rawPos, 1.0f));
         
-        // ★ 今度こそ、全身の法線が1ピクセルの狂いもなく滑らかに繋がります！
-        //balls[gtid].Color = float4(normal * 0.5f + 0.5f, 1.0f);
         balls[gtid].Color = float4(uv, 0.0f, 1.0f);
         balls[gtid].TexCoord = uv;
         balls[gtid].MaterialID = m.MaterialId;

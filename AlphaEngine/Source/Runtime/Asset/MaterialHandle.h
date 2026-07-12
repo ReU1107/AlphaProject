@@ -10,7 +10,7 @@ namespace Alpha
 	class MaterialHandle : public AssetHandle
 	{
 	private:
-		Renderer::MaterialData m_data{};
+		Renderer::MaterialProperties m_props{};
 		TArray<String> m_texture_paths{};
 
 		TSharedArray<TextureHandle> m_referenced_textures{};
@@ -23,8 +23,8 @@ namespace Alpha
 
 		AssetType GetType() const final { return AssetType::Material; }
 
-		Renderer::MaterialData& GetData() { return m_data; }
-		const Renderer::MaterialData& GetData() const { return m_data; }
+		Renderer::MaterialProperties& GetProperties() { return m_props; }
+		const Renderer::MaterialProperties& GetProperties() const { return m_props; }
 
 		void AddTexturePath(StringView path) { m_texture_paths.push_back(path); }
 		const TArray<String>& GetTexturePaths() const { return m_texture_paths; }

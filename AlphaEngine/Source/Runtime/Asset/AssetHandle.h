@@ -16,6 +16,7 @@ namespace Alpha
 		Material,
 		Particle,
 		Skeleton,
+		Shader,
 	};
 
 	class AssetHandle : public Object

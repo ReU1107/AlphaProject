@@ -57,13 +57,13 @@ float4 main(VertexOut input) : SV_TARGET
     Texture2D tex = ResourceDescriptorHeap[NonUniformResourceIndex(material.base_color_tex_idx)];
     //Texture2D tex = ResourceDescriptorHeap[8];
     
-    return tex.Sample(sam, input.TexCoord);    
+    //return tex.Sample(sam, input.TexCoord);    
     //return float4(
     //frac(input.MaterialID / 8.0),
     //frac(input.MaterialID / 16.0),
     //frac(input.MaterialID / 32.0),
     //1.0);
     
-    //return float4(input.TexCoord, 0.0f, 1.0f);
+    return float4(input.TexCoord, 0.0f, 1.0f);
     
 }

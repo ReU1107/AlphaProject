@@ -28,9 +28,11 @@ namespace Alpha
 
         bool Initialize(const Args& args);
 
-        bool Allocate(UInt32 num, UInt64* out_offset);
+        bool AllocateByNum(UInt32 num, Allocation* allocation);
 
-        bool AllocateBySize(UInt32 size, UInt64* out_offset);
+        bool AllocateBySize(UInt32 size, Allocation* allocation);
+
+        void Free(const Allocation& allocation);
 
         Buffer* GetBuffer() const { return m_buffer.get(); }
     };

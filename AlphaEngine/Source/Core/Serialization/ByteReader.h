@@ -41,7 +41,7 @@ namespace Alpha
         Vector3 ReadVector3() { Vector3  v; Read(&v, sizeof(v)); return v; }
         Vector4 ReadVector4() { Vector4  v; Read(&v, sizeof(v)); return v; }
 
-        // 🌟 アライメント分だけカーソルを飛ばす関数
+        // アライメント分だけカーソルを飛ばす関数
         void Align(size_t alignment)
         {
             size_t misaligned = m_cursor % alignment;
