@@ -7,14 +7,19 @@ namespace Alpha
 {
 	class Buffer;
 	class RenderCore;
-	// 一過性
+	// 一過性の毎フレーム更新されるものなのでマルチバッファ
 	class TransientBufferAllocator
 	{
+		struct FrameBlock
+		{
+			TUnique<Buffer> buffer{ nullptr };
+			UInt8* map_ptr{ nullptr };
+			UInt64 current_offset{ 0 };
+		};
 	private:
-		TUnique<Buffer> m_buffer{ nullptr };
-		UInt8* m_map_ptr{ nullptr };
-		UInt64 m_current_offset{ 0 };
+		TArray<FrameBlock> m_blocks{};
 		UInt64 m_alignment{ 4 };
+		UInt32 m_current_block_index{ 0 };
 
 	public:
 		TransientBufferAllocator();
@@ -22,12 +27,14 @@ namespace Alpha
 
 		struct Args
 		{
-			RenderCore* render_core{ nullptr };
+			RenderCore* render_core{ nullptr };	
+			UInt32 block_num{ 3 };
 
 			UInt64 stride{ 4 };
 			UInt64 size{ 4 };
 
 			UInt64 alignment{ 4 };
+			EBufferPresetType type{ EBufferPresetType::Upload };
 		};
 
 		void Initialize(const Args& args);
@@ -41,11 +48,20 @@ namespace Alpha
 			return offset;
 		}
 
+		template<typename T>
+		UInt64 WriteData(const T* data, UInt32 num)
+		{
+			UInt64 offset = 0;
+			T* dest = reinterpret_cast<T*>(Allocate(sizeof(T) * num, &offset));
+			std::memcpy(dest, data, sizeof(T));
+			return offset;
+		}
+
 		UInt8* Allocate(UInt64 size, UInt64* out_offset);
 
 		Buffer* GetBuffer() const;
 
-		void Reset();
+		void Reset(UInt32 current_buffer_index);
 	};
 }
 /*

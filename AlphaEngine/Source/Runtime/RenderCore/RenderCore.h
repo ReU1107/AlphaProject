@@ -120,6 +120,8 @@ namespace Alpha
 
 		ERHIResourceFormat GetBackBufferFormat() const { return m_back_buffer_format; }
 
+		UINT32 GetCurrentBackBufferIndex() const;
+
 		Texture* GetCurrentRenderTarget() const;
 		Texture* GetDepthTexture() const;
 

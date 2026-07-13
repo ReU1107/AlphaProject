@@ -41,6 +41,7 @@ namespace Alpha
 
         m_mesh_palette.Initialize(100);
         m_material_palette.Initialize(100);
+        m_material_table_palette.Initialize(100);
         m_texture_palette.Initialize(100);
 
 		return true;
@@ -51,12 +52,20 @@ namespace Alpha
 
 	}
 
-	UInt32 RenderResourceManager::RegisterMesh(TShared<ModelHandle> model)
+	UInt32 RenderResourceManager::RegisterMesh(TShared<ModelHandle> handle)
 	{
-        Mesh& mesh = m_mesh_palette.Allocate(model->GetID());
+        UInt64 handle_id = handle->GetID();
+        UInt32 palette_index = 0;
+
+        if (m_mesh_palette.TryGetIndex(handle_id, &palette_index))
+        {
+            return palette_index;
+        }
+
+        Mesh& mesh = m_mesh_palette.Allocate(handle_id, palette_index);
 
         {
-			UInt32 num = model->GetPositions().size();
+			UInt32 num = handle->GetPositions().size();
 			Allocation alloc{};
 			if (!m_vertex_position_allocator->AllocateByNum(num, &alloc))
 			{
@@ -64,20 +73,20 @@ namespace Alpha
 				// 
 			}
 			
-			RenderCore::Get().UploadBuffer(m_vertex_position_allocator->GetBuffer(), alloc.offset, model->GetPositions().data(), sizeof(Vector3) * num);
+			RenderCore::Get().UploadBuffer(m_vertex_position_allocator->GetBuffer(), alloc.offset, handle->GetPositions().data(), sizeof(Vector3) * num);
 
             mesh.vertex_position_alloc = alloc;
 		}
 
 		{
-			UInt32 size = model->GetPackData().size();
+			UInt32 size = handle->GetPackData().size();
 			Allocation alloc{};
 			if (!m_vertex_attribute_allocator->AllocateBySize(size, &alloc))
 			{
 				ALPHA_LOG_WARN(L"ModelHandleのリソース化に失敗しました");
 				// 
 			}
-			RenderCore::Get().UploadBuffer(m_vertex_attribute_allocator->GetBuffer(), alloc.offset, model->GetPackData().data(), size);
+			RenderCore::Get().UploadBuffer(m_vertex_attribute_allocator->GetBuffer(), alloc.offset, handle->GetPackData().data(), size);
 
             mesh.vertex_attribute_alloc = alloc;
 		}
@@ -85,8 +94,8 @@ namespace Alpha
         {
             mesh.data.vertex_position_offset = mesh.vertex_position_alloc.offset / sizeof(Vector3);
             mesh.data.vertex_attribute_offset = mesh.vertex_attribute_alloc.offset;  // ByteAddressBufferだからそのまま
-            mesh.data.vertex_stride = model->GetVertexAttributeStride();
-            mesh.data.attribute_flags = model->GetVertexAttributeFlags().GetValue();
+            mesh.data.vertex_stride = handle->GetVertexAttributeStride();
+            mesh.data.attribute_flags = handle->GetVertexAttributeFlags().GetValue();
 
             Allocation alloc{};
             m_mesh_allocator->AllocateByNum(1, &alloc);
@@ -100,13 +109,13 @@ namespace Alpha
         const size_t max_primitives = 126;
 
         // 
-        const float* mesh_vertices = model->GetPositions()[0].data();
-        size_t mesh_vertex_count = model->GetPositions().size();
+        const float* mesh_vertices = reinterpret_cast<const float*>(handle->GetPositions().data());
+        size_t mesh_vertex_count = handle->GetPositions().size();
 
-        for (const auto& submesh : model->GetSubMeshHandles())
+        for (const auto& submesh : handle->GetSubMeshHandles())
         {
             // このサブメッシュが使用しているインデックス範囲だけを指すポインタを作る
-            const unsigned int* submesh_indices = model->GetIndices().data() + submesh.index_offset;
+            const unsigned int* submesh_indices = handle->GetIndices().data() + submesh.index_offset;
             size_t submesh_index_count = submesh.index_count;
 
             // このサブメッシュに必要な最大の Meshlet 数を計算
@@ -217,20 +226,42 @@ namespace Alpha
             mesh.meshlet_alloc = alloc;
         }
 
-        // マテリアルの登録
-        for (auto& material_handle : model->GetMaterialHandles())
+        // マテリアルの登録とこのモデルのデフォルトのマテリアルテーブルの作成
+        for (auto& material_handle : handle->GetMaterialHandles())
         {
-            RegisterMaterial(material_handle);
+            UInt32 mat_index = RegisterMaterial(material_handle);
+
+            mesh.default_table.material_indices[mesh.default_table.material_num++] = m_material_palette[mat_index].alloc.offset / sizeof(MaterialData);
+        }
+        
+        {
+            UInt32 size = sizeof(UInt32) * mesh.default_table.material_num;
+            Allocation alloc{};
+            if (!m_material_table_allocator->AllocateBySize(size, &alloc))
+            {
+                ALPHA_LOG_WARN(L"ModelHandleのリソース化に失敗しました");
+                // 
+            }
+            RenderCore::Get().UploadBuffer(m_material_table_allocator->GetBuffer(), alloc.offset, mesh.default_table.material_indices, size);
+
+            mesh.default_table.alloc = alloc;
         }
 
-        return 0;
+        return palette_index;
 	}
 
-    void RenderResourceManager::RegisterMaterial(TShared<MaterialHandle> handle)
+    UInt32 RenderResourceManager::RegisterMaterial(TShared<MaterialHandle> handle)
     {
-        Material& material = m_material_palette.Allocate(handle->GetID());
+        UInt64 handle_id = handle->GetID();
+        UInt32 palette_index = 0;
 
-        // このマテリアルが利用するテクスチャのsrvindex
+        if (m_material_palette.TryGetIndex(handle_id, &palette_index))
+        {
+            return palette_index;
+        }
+
+        Material& material = m_material_palette.Allocate(handle_id, palette_index);
+
         TMap<ETextureAttribute, UInt32> local_tex_cache;
 
         for (auto& texture_handle : handle->GetTextureHandles())
@@ -246,10 +277,15 @@ namespace Alpha
         auto black_tex = RegisterTexture(AssetManager::Get().GetBlackTexture());
         auto normal_tex = RegisterTexture(AssetManager::Get().GetNormalTexture());
 
-        auto GetTexture = [&](ETextureAttribute attr, UInt32 fallback_srv)
+        auto GetTexture = [&](ETextureAttribute attr, UInt32 fallback_index)
         {
             auto found = local_tex_cache.find(attr);
-            return (found != local_tex_cache.cend()) ? found->second : fallback_srv;
+            
+            UInt32 index = fallback_index;
+            if (found != local_tex_cache.cend())
+                index = found->second;
+
+            return m_texture_palette[index].tex.get()->GetSRVHandle().index;
         };
 
         material.data.props = handle->GetProperties();
@@ -273,7 +309,15 @@ namespace Alpha
 
     UInt32 RenderResourceManager::RegisterTexture(TShared<TextureHandle> handle)
     {
-        TextureResource& texture = m_texture_palette.Allocate(handle->GetID());
+        UInt64 handle_id = handle->GetID();
+        UInt32 palette_index = 0;
+
+        if (m_texture_palette.TryGetIndex(handle_id, &palette_index))
+        {
+            return palette_index;
+        }
+
+        TextureResource& texture = m_texture_palette.Allocate(handle_id, palette_index);
 
         if (texture.tex)
             return texture.tex.get()->GetSRVHandle().index;
@@ -286,11 +330,9 @@ namespace Alpha
             handle->GetDimension()
         );
         RenderCore::Get().UploadTexture(tex.get(), handle->GetPixels());
-
-        UInt32 descriptor_index = tex->GetSRVHandle().index;
         texture.tex = std::move(tex);
 
-        return descriptor_index;
+        return palette_index;
     }
 
 }

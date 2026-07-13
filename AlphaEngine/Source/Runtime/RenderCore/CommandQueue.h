@@ -40,7 +40,6 @@ namespace Alpha
 		// 
 		UInt64 Signal(Timeline* timeline);
 
-		void Wait(Timeline* timeline);
 		void Wait(Timeline* timeline, UInt64 wait_value);
 
 

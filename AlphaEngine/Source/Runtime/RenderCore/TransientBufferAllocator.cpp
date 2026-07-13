@@ -15,36 +15,45 @@ namespace Alpha
 
 	void TransientBufferAllocator::Initialize(const Args& args)
 	{
-		m_buffer = args.render_core->CreateBuffer(args.stride, args.size, EBufferPresetType::Upload);
+		m_blocks.resize(args.block_num);
+		for (UInt32 i = 0; i < args.block_num; ++i)
+		{
+			auto& block = m_blocks[i];
+			block.buffer = args.render_core->CreateBuffer(args.stride, args.size, args.type);
+			block.map_ptr = block.buffer->GetMappedPtr();
 
-		m_map_ptr = m_buffer->GetMappedPtr();
+		}
+
 		m_alignment = args.alignment;
 	}
 
 	UInt8* TransientBufferAllocator::Allocate(UInt64 size, UInt64* out_offset)
 	{
-		UInt64 aligned_offset = Alignment(m_current_offset, m_alignment);
+		auto& block = m_blocks[m_current_block_index];
+
+		UInt64 aligned_offset = Alignment(block.current_offset, m_alignment);
 
 		UInt64 aligned_size = Alignment(size, m_alignment);
 
 		*out_offset = aligned_offset;
 
-		UInt8* dest = m_map_ptr + aligned_offset;
+		UInt8* dest = block.map_ptr + aligned_offset;
 		// alignmentしたサイズ分までは結局使うので安全のために0クリアだけしておく
 		std::memset(dest, 0, aligned_size);
 
-		m_current_offset = aligned_size + aligned_offset;
+		block.current_offset = aligned_size + aligned_offset;
 
 		return dest;
 	}
 
 	Buffer* TransientBufferAllocator::GetBuffer() const
 	{
-		return m_buffer.get();
+		return m_blocks[m_current_block_index].buffer.get();
 	}
 
-	void TransientBufferAllocator::Reset()
+	void TransientBufferAllocator::Reset(UInt32 current_buffer_index)
 	{
-		m_current_offset = 0;
+		m_blocks[current_buffer_index].current_offset = 0;
+		m_current_block_index = current_buffer_index;
 	}
 }

@@ -25,7 +25,7 @@ namespace Alpha
 	{
 		RHICommandBufferDesc desc;
 		desc.type = args.type;
-		desc.count = 3;
+		desc.count = args.buffer_num;
 		m_rhi = args.rhi->CreateCommandBuffer(desc);
 	}
 

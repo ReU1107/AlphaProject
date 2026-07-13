@@ -3,9 +3,10 @@
 
 namespace Alpha
 {
-	void DescriptorHandle::Free()
+	void DescriptorHandle::Free(UInt32 current_buffer_index)
 	{
-		if (heap)
-			heap->Free(*this);
+		auto h = heap;
+
+		h->Free(*this, current_buffer_index);
 	}
 }

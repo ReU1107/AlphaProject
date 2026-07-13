@@ -47,11 +47,6 @@ namespace Alpha
 		return fence_value;
 	}
 
-	void CommandQueue::Wait(Timeline* timeline)
-	{
-		m_rhi->Wait(timeline->GetRHI(), timeline->GetCurrentValue());
-	}
-
 	void CommandQueue::Wait(Timeline* timeline, UInt64 signal_value)
 	{
 		m_rhi->Wait(timeline->GetRHI(), signal_value);

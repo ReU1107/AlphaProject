@@ -10,10 +10,12 @@ namespace Alpha
 	class MeshComponent// : public Component
 	{
 	public:
-		TShared<ModelHandle> m_handle{ nullptr };
-		TSharedArray<MaterialHandle> m_material_table{};
+		UInt32 m_mesh_id{ 0 };
+		UInt32 m_material_table_id{ 0 };
 
 
 
 	};
+
+
 }

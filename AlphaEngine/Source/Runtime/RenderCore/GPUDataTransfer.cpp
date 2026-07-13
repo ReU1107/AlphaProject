@@ -77,7 +77,9 @@ namespace Alpha
 			if (!m_staging_allocator.Allocate(request.size, GetUploadAlignment(request.type), &offset))
 			{
 				// バッファが一杯なのでこの段階で予定されてる分をアップロードする
-
+				// で一度リセットしてからもう一度リクエスト処理に戻す
+				m_staging_allocator.Reset();
+				// ↑ていうのを後でやる;;
 			}
 			UInt8* dest = ptr + offset;
 
@@ -108,7 +110,6 @@ namespace Alpha
 		auto fence_value = m_copy_queue->Signal(m_copy_fence.get());
 		
 		m_requests.clear();
-		//m_staging_buffer->Reset();
 
 		return fence_value;
 	}

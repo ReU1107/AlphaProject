@@ -111,6 +111,20 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         }
     );
 
+    // インスタンスデータ用
+    auto m_transient_allocator = std::make_unique<TransientBufferAllocator>();
+    {
+        TransientBufferAllocator::Args desc = {
+            .render_core = RenderCore::GetPtr(),
+            .stride = sizeof(Renderer::InstanceData),
+            .size = 4_MB,
+        };
+        m_transient_allocator->Initialize(desc);
+    }
+ /*   TArray<Renderer::InstanceData> abcl;
+    m_transient_allocator->WriteData(abcl.data(), abcl.size());
+*/
+
     struct MeshConstants
     {
         float4x4 WorldViewProj;
@@ -191,6 +205,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         RenderContext ctx = {};
         ctx.command_list = RenderCore::Get().GetCommandList();
         ctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
+        ctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
 
 		GUISystem::Get().BeginFrame();
 

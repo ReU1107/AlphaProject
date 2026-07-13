@@ -30,33 +30,55 @@ namespace Alpha
             m_allocator.Initialize(max_element_count);
         }
 
-        bool Contains(UInt64 key)
+        bool Contains(UInt64 key) const
         {
-            return (m_key_to_index_map.contains(key));
+            return m_key_to_index_map.contains(key);
         }
 
-        T& Allocate(UInt64 key)
+        bool TryGetIndex(UInt64 key, UInt32* out_index) const
         {
             auto found = m_key_to_index_map.find(key);
             if (found != m_key_to_index_map.cend())
-                return m_palette[found->second];
+            {
+                if (out_index) *out_index = found->second;
+                return true;
+            }
+            return false;
+        }
+
+        T* Find(UInt64 key)
+        {
+            auto found = m_key_to_index_map.find(key);
+            if (found != m_key_to_index_map.cend())
+                return &m_palette[found->second];
+            return nullptr;
+        }
+
+        T& Allocate(UInt64 key, UInt32& out_index)
+        {
+            auto found = m_key_to_index_map.find(key);
+            if (found != m_key_to_index_map.cend())
+            {
+                ALPHA_LOG_WARN(L"すでに登録されているキーでAllocateしようとしました: %llu", key);
+                out_index = found->second;
+                return m_palette[out_index];
+            }
 
             UInt32 index = 0;
             if (!m_allocator.Allocate(&index))
             {
                 ALPHA_LOG_WARN(L"想定した量を超えています初期化時の数を増やすなどし対処してください");
-                // いちおう動くためにバッファの数を一旦増やす
-
+                // 動的拡張などのフォールバック処理...
             }
 
             m_key_to_index_map[key] = index;
+            out_index = index;
 
             return m_palette[index];
         }
 
         void Free(UInt64 key)
         {
-            // 登録されているか確認
             if (!m_key_to_index_map.contains(key))
             {
                 ALPHA_LOG_WARN(L"登録されていないキーを解放しようとしました: %llu", key);
@@ -64,14 +86,23 @@ namespace Alpha
             }
 
             UInt32 index = m_key_to_index_map[key];
-
             m_allocator.Free(index);
-
             m_palette[index] = T{};
-
             m_key_to_index_map.erase(key);
         }
 
+        T& operator[](UInt32 index)
+        {
+            return m_palette[index];
+        }
+
+        const T& operator[](UInt32 index) const
+        {
+            return m_palette[index];
+        }
+
+        T& GetAt(UInt32 index) { return (*this)[index]; }
+        const T& GetAt(UInt32 index) const { return (*this)[index]; }
     };
 
     /*
@@ -83,6 +114,7 @@ namespace Alpha
     private:
         TSlotPalette<Renderer::Mesh> m_mesh_palette{};
         TSlotPalette<Renderer::Material> m_material_palette{};
+        TSlotPalette<Renderer::MaterialTable> m_material_table_palette{};
         TSlotPalette<Renderer::TextureResource> m_texture_palette{};
 
 
@@ -107,7 +139,7 @@ namespace Alpha
         void Finalize();
 
         UInt32 RegisterMesh(TShared<ModelHandle> handle);
-        void RegisterMaterial(TShared<MaterialHandle> handle);
+        UInt32 RegisterMaterial(TShared<MaterialHandle> handle);
 
         UInt32 RegisterTexture(TShared<TextureHandle> handle);
 

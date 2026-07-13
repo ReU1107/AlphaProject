@@ -39,6 +39,8 @@ namespace Alpha
 		};
 		void Initialize(const Args& args);
 
+		void Destroy(UInt32 current_frame_index) final;
+
 		RHITexture* GetRHI() const;
 
 		void Upload(void* map_ptr, const void* data);

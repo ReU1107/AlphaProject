@@ -11,7 +11,7 @@ namespace Alpha
 namespace Alpha::Renderer
 {
 	/*
-	* ↓GPU側に贈る時のデータ構造
+	* GPU側に贈る時のデータ構造
 	*/
 
 	struct MaterialProperties
@@ -33,19 +33,6 @@ namespace Alpha::Renderer
 		bool operator==(const MaterialProperties&) const = default;
 	};
 
-	struct Meshlet
-	{
-		UInt32 vertex_offset{};
-		UInt32 triangle_offset{};
-		UInt32 vertex_count{};
-		UInt32 triangle_count{};
-
-
-		UInt32 material_index{};
-		UInt32 mesh_index{};		// 
-	};
-
-
 	struct MaterialData
 	{
 		MaterialProperties props{};
@@ -58,6 +45,18 @@ namespace Alpha::Renderer
 		UInt32 toon_tex_idx{ 0xFFFFFFFF };
 		UInt32 sphere_tex_idx{ 0xFFFFFFFF };
 		UInt32 flags{ 0 }; // マテリアルの種類（不透明・半透明など）を判別するフラグ用
+	};
+
+	struct Meshlet
+	{
+		UInt32 vertex_offset{};
+		UInt32 triangle_offset{};
+		UInt32 vertex_count{};
+		UInt32 triangle_count{};
+
+
+		UInt32 material_index{};
+		UInt32 mesh_index{};		// 
 	};
 
 	struct MeshData
@@ -77,14 +76,28 @@ namespace Alpha::Renderer
 		UInt32 material_table_index{};
 	};
 
-	struct MaterialTable
+	/*
+	* ResourceManagerで管理するやつ
+	* Allocationは基本Free用の為に持っている
+	*/
+
+	struct Material
 	{
-		UInt32 material_indices[16];
+		Allocation alloc{};
+		MaterialData data{};
 	};
 
-	/*
-	* ↓CPU側で持つべきデータ構造
-	*/
+	struct MaterialTable
+	{
+		Allocation alloc{};
+		UInt32 material_indices[16];
+		UInt32 material_num{ 0 };
+	};
+
+	struct TextureResource
+	{
+		TUnique<Texture> tex{ nullptr };
+	};
 
 	struct Mesh
 	{
@@ -100,20 +113,6 @@ namespace Alpha::Renderer
 		TArray<UInt32> triangle_indices{};
 
 		MeshData data{};
+		MaterialTable default_table{};
 	};
-
-	struct Material
-	{
-		Allocation alloc{};
-		MaterialData data{};
-		UInt32 material_offset{};	// 一時変数がつかえないからおいてる(ちょっとした最適化をするならMaterialPropertiesの無駄なpaddingをハックしたっていいw)
-	};
-
-	struct TextureResource
-	{
-		TUnique<Texture> tex{ nullptr };
-	};
-
-
-
 }

@@ -6,13 +6,7 @@
 namespace Alpha
 {
 	SamplerState::SamplerState() = default;
-	SamplerState::~SamplerState()
-	{
-		if(m_handle.IsActive())
-		{
-			m_handle.Free();
-		}
-	}
+	SamplerState::~SamplerState() = default;
 
 	bool SamplerState::Initialize(const Args& args)
 	{
@@ -29,6 +23,14 @@ namespace Alpha
 		m_rhi = args.rhi->CreateSamplerState(desc);
 
 		return true;
+	}
+
+	void SamplerState::Destroy(UInt32 current_frame_index)
+	{
+		if (m_handle.IsActive())
+		{
+			m_handle.Free(current_frame_index);
+		}
 	}
 
 	void SamplerState::Finalize()
