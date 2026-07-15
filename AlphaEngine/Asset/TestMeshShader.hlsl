@@ -8,42 +8,55 @@ struct VertexOut
 {
     float4 Position : SV_Position;
     float4 Color : COLOR;
+    float3 Normal : NORMAL;
     float2 TexCoord : TEXCOORD;
+    nointerpolation uint MaterialTableID : MATERIAL_TABLE_ID;
     nointerpolation uint MaterialID : MATERIAL_ID;
 
 };
 
-struct MeshoptMeshlet
+struct Meshlet
 {
-    uint VertexOffset;
-    uint TriangleOffset;
-    
-    uint VertexCount;
-    uint TriangleCount;
-    
-    uint MaterialId;
+    uint vertex_offset; //  4バイト - 頂点インデックスの開始オフセット
+    uint triangle_offset; //  4バイト - 三角形インデックスの開始オフセット
+    uint vertex_count; //  4バイト - このメッシュレット内の頂点数
+    uint triangle_count; //  4バイト - このメッシュレット内の三角形（プリミティブ）数
+
+    uint material_index; //  4バイト - 使用するマテリアルデータのローカルインデックス
 };
 
-// 【非バインドレス】定数バッファ
-struct MeshConstants
+struct MeshData
 {
-    float4x4 WorldViewProj;
-    uint VertexHeapIndex; // 元の頂点データのバッファ
-    uint VertexAttributeHeapIndex; // 元の頂点属性データのバッファ
-    uint MeshletMetaHeapIndex; // global_meshlets バッファ
-    uint MeshletVertHeapIndex; // global_meshlet_vertices バッファ
-    uint MeshletTriHeapIndex; // global_meshlet_triangles バッファ
-    uint MaterialHeapIndex; // \
+    uint vertex_position_offset; // 4バイト - 巨大バッファ内での位置（XYZ）のバイトオフセット
+    uint vertex_attribute_offset; // 4バイト - 巨大バッファ内での属性（UV/Normal等）のバイトオフセット
+
+    uint meshlet_offset;
     
-    // 別バッファに移す
-    uint GlobalVertexPositionOffset;
-    uint GlobalVertexAttributeOffset;
-    
-    uint VertexStride; // 
-    uint AttributeFlags; // 
-    
+    uint attribute_flags; // 4バイト - 頂点属性フラグ
+    uint vertex_stride; // 4バイト - 頂点属性（1頂点あたり）のバイトサイズ（ストライド）
 };
-ConstantBuffer<MeshConstants> cb : register(b0);
+
+struct InstanceData
+{
+    float4x4 world_matrix; // 64バイト - ワールド変換行列
+    uint material_table_index; //  4バイト - 使用するマテリアルテーブルのインデックス
+    uint mesh_index;
+};
+
+struct HeapIndices
+{
+    float4x4 view_proj;
+    uint position;
+    uint attribute;
+    uint vertex_indices;
+    uint triangle_indices;
+    uint meshlet;
+    uint mesh;
+    uint material;
+    uint material_table;
+    uint instance;
+};
+ConstantBuffer<HeapIndices> heap_indices : register(b0);
 
 #define MAX_VERTICES 64
 #define MAX_PRIMITIVES 126
@@ -77,92 +90,88 @@ float3 GetRandomColor(uint id)
     return float3((h & 0xFFu), ((h >> 8u) & 0xFFu), ((h >> 16u) & 0xFFu)) / 255.0f;
 }
 
-// ==========================================
-// メッシュシェーダー (MS)
-// ==========================================
 [NumThreads(128, 1, 1)]
 [OutputTopology("triangle")]
 void main(
     uint gtid : SV_GroupThreadID,
-    uint gid : SV_GroupID, //「自分は何番目のMeshletか」をインデックスとして使う
-    out vertices VertexOut balls[MAX_VERTICES],
+    uint3 gid : SV_GroupID, //「自分は何番目のMeshletか」をインデックスとして使う
+    out vertices VertexOut outputs[MAX_VERTICES],
     out indices uint3 triangles[MAX_PRIMITIVES]
 )
 {
-    StructuredBuffer<float3> vertexBuffer = ResourceDescriptorHeap[cb.VertexHeapIndex];
-    StructuredBuffer<MeshoptMeshlet> meshletMetaBuffer = ResourceDescriptorHeap[cb.MeshletMetaHeapIndex];
-    StructuredBuffer<uint> meshletVertBuffer = ResourceDescriptorHeap[cb.MeshletVertHeapIndex];
-    StructuredBuffer<uint> meshletTriBuffer= ResourceDescriptorHeap[cb.MeshletTriHeapIndex];
+    StructuredBuffer<InstanceData> instance_buffer = ResourceDescriptorHeap[heap_indices.instance];
 
-    MeshoptMeshlet m;
-    m.VertexOffset = meshletMetaBuffer[gid].VertexOffset;
-    m.TriangleOffset = meshletMetaBuffer[gid].TriangleOffset;
-    m.VertexCount = meshletMetaBuffer[gid].VertexCount;
-    m.TriangleCount = meshletMetaBuffer[gid].TriangleCount;
-    m.MaterialId = meshletMetaBuffer[gid].MaterialId;
-
-    // このMeshletの実際の頂点数・三角形数を確定させる
-    SetMeshOutputCounts(m.VertexCount, m.TriangleCount);
-
-    uint vertexIndexOffset = m.VertexOffset;
     
-    uint vertexCount = m.VertexCount;
+    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[heap_indices.position];
+    ByteAddressBuffer attribute_buffer = ResourceDescriptorHeap[heap_indices.attribute];
     
-    if (gtid < vertexCount)
+    StructuredBuffer<MeshData> mesh_buffer = ResourceDescriptorHeap[heap_indices.mesh];
+    
+    StructuredBuffer<Meshlet> meshlet_buffer = ResourceDescriptorHeap[heap_indices.meshlet];
+    
+    StructuredBuffer<uint> vertex_indices_buffer = ResourceDescriptorHeap[heap_indices.vertex_indices];
+    StructuredBuffer<uint> triangle_indices_buffer = ResourceDescriptorHeap[heap_indices.triangle_indices];
+   
+    uint instance_id = gid.y;
+    uint local_mesh_id = gid.x;
+    
+    InstanceData instance = instance_buffer[instance_id];
+    
+    MeshData mesh = mesh_buffer[instance.mesh_index];
+
+    Meshlet meshlet = meshlet_buffer[mesh.meshlet_offset + local_mesh_id];
+    
+    SetMeshOutputCounts(meshlet.vertex_count, meshlet.triangle_count);
+
+    uint vertex_index_offset = meshlet.vertex_offset;
+          
+    float4x4 mat = mul(heap_indices.view_proj, instance.world_matrix);
+    
+    if (gtid < meshlet.vertex_count)
     {
         // まず、この頂点が「元々のモデルで何番目の頂点だったか」をインデックスバッファから引く
-        uint vertexIndex = meshletVertBuffer[vertexIndexOffset + gtid];
-        
+        uint vertex_index = vertex_indices_buffer[vertex_index_offset + gtid];
+                
         // 位置は元々の頂点番号で引く
-        float3 rawPos = vertexBuffer[cb.GlobalVertexPositionOffset + vertexIndex];
-
-        // 頂点属性（ByteAddressBuffer）の正しいロード処理
-        ByteAddressBuffer vertexAttributeBuffer = ResourceDescriptorHeap[cb.VertexAttributeHeapIndex];
+        float3 position = position_buffer[mesh.vertex_position_offset + vertex_index];
 
         // 頂点属性が入っているであろう先頭アドレスからこの頂点index分オフセット
-        uint baseAddress = cb.GlobalVertexAttributeOffset + (vertexIndex * cb.VertexStride);
+        uint base_offset = mesh.vertex_attribute_offset + (vertex_index * mesh.vertex_stride);
 
-        // （※以下、マクロやオフセット計算は先ほどのままで完全に動作します）
-#define VERTEX_ATTR_NORMALS      1u
-#define VERTEX_ATTR_BONE_WEIGHTS 8u
-#define VERTEX_ATTR_TEXCOORDS0   256u
-
-        uint normalOffset = 0;
-        uint boneOffset = normalOffset + ((cb.AttributeFlags & VERTEX_ATTR_NORMALS) ? 12 : 0);
-        uint uvOffset = boneOffset + ((cb.AttributeFlags & VERTEX_ATTR_BONE_WEIGHTS) ? 32 : 0);
+        uint normal_offset = 0;
+        uint bone_offset = normal_offset + ((mesh.attribute_flags & VERTEX_ATTR_NORMALS) ? 12 : 0);
+        uint uv_offset = bone_offset + ((mesh.attribute_flags & VERTEX_ATTR_BONE_WEIGHTS) ? 32 : 0);
 
         float3 normal = float3(0.0f, 1.0f, 0.0f);
         float2 uv = float2(0.0f, 0.0f);
 
-        // 法線のロード（個別asfloat）
-        if (cb.AttributeFlags & VERTEX_ATTR_NORMALS)
+        if (mesh.attribute_flags & VERTEX_ATTR_NORMALS)
         {
-            uint addr = baseAddress + normalOffset;
-            normal = asfloat(vertexAttributeBuffer.Load3(addr));
+            uint addr = base_offset + normal_offset;
+            normal = asfloat(attribute_buffer.Load3(addr));
 
         }
-
-        // UVのロード（個別asfloat）
-        if (cb.AttributeFlags & VERTEX_ATTR_TEXCOORDS0)
+        if (mesh.attribute_flags & VERTEX_ATTR_TEXCOORDS0)
         {
-            uint addr = baseAddress + uvOffset;
-            uv = asfloat(vertexAttributeBuffer.Load2(addr));
+            uint addr = base_offset + uv_offset;
+            uv = asfloat(attribute_buffer.Load2(addr));
 
         }
-
-        // 座標変換して出力
-        balls[gtid].Position = mul(cb.WorldViewProj, float4(rawPos, 1.0f));
         
-        balls[gtid].Color = float4(uv, 0.0f, 1.0f);
-        balls[gtid].TexCoord = uv;
-        balls[gtid].MaterialID = m.MaterialId;
+        // 座標変換して出力
+        outputs[gtid].Position = mul(mat, float4(position, 1.0f));
+        
+        outputs[gtid].Color = float4(uv, 0.0f, 1.0f);
+        outputs[gtid].TexCoord = uv;
+        outputs[gtid].Normal = normal;
+        outputs[gtid].MaterialTableID = instance.material_table_index;
+        outputs[gtid].MaterialID = meshlet.material_index;
     }
 
-    // meshoptimizer の triangles は1頂点1バイト（unsigned char）のフラット配列です
-    if (gtid < m.TriangleCount)
+    if (gtid < meshlet.triangle_count)
     {
         // パックされたUInt32データを1つ取得
-        uint packedTriangle = meshletTriBuffer[m.TriangleOffset + gtid];
+        uint packedTriangle = triangle_indices_buffer[meshlet.triangle_offset + gtid];
         
         // ビットシフトとマスク演算で、1つのUInt32から3つのローカル頂点IDを切り出す
         uint idx0 = (packedTriangle >> 0) & 0xFFu;

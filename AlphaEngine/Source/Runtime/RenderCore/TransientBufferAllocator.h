@@ -43,8 +43,9 @@ namespace Alpha
 		UInt64 WriteData(const T* data)
 		{
 			UInt64 offset = 0;
-			T* dest = reinterpret_cast<T*>(Allocate(sizeof(T), &offset));
-			std::memcpy(dest, data, sizeof(T));
+			UInt64 size = sizeof(T);
+			T* dest = reinterpret_cast<T*>(Allocate(size, &offset));
+			std::memcpy(dest, data, size);
 			return offset;
 		}
 
@@ -52,8 +53,9 @@ namespace Alpha
 		UInt64 WriteData(const T* data, UInt32 num)
 		{
 			UInt64 offset = 0;
-			T* dest = reinterpret_cast<T*>(Allocate(sizeof(T) * num, &offset));
-			std::memcpy(dest, data, sizeof(T));
+			UInt64 size = sizeof(T) * num;
+			T* dest = reinterpret_cast<T*>(Allocate(size, &offset));
+			std::memcpy(dest, data, size);
 			return offset;
 		}
 

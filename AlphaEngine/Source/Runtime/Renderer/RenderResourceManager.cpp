@@ -64,6 +64,7 @@ namespace Alpha
 
         Mesh& mesh = m_mesh_palette.Allocate(handle_id, palette_index);
 
+        // 座標データ
         {
 			UInt32 num = handle->GetPositions().size();
 			Allocation alloc{};
@@ -78,6 +79,7 @@ namespace Alpha
             mesh.vertex_position_alloc = alloc;
 		}
 
+        // 頂点属性データ
 		{
 			UInt32 size = handle->GetPackData().size();
 			Allocation alloc{};
@@ -91,20 +93,7 @@ namespace Alpha
             mesh.vertex_attribute_alloc = alloc;
 		}
 
-        {
-            mesh.data.vertex_position_offset = mesh.vertex_position_alloc.offset / sizeof(Vector3);
-            mesh.data.vertex_attribute_offset = mesh.vertex_attribute_alloc.offset;  // ByteAddressBufferだからそのまま
-            mesh.data.vertex_stride = handle->GetVertexAttributeStride();
-            mesh.data.attribute_flags = handle->GetVertexAttributeFlags().GetValue();
-
-            Allocation alloc{};
-            m_mesh_allocator->AllocateByNum(1, &alloc);
-
-            RenderCore::Get().UploadBuffer(m_mesh_allocator->GetBuffer(), alloc.offset, &mesh.data, sizeof(MeshData));
-
-            mesh.data_alloc = alloc;
-        }
-
+        // メッシュレットの生成(Handle側に移すかも)
         const size_t max_vertices = 64;
         const size_t max_primitives = 126;
 
@@ -152,7 +141,6 @@ namespace Alpha
                 meshlet.triangle_offset = submesh_tri_idx_offset + (opt_meshlet.triangle_offset / 3);
                 meshlet.triangle_count = opt_meshlet.triangle_count;
                 meshlet.material_index = submesh.material_index;
-                meshlet.mesh_index = mesh.data_alloc.offset / sizeof(MeshData);
 
                 mesh.meshlets.push_back(meshlet);
                 valid_vertex_num += meshlet.vertex_count;
@@ -180,6 +168,7 @@ namespace Alpha
             mesh.triangle_indices.insert(mesh.triangle_indices.end(), local_packed_triangles.begin(), local_packed_triangles.end());
         }
 
+        // メッシュレットの頂点index
         {
             /*
             * m_vertex_indicesの中身に対してglobal_vertex_offsetを加算した値が全体の頂点バッファのオフセットになる
@@ -196,7 +185,7 @@ namespace Alpha
             mesh.vertex_inidices_alloc = alloc;
 
         }
-
+        // メッシュレットの三角形index
         {
             UInt32 num = mesh.triangle_indices.size();
             Allocation alloc = {};
@@ -209,6 +198,7 @@ namespace Alpha
             mesh.triangle_indices_alloc = alloc;
         }
 
+        // メッシュレット
         {
             UInt64 vertex_offset = mesh.vertex_inidices_alloc.offset / sizeof(UInt32);
             UInt64 triangle_offset = mesh.triangle_indices_alloc.offset / sizeof(UInt32);
@@ -224,6 +214,22 @@ namespace Alpha
             RenderCore::Get().UploadBuffer(m_meshlet_allocator->GetBuffer(), alloc.offset, mesh.meshlets.data(), sizeof(Meshlet) * num);
 
             mesh.meshlet_alloc = alloc;
+        }
+
+        // メッシュデータ
+        {
+            mesh.data.vertex_position_offset = mesh.vertex_position_alloc.offset / sizeof(Vector3);
+            mesh.data.vertex_attribute_offset = mesh.vertex_attribute_alloc.offset;  // ByteAddressBufferだからそのまま
+            mesh.data.vertex_stride = handle->GetVertexAttributeStride();
+            mesh.data.attribute_flags = handle->GetVertexAttributeFlags().GetValue();
+            mesh.data.meshlet_offset = mesh.meshlet_alloc.offset / sizeof(Meshlet);
+
+            Allocation alloc{};
+            m_mesh_allocator->AllocateByNum(1, &alloc);
+
+            RenderCore::Get().UploadBuffer(m_mesh_allocator->GetBuffer(), alloc.offset, &mesh.data, sizeof(MeshData));
+
+            mesh.data_alloc = alloc;
         }
 
         // マテリアルの登録とこのモデルのデフォルトのマテリアルテーブルの作成
@@ -305,6 +311,7 @@ namespace Alpha
         RenderCore::Get().UploadBuffer(m_material_allocator->GetBuffer(), alloc.offset, &material.data, sizeof(MaterialData));
 
         material.alloc = alloc;
+        return palette_index;
     }
 
     UInt32 RenderResourceManager::RegisterTexture(TShared<TextureHandle> handle)
@@ -333,6 +340,65 @@ namespace Alpha
         texture.tex = std::move(tex);
 
         return palette_index;
+    }
+
+    const Mesh& RenderResourceManager::GetMesh(UInt64 id)
+    {
+        return m_mesh_palette.GetAt(id);
+    }
+
+    RenderResourceManager::HeapIndices RenderResourceManager::GetBufferHeapIndices() const
+    {
+        return HeapIndices{
+            .position = m_vertex_position_allocator->GetBuffer()->GetSRVHandle().index,
+            .attribute = m_vertex_attribute_allocator->GetBuffer()->GetSRVHandle().index,
+            .vertex_indices = m_vertex_indices_allocator->GetBuffer()->GetSRVHandle().index,
+            .triangle_indices = m_triangle_indices_allocator->GetBuffer()->GetSRVHandle().index,
+            .meshlet = m_meshlet_allocator->GetBuffer()->GetSRVHandle().index,
+            .mesh = m_mesh_allocator->GetBuffer()->GetSRVHandle().index,
+            .material = m_material_allocator->GetBuffer()->GetSRVHandle().index,
+            .material_table = m_material_table_allocator->GetBuffer()->GetSRVHandle().index
+        };
+    }
+
+    UInt32 RenderResourceManager::GetPositionBufferIndex() const
+    {
+        return m_vertex_position_allocator->GetBuffer()->GetSRVHandle().index;
+    }
+
+    UInt32 RenderResourceManager::GetAttributeBufferIndex() const
+    {
+        return m_vertex_attribute_allocator->GetBuffer()->GetSRVHandle().index;
+    }
+
+    UInt32 RenderResourceManager::GetVertexIndicesBufferIndex() const
+    {
+        return m_vertex_indices_allocator->GetBuffer()->GetSRVHandle().index;
+    }
+
+    UInt32 RenderResourceManager::GetTriangleIndicesBufferIndex() const
+    {
+        return m_triangle_indices_allocator->GetBuffer()->GetSRVHandle().index;
+    }
+
+    UInt32 RenderResourceManager::GetMeshletBufferIndex() const
+    {
+        return m_meshlet_allocator->GetBuffer()->GetSRVHandle().index;
+    }
+
+    UInt32 RenderResourceManager::GetMeshBufferIndex() const
+    {
+        return m_mesh_allocator->GetBuffer()->GetSRVHandle().index;
+    }
+
+    UInt32 RenderResourceManager::GetMaterialBufferIndex() const
+    {
+        return m_material_allocator->GetBuffer()->GetSRVHandle().index;
+    }
+
+    UInt32 RenderResourceManager::GetMaterialTableBufferIndex() const
+    {
+        return m_material_table_allocator->GetBuffer()->GetSRVHandle().index;
     }
 
 }

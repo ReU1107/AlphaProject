@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "Types.h"
 #include "Allocator.h"
+#include "Math/MathUtil.h"
+
 #include <list>
 
 namespace Alpha
@@ -31,7 +33,7 @@ namespace Alpha
         {
             for (auto it = m_free_blocks.begin(); it != m_free_blocks.end(); ++it)
             {
-                UInt64 aligned_offset = (it->offset + (alignment - 1)) & ~(alignment - 1);
+                UInt64 aligned_offset = Alignment(it->offset, alignment);
                 UInt64 padding = aligned_offset - it->offset;
 
                 if (it->size >= size + padding)

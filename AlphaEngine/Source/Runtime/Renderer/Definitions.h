@@ -54,15 +54,15 @@ namespace Alpha::Renderer
 		UInt32 vertex_count{};
 		UInt32 triangle_count{};
 
-
 		UInt32 material_index{};
-		UInt32 mesh_index{};		// 
 	};
 
 	struct MeshData
 	{
 		UInt32 vertex_position_offset{};
 		UInt32 vertex_attribute_offset{};
+
+		UInt32 meshlet_offset{};
 
 		UInt32 attribute_flags{};	// このモデルが持つ頂点属性のフラグ
 		UInt32 vertex_stride{};	// 頂点属性のバイト数
@@ -74,6 +74,7 @@ namespace Alpha::Renderer
 		// 属性フラグ
 		// 行列パレットの場所を指すindex
 		UInt32 material_table_index{};
+		UInt32 mesh_index{};
 	};
 
 	/*

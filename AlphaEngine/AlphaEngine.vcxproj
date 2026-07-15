@@ -154,6 +154,7 @@
     <ClCompile Include="Source\Core\Math\MathF.cpp" />
     <ClCompile Include="Source\Core\Math\MathUtil.cpp" />
     <ClCompile Include="Source\Core\Math\Quaternion.cpp" />
+    <ClCompile Include="Source\Core\Math\Random.cpp" />
     <ClCompile Include="Source\Core\Object.cpp" />
     <ClCompile Include="Source\Core\String\StringUtil.cpp" />
     <ClCompile Include="Source\Core\Time\TimeManager.cpp" />
@@ -214,6 +215,7 @@
     <ClCompile Include="Source\Runtime\Renderer\GUIVisitor.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\TransientBufferAllocator.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\RenderResourceManager.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\RenderSystem.cpp" />
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2Device.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\Buffer.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\CommandList.cpp" />
@@ -273,9 +275,11 @@
     <ClInclude Include="Source\Core\Assertion.h" />
     <ClInclude Include="Source\Core\Common.h" />
     <ClInclude Include="Source\Core\Component.h" />
+    <ClInclude Include="Source\Core\Component\TransformComponent.h" />
     <ClInclude Include="Source\Core\Container\Array.h" />
     <ClInclude Include="Source\Core\Container\Hierarchy.h" />
     <ClInclude Include="Source\Core\Container\Map.h" />
+    <ClInclude Include="Source\Core\Container\SlotPalette.h" />
     <ClInclude Include="Source\Core\EnumClassUtil.h" />
     <ClInclude Include="Source\Core\IO\BinaryReader.h" />
     <ClInclude Include="Source\Core\IO\BinaryWriter.h" />
@@ -288,6 +292,7 @@
     <ClInclude Include="Source\Core\Math\MathUtil.h" />
     <ClInclude Include="Source\Core\Math\Matrix.h" />
     <ClInclude Include="Source\Core\Math\Quaternion.h" />
+    <ClInclude Include="Source\Core\Math\Random.h" />
     <ClInclude Include="Source\Core\Math\Rect.h" />
     <ClInclude Include="Source\Core\Math\Sphere.h" />
     <ClInclude Include="Source\Core\Math\Transform.h" />
@@ -383,10 +388,11 @@
     <ClInclude Include="Source\Runtime\Renderer\Definitions.h" />
     <ClInclude Include="Source\Runtime\Renderer\GUISystem.h" />
     <ClInclude Include="Source\Runtime\Renderer\GUIVisitor.h" />
-    <ClInclude Include="Source\Runtime\Renderer\MeshComponent.h" />
+    <ClInclude Include="Source\Core\Component\MeshComponent.h" />
     <ClInclude Include="Source\Runtime\Renderer\RenderContext.h" />
     <ClInclude Include="Source\Runtime\RenderCore\TransientBufferAllocator.h" />
     <ClInclude Include="Source\Runtime\Renderer\RenderResourceManager.h" />
+    <ClInclude Include="Source\Runtime\Renderer\RenderSystem.h" />
     <ClInclude Include="Source\Runtime\Renderer\Types.h" />
     <ClInclude Include="Source\Runtime\Scene\Scene.h" />
     <ClInclude Include="Source\Runtime\Scene\SceneObject.h" />
@@ -448,6 +454,7 @@
     <ClInclude Include="ThirdParty\std\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Asset\Resource.hlsli" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

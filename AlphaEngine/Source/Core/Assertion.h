@@ -7,7 +7,13 @@ namespace Alpha
 }
 
 // 報告
-#define ALPHA_LOG_INFO(msg)    Alpha::Logger::Dispatch(Alpha::ELogLevel::Info,    __FILE__, __LINE__, msg)
+#define ALPHA_LOG_INFO(fmt, ...) \
+    ([&](const char* file, int line) \
+        { \
+            Alpha::Logger::Dispatch(Alpha::ELogLevel::Info, file, line, Alpha::Format(fmt, ##__VA_ARGS__)); \
+        } \
+    )(__FILE__, __LINE__)
+
 #define ALPHA_LOG_WARN(msg)    Alpha::Logger::Dispatch(Alpha::ELogLevel::Warning, __FILE__, __LINE__, msg)
 
 #define ALPHA_LOG_ERROR(fmt, ...) \
