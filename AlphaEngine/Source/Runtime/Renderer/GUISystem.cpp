@@ -318,8 +318,8 @@ namespace Alpha
 		if (!draw_data) 
 			return;
 
-		m_vertex_buffer->Reset();
-		m_index_buffer->Reset();
+		m_vertex_buffer->Reset(ctx.current_frame_index);
+		m_index_buffer->Reset(ctx.current_frame_index);
 
 		ctx.command_list->SetGraphicsPipeline(m_pipeline.get());
 		ctx.command_list->SetDescriptorHeap(RenderCore::Get().GetResourceHeap(), RenderCore::Get().GetSamplerHeap());

@@ -20,6 +20,7 @@ namespace Alpha
 			return false;
 
 		m_max_count = args.max_count;
+		m_deferred_free_indices.resize(3);
 
 		return true;
 	}
@@ -84,11 +85,27 @@ namespace Alpha
 		return handle;
 	}
 
-	void DescriptorHeap::Free(DescriptorHandle& handle)
+	void DescriptorHeap::Free(DescriptorHandle& handle, UInt32 current_buffer_index)
 	{
-		m_free_indices.push_back(handle.index);
+		if (handle.heap == nullptr) return;
+
+		m_deferred_free_indices[current_buffer_index].push_back(handle.index);
+
 		handle.heap = nullptr;
 		handle.index = 0;
 		handle.view_type = ERHIResourceViewType::Unknown;
+
 	}
+
+	void DescriptorHeap::Reclaim(UInt32 ready_buffer_index)
+	{
+		auto& list = m_deferred_free_indices[ready_buffer_index];
+
+		if (!list.empty())
+		{
+			m_free_indices.insert(m_free_indices.end(), list.begin(), list.end());
+			list.clear();
+		}
+	}
+
 }

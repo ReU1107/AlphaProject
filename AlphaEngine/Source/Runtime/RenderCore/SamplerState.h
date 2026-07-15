@@ -31,6 +31,8 @@ namespace Alpha
 		};
 		bool Initialize(const Args& args);
 
+		void Destroy(UInt32 current_frame_index);
+
 		void Finalize();
 
 		DescriptorHandle GetSamplerHandle() const { return m_handle; }

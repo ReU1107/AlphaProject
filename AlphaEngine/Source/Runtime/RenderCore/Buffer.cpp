@@ -9,14 +9,7 @@ namespace Alpha
 	Buffer::Buffer() = default;
 	Buffer::~Buffer()
 	{
-		if (m_srv_handle.IsActive())
-		{
-			m_srv_handle.Free();
-		}
-		if (m_uav_handle.IsActive())
-		{
-			m_uav_handle.Free();
-		}
+
 	}
 
 	void Buffer::Initialize(const Args& args)
@@ -38,6 +31,18 @@ namespace Alpha
 			m_uav_handle = args.resource_heap->Allocate(this, ERHIResourceViewType::UnorderedAccessView);
 		}
 
+	}
+
+	void Buffer::Destroy(UInt32 current_frame_index)
+	{
+		if (m_srv_handle.IsActive())
+		{
+			m_srv_handle.Free(current_frame_index);
+		}
+		if (m_uav_handle.IsActive())
+		{
+			m_uav_handle.Free(current_frame_index);
+		}
 	}
 
 	RHIBuffer* Buffer::GetRHI() const

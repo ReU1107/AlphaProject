@@ -145,9 +145,21 @@ namespace Alpha
 
 		TVector() = default;
 
+		template <typename OtherType, UInt32 OtherN>
+		TVector& operator=(const TVector<OtherType, OtherN>& rhs) noexcept
+		{
+			constexpr UInt32 minSize = (N < OtherN) ? N : OtherN;
+
+			for (UInt32 i = 0; i < minSize; ++i)
+			{
+				value[i] = static_cast<Type>(rhs.At(i));
+			}
+
+			return *this;
+		}
+
 		template<typename... Args>
 		TVector(Args&&... args) noexcept
-			: value{}
 		{
 			UInt32 index = 0;
 			// 畳み込み演算とやらでやってみる

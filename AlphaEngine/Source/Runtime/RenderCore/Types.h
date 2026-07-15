@@ -9,13 +9,14 @@ namespace Alpha
 
 		Constant,				// 定数バッファ (256Bアライメント強制, CBV用)
 		Upload,					// 毎フレーム更新するバッファ
+		UploadStructured,		// 毎フレーム更新する構造化バッファSRV
 
 		// GPU専用 高速バッファ (Default Heap)
 
-		ROByteAddress,			// 初期化後に固定のRawバッファ (SRV用)
-		ROStructured,			// 初期化後に固定の構造化バッファ (SRV用)
-		RWByteAddress,          // 読み書き可能なRawバッファ (UAV用)
-		RWStructured,           // 読み書き可能な構造化バッファ (UAV用)
+		ROByteAddress,			// Rawバッファ (SRV用)
+		ROStructured,			// 構造化バッファ (SRV用)
+		RWByteAddress,          // GPU側で読み書き可能なRawバッファ (UAV用)
+		RWStructured,           // GPU側で読み書き可能な構造化バッファ (UAV用)
 
 		// GPU書き込み → CPU読み込み (Readback Heap)
 

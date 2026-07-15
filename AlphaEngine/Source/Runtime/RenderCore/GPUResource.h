@@ -19,6 +19,8 @@ namespace Alpha
 
 		ERHIResourceBindFlags GetFlags() const;
 
+		virtual void Destroy(UInt32 current_frame_index) = 0;
+
 		void SetName(StringView name);
 
 	};

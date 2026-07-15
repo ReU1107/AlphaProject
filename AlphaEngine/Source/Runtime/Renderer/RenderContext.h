@@ -12,6 +12,7 @@ namespace Alpha
 	{
 		CommandList* command_list{ nullptr };
 		TransientBufferAllocator* transient_buffer{ nullptr };
+		UInt32 current_frame_index{ 0 };
 
 		UInt64 current_camera_offset{ 0 };
 

@@ -370,9 +370,10 @@ namespace Alpha
 		{
 			for (UInt32 j = 0; j < J; j++)
 			{
+				Type leftValue = lhs.At(i).At(j);
 				for (UInt32 k = 0; k < K; k++)
 				{
-					result[i][k] += lhs.At(i).At(j) * rhs.At(j).At(k);
+					result[i][k] += leftValue * rhs.At(j).At(k);
 				}
 			}
 		}

@@ -32,20 +32,31 @@
 
 #include "ThirdParty/imgui/imgui.h"
 
+#include "Source/Core/Math/MathF.h"
+
 #include "RHI/Definitions.h"
 
 #pragma comment(lib, "dxguid.lib")
-
 
 using Microsoft::WRL::ComPtr;
 using namespace Alpha;
 using namespace Alpha::Renderer;
 
+
+using Entity = UInt32;
+
+struct TransformComponent
+{
+    Matrix4x4 matrix{ Matrix4x4::Identity };
+};
+
+
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
+//int main()
 {
     WindowSystem::Args win_args =
     {
-        .title = L"Graphics Engine",
+        .title = L"AlphaEngine",
         .width = 1920,
         .height = 1080,
         .fullscreen = false
@@ -59,8 +70,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     };
     AssetManager::Startup(asset_args);
-    auto model = AssetManager::Get().Load<ModelHandle>(L"C:/Users/owner/Desktop/Asset/紲星☆あかり20180430/お宮式紲星☆あかりv1.00.pmx");
-
+    auto model1 = AssetManager::Get().Load<ModelHandle>(L"C:/Users/owner/Desktop/Asset/紲星☆あかり20180430/お宮式紲星☆あかりv1.00.pmx");
+    auto model2 = AssetManager::Get().Load<ModelHandle>(L"C:/Users/owner/Desktop/Asset/パチュリーVer2.00/Model/パチュリーVer2.00_Type-C(フル_ポニテC_ミニスカ_ブーツC_パンプス)_サーモン.pmx");
+    
+    
     RenderCore::Args render_core_args = {};
     render_core_args.hWnd = (HWND)WindowSystem::Get().GetNativeHandle();
     render_core_args.transient_buffer_size = 1_MB;
@@ -72,11 +85,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     GUISystem::Startup(gui_args);
 
     RenderResourceManager::Args resource_args = {
-
+        .render_core = RenderCore::GetPtr(),
     };
     RenderResourceManager::Startup(resource_args);
 
-    RenderResourceManager::Get().RegisterMesh(model);
+    UInt32 akari_index = RenderResourceManager::Get().RegisterMesh(model1);
+    UInt32 patchouli_index = RenderResourceManager::Get().RegisterMesh(model2);
 
 
     RenderCore::Get().PostInitialize();
@@ -111,20 +125,25 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         }
     );
 
-    struct MeshConstants
+    // インスタンスデータ用
+    auto m_instance_allocator = std::make_unique<TransientBufferAllocator>();
     {
-        float4x4 WorldViewProj;
-        UInt32 VertexHeapIndex; // 元の頂点データのバッファ
-		UInt32 VertexAttributeHeapIndex; // 元の頂点属性データのバッファ
-        UInt32 MeshletMetaHeapIndex; // global_meshlets バッファ
-        UInt32 MeshletVertHeapIndex; // global_meshlet_vertices バッファ
-        UInt32 MeshletTriHeapIndex; // global_meshlet_triangles バッファ
-        UInt32 MaterialHeapIndex;
-        UInt32 GlobalVertexPositionOffset;
-        UInt32 GlobalVertexAttributeOffset;
+        TransientBufferAllocator::Args desc = {
+            .render_core = RenderCore::GetPtr(),
+            .stride = sizeof(Renderer::InstanceData),
+            .size = 4_MB,
+            .type = EBufferPresetType::UploadStructured,
+        };
+        m_instance_allocator->Initialize(desc);
+    }
+    TArray<Renderer::InstanceData> instances{};
+    instances.reserve(1000);
 
-        UInt32 VertexStride; // 
-        UInt32 AttributeFlags; // 
+    struct Constants
+    {
+        float4x4 ViewProj;
+        RenderResourceManager::HeapIndices indices{};
+        UInt32 instance_heap{};
     };
 
     static float3 camera_pos = Vector3(0.0f, 10.0f, -25.0f);
@@ -139,6 +158,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         list->SetGraphicsPipeline(pipeline.get());
         auto nativeCmdList = static_cast<D3D12CommandBuffer*>(list->GetRHI())->GetNative();
 
+        RenderContext ctx = {};
+        ctx.command_list = RenderCore::Get().GetCommandList();
+        ctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
+        ctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
+
+
 
         if (GetKeyState('W') & 0x8000) { camera_pos.Z() += 0.2f; }
         if (GetKeyState('S') & 0x8000) { camera_pos.Z() -= 0.2f; }
@@ -148,65 +173,54 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         Camera camera = {};
         camera.SetPosition(camera_pos);
 
-  //      MeshConstants constants = {};
-  //      constants.WorldViewProj = camera.GetViewProjectionMatrix();
-  //      constants.VertexHeapIndex = vertex_buffer->GetBuffer()->GetSRVHandle().index;
-  //      constants.VertexAttributeHeapIndex = vertex_attribute_buffer->GetBuffer()->GetSRVHandle().index;
-  //      constants.MeshletMetaHeapIndex = meshlet_buffer->GetBuffer()->GetSRVHandle().index;
-  //      constants.MeshletVertHeapIndex = vertex_indices_buffer->GetBuffer()->GetSRVHandle().index;
-  //      constants.MeshletTriHeapIndex = triangle_indices_buffer->GetBuffer()->GetSRVHandle().index;
-  //      constants.MaterialHeapIndex = material_buffer->GetBuffer()->GetSRVHandle().index;
+        m_instance_allocator->Reset(ctx.current_frame_index);
 
-		//constants.GlobalVertexPositionOffset = static_cast<UInt32>(global_vertex_offset);
-		//constants.GlobalVertexAttributeOffset = static_cast<UInt32>(global_vertex_attribute_offset);
 
-  //      constants.VertexStride = model->GetVertexAttributeStride();
-  //      constants.AttributeFlags = model->GetVertexAttributeFlags().GetValue();
+        Constants constants = {};
+        constants.ViewProj = camera.GetViewProjectionMatrix();
+        constants.indices = RenderResourceManager::Get().GetBufferHeapIndices();
+        constants.instance_heap = m_instance_allocator->GetBuffer()->GetSRVHandle().index;
 
-  //      {
-  //          auto offset = RenderCore::Get().GetTransientAllocator()->WriteData<MeshConstants>(&constants);
+        {
+            auto offset = RenderCore::Get().GetTransientAllocator()->WriteData<Constants>(&constants);
 
-  //          list->SetGraphicsCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 0);
-  //      }
+            list->SetGraphicsCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 0);
+            list->SetGraphicsCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 2);
+        }
+        list->SetGraphicsSamplerState(RenderCore::Get().GetPresetSampler(ESamplerPresetType::LinearClamp), 1);
+	
+        const auto& mesh1 = RenderResourceManager::Get().GetMesh(akari_index);
+        const float interval = 20.0f;
 
-		//list->SetGraphicsSamplerState(RenderCore::Get().GetPresetSampler(ESamplerPresetType::LinearClamp), 1);
-  //      struct TestConstants
-  //      {
-  //          UInt32 MaterialHeapIndex; //
-  //          uint3 padding;
-  //      };
+        instances.clear();
 
-  //      {
-  //          TestConstants tc = {};
-  //          tc.MaterialHeapIndex = material_buffer->GetBuffer()->GetSRVHandle().index;
-  //          auto offset = RenderCore::Get().GetTransientAllocator()->WriteData<TestConstants>(&tc);
+        for (int i = -5; i < 5; ++i)
+        {
+            for (int j = -5; j < 5; ++j)
+            {
+                float posX = interval * j;
+                float posZ = 0.0f;
+                float posY = interval * i;
 
-  //          list->SetGraphicsCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 2);
-  //      }
+                Matrix4x4 pos = Matrix4x4::Identity;
+                pos._4() = float3(posX, posY, posZ);
+   
+                Renderer::InstanceData instance = {};
+                instance.world_matrix = pos;
+                instance.mesh_index = akari_index;
+                instance.material_table_index = mesh1.default_table.alloc.offset;
 
-  //      auto count = m_meshlets.size();
+                instances.push_back(instance);
+            }
+        }
 
-  //      nativeCmdList->DispatchMesh(count, 1, 1);
+        m_instance_allocator->WriteData(instances.data(), instances.size());
 
-        RenderContext ctx = {};
-        ctx.command_list = RenderCore::Get().GetCommandList();
-        ctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
+        nativeCmdList->DispatchMesh(mesh1.meshlets.size(), instances.size(), 1);
 
 		GUISystem::Get().BeginFrame();
 
-        ImGui::Begin("Texture Viewer");
-
-        // 1枚あたりの表示サイズ（見やすい大きさに調整してください）
-        ImVec2 texture_size(320.0f, 240.0f);
-
-        // ImGuiのスタイルから、画像同士の横の隙間（間隔）を取得
-        float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-        float spacing = ImGui::GetStyle().ItemSpacing.x;
-
-        ImGui::End();
-
         GUISystem::Get().EndFrame();
-
 
         GUISystem::Get().Flush(ctx);
 

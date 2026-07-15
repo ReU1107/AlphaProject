@@ -14,6 +14,7 @@ namespace Alpha
 	private:
 		TUnique<RHIDescriptorHeap> m_rhi{ nullptr };
 		TArray<UInt64> m_free_indices{};
+		TArray<TArray<UInt64>> m_deferred_free_indices{};
 
 		UInt64 m_max_count{ 0 };          // 最大数
 		UInt64 m_allocated_count{ 0 };    // 使用済み数
@@ -26,8 +27,6 @@ namespace Alpha
 			RenderHardwareInterface* rhi{ nullptr };
 			ERHIDescriptorType type{ ERHIDescriptorType::SRV_UAV_CBV };
 			UInt64 max_count{ 0 };
-
-			// 追加の初期化パラメーターをここに記述できます
 		};
 		bool Initialize(const Args& args);
 		RHIDescriptorHeap* GetRHI();
@@ -37,7 +36,9 @@ namespace Alpha
 		// Sampler用
 		DescriptorHandle Allocate(ERHIResourceViewType type);
 
-		void Free(DescriptorHandle& handle);
 
+		void Free(DescriptorHandle& handle, UInt32 current_buffer_index);
+
+		void Reclaim(UInt32 ready_buffer_index);
 	};
 }

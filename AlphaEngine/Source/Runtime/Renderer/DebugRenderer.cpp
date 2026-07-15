@@ -100,7 +100,7 @@ namespace Alpha
 		if (m_lines.empty())
 			return;
 
-		m_line_buffer->Reset();
+		m_line_buffer->Reset(ctx.current_frame_index);
 
 		uint64_t vertex_num = m_lines.size() * 2;
 		uint64_t vertex_size = sizeof(LineVertex) * vertex_num;

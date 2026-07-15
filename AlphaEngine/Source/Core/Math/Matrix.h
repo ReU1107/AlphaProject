@@ -45,7 +45,6 @@ namespace Alpha
 
 		template<typename... Args>
 		TMatrix(Args... args)
-			: value{}
 		{
 			UInt32 index = 0;
 			// 畳み込み演算とやらでやってみる

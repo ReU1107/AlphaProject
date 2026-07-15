@@ -104,6 +104,7 @@ namespace Alpha
 		{
 			TransientBufferAllocator::Args desc = {
 				.render_core = this,
+				.block_num = args.back_buffer_count,
 				.stride = 4,
 				.size = args.transient_buffer_size,
 				.alignment = 256,
@@ -118,32 +119,41 @@ namespace Alpha
 
 	void RenderCore::Finalize()
 	{
-		m_preset_samplers.clear();
+		if (m_timeline)
+		{
+			m_timeline->WaitCPU();
+		}
 
 		m_transient_allocator.reset();
+		m_preset_samplers.clear();
+
+		m_sampler_heap.reset();
+		m_resource_heap.reset();
+
 		m_gpu_data_transfer.reset();
+
+		m_depth_texture.reset();
 
 		for (auto& buffer : m_back_buffer)
 		{
 			buffer.reset();
 		}
-
 		m_back_buffer.clear();
-		m_depth_texture.reset();
 
-		m_sampler_heap.reset();
 		m_dsv_heap.reset();
 		m_rtv_heap.reset();
-		m_resource_heap.reset();
+		m_timeline.reset();
 
 		m_swap_chain.reset();
-		m_timeline.reset();
-		m_command_list.reset();
 
+		m_command_list.reset();
 		m_command_queue.reset();
 
-		m_rhi->Finalize();
-		m_rhi.reset();
+		if (m_rhi)
+		{
+			m_rhi->Finalize();
+			m_rhi.reset();
+		}
 	}
 
 	TUnique<CommandQueue> RenderCore::CreateCommandQueue(StringView name, ERHICommandType type)
@@ -206,40 +216,45 @@ namespace Alpha
 
 		switch (type)
 		{
-		case Alpha::EBufferPresetType::Constant:
+		case EBufferPresetType::Constant:
 			desc.access_type = ERHIResourceAccessType::Dynamic;
 			desc.size = Alignment(desc.size, 256);
 
 			break;
-		case Alpha::EBufferPresetType::Upload:
+		case EBufferPresetType::Upload:
 			desc.access_type = ERHIResourceAccessType::Dynamic;
 			desc.size = Alignment(desc.size, 4);
 
 			break;
-		case Alpha::EBufferPresetType::ROByteAddress:
+		case EBufferPresetType::UploadStructured:
+			desc.access_type = ERHIResourceAccessType::Dynamic;
+			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
+
+			break;
+		case EBufferPresetType::ROByteAddress:
 			desc.access_type = ERHIResourceAccessType::Static;
 			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
 			desc.bind_flags |= ERHIResourceBindFlags::Raw;
 			desc.stride = 4; // ByteAddressBufferは4バイト固定
 			break;
-		case Alpha::EBufferPresetType::ROStructured:
+		case EBufferPresetType::ROStructured:
 			desc.access_type = ERHIResourceAccessType::Static;
 			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
 
 			break;
-		case Alpha::EBufferPresetType::RWByteAddress:
+		case EBufferPresetType::RWByteAddress:
 			desc.access_type = ERHIResourceAccessType::Static;
 			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
 			desc.bind_flags |= ERHIResourceBindFlags::UnorderedAccess; // UAV追加
 			desc.bind_flags |= ERHIResourceBindFlags::Raw;
 			desc.stride = 4; // ByteAddressBufferは4バイト固定
 			break;
-		case Alpha::EBufferPresetType::RWStructured:
+		case EBufferPresetType::RWStructured:
 			desc.access_type = ERHIResourceAccessType::Static;
 			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
 			desc.bind_flags |= ERHIResourceBindFlags::UnorderedAccess; // UAV追加
 			break;
-		case Alpha::EBufferPresetType::Readback:
+		case EBufferPresetType::Readback:
 			desc.access_type = ERHIResourceAccessType::Staging;
 			break;
 		default:
@@ -347,6 +362,11 @@ namespace Alpha
 		return pipeline;
 	}
 
+	UINT32 RenderCore::GetCurrentBackBufferIndex() const
+	{
+		return m_swap_chain->GetCurrentBackBufferIndex();
+	}
+
 	Texture* RenderCore::GetCurrentRenderTarget() const
 	{
 		auto current_index = m_swap_chain->GetCurrentBackBufferIndex();
@@ -367,12 +387,24 @@ namespace Alpha
 
 	void RenderCore::BeginFrame()
 	{
-		m_timeline->WaitCPU();
-
+		// 今はリクエストをメインスレッドで監視してるけどマルチスレッドが追加されたら変える
 		if (m_gpu_data_transfer->HasUpload())
-			m_gpu_data_transfer->UploadAsync();
+		{
+			UInt64 copy_fence_value = m_gpu_data_transfer->UploadAsync();
+
+			m_command_queue->Wait(m_gpu_data_transfer->GetCopyTimeline(), copy_fence_value);
+
+		}
 
 		auto current_buffer_index = m_swap_chain->GetCurrentBackBufferIndex();
+
+		// このフレームで使用する前に積んだコマンドが終了してないなら待つ
+		m_timeline->WaitCPUCurrentFrame(current_buffer_index);
+
+		m_resource_heap->Reclaim(current_buffer_index);
+		m_sampler_heap->Reclaim(current_buffer_index);
+
+		m_transient_allocator->Reset(current_buffer_index);
 
 		m_command_list->Begin(current_buffer_index);
 
@@ -386,7 +418,6 @@ namespace Alpha
 
 		m_command_list->SetScissorRect(0, 0, m_width, m_height);
 
-		m_transient_allocator->Reset();
 	}
 
 	void RenderCore::EndFrame()

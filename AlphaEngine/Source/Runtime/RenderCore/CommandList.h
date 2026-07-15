@@ -32,6 +32,7 @@ namespace Alpha
 		{
 			RenderHardwareInterface* rhi{ nullptr };
 			ERHICommandType type{ ERHICommandType::Direct };
+			UInt32 buffer_num{ 3 };
 			// 追加の初期化パラメーターをここに記述できます
 		};
 

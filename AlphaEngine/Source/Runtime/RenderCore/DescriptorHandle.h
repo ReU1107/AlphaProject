@@ -17,6 +17,6 @@ namespace Alpha
 			return (heap != nullptr);
 		}
 		// 
-		void Free();
+		void Free(UInt32 current_buffer_index);
 	};
 }

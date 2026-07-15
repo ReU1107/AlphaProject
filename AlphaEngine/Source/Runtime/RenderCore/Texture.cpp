@@ -10,28 +10,7 @@ namespace Alpha
 {
 	Texture::Texture() = default;
 	
-	Texture::~Texture()
-	{
-		if (m_srv_handle.IsActive())
-		{
-			m_srv_handle.Free();
-		}
-
-		if (m_uav_handle.IsActive())
-		{
-			m_uav_handle.Free();
-		}
-
-		if (m_rtv_handle.IsActive())
-		{
-			m_rtv_handle.Free();
-		}
-
-		if (m_dsv_handle.IsActive())
-		{
-			m_dsv_handle.Free();
-		}
-	}
+	Texture::~Texture() = default;
 
 	void Texture::Initialize(const Args& args)
 	{
@@ -70,6 +49,29 @@ namespace Alpha
 			m_dsv_handle = args.dsv_heap->Allocate(this, ERHIResourceViewType::DepthStencilView);
 		}
 
+	}
+
+	void Texture::Destroy(UInt32 current_frame_index)
+	{
+		if (m_srv_handle.IsActive())
+		{
+			m_srv_handle.Free(current_frame_index);
+		}
+
+		if (m_uav_handle.IsActive())
+		{
+			m_uav_handle.Free(current_frame_index);
+		}
+
+		if (m_rtv_handle.IsActive())
+		{
+			m_rtv_handle.Free(current_frame_index);
+		}
+
+		if (m_dsv_handle.IsActive())
+		{
+			m_dsv_handle.Free(current_frame_index);
+		}
 	}
 
 	RHITexture* Texture::GetRHI() const

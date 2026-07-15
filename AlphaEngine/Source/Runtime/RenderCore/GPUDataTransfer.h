@@ -63,7 +63,7 @@ namespace Alpha
 		void Upload();
 
 		// Upload がシグナルする Timeline を返す（レンダー側が待つために使用）
-		Timeline* GetTimeline() const { return m_copy_fence.get(); }
+		Timeline* GetCopyTimeline() const { return m_copy_fence.get(); }
 
 	};
 
