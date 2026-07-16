@@ -336,6 +336,7 @@
     <ClInclude Include="Source\Runtime\Animation\Context\State.h" />
     <ClInclude Include="Source\Runtime\Animation\Context\StateMachine.h" />
     <ClInclude Include="Source\Runtime\Animation\Context\StateTransition.h" />
+    <ClInclude Include="Source\Runtime\Animation\Definitions.h" />
     <ClInclude Include="Source\Runtime\Animation\Module.h" />
     <ClInclude Include="Source\Runtime\Animation\Resource\Channel.h" />
     <ClInclude Include="Source\Runtime\Animation\Resource\Clip.h" />

@@ -33,14 +33,19 @@ namespace Alpha
 		m_indices = std::move(indices);
 	}
 
-	void ModelHandle::SetMaterialTable(TShared<MaterialTableHandle>&& table)
+	void ModelHandle::SetMaterialTable(TShared<MaterialTableHandle> table)
 	{
-		m_material_table = std::move(table);
+		m_material_table = table;
 	}
 
 	void ModelHandle::SetSubMeshes(TArray<SubMeshHandle>&& sub_meshes)
 	{
 		m_sub_meshes = std::move(sub_meshes);
+	}
+
+	void ModelHandle::AddSubMesh(const SubMeshHandle& sub_mesh)
+	{
+		m_sub_meshes.push_back(sub_mesh);
 	}
 
 	void ModelHandle::BuildVertexAttributeBuffer()

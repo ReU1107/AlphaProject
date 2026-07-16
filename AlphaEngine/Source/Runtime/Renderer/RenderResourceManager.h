@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "Core/Subsystem.h"
 #include "Core/Common.h"
+#include "Core/Subsystem.h"
 #include "Core/Container/SlotPalette.h"
 #include "Definitions.h"
 
@@ -53,6 +53,8 @@ namespace Alpha
         UInt32 RegisterTexture(TShared<TextureHandle> handle);
 
         const Renderer::Mesh& GetMesh(UInt64 id);
+        const Renderer::Material& GetMaterial(UInt64 id);
+        const Renderer::MaterialTable& GetMaterialTable(UInt64 id);
 
         struct HeapIndices
         {

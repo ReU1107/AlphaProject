@@ -76,7 +76,7 @@ namespace Alpha
             }
         }
 
-        handle->SetMaterialTable(std::move(table));
+        handle->SetMaterialTable(table);
         handle->SetSubMeshes(std::move(sub_meshes));
 
         handle->BuildVertexAttributeBuffer();

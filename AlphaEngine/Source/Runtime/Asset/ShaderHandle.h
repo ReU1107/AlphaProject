@@ -8,6 +8,7 @@ namespace Alpha
 	class ShaderHandle : public AssetHandle
 	{
 	private:
+		ERHIShaderType m_type{};
 
 
 	public:

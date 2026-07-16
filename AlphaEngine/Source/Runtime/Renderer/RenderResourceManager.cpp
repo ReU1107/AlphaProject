@@ -361,9 +361,19 @@ namespace Alpha
         return palette_index;
     }
 
-    const Mesh& RenderResourceManager::GetMesh(UInt64 id)
+    const Mesh& RenderResourceManager::GetMesh(UInt64 index)
     {
-        return m_mesh_palette.GetAt(id);
+        return m_mesh_palette.GetAt(index);
+    }
+
+    const Renderer::Material& RenderResourceManager::GetMaterial(UInt64 index)
+    {
+        return m_material_palette.GetAt(index);
+    }
+
+    const Renderer::MaterialTable& RenderResourceManager::GetMaterialTable(UInt64 index)
+    {
+        return m_material_table_palette.GetAt(index);
     }
 
     RenderResourceManager::HeapIndices RenderResourceManager::GetBufferHeapIndices() const

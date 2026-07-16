@@ -91,7 +91,7 @@ namespace Alpha::Renderer
 	struct MaterialTable
 	{
 		Allocation alloc{};
-		UInt32 material_indices[16];
+		UInt32 material_indices[64];
 		UInt32 material_num{ 0 };
 	};
 

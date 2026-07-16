@@ -7,6 +7,9 @@ namespace Alpha
 {
 	class AssetLoader;
 	class TextureHandle;
+	class ModelHandle;
+	class MaterialHandle;
+	class MaterialTableHandle;
 
 	class AssetManager : public Subsystem<AssetManager>
 	{
@@ -29,6 +32,12 @@ namespace Alpha
 		TShared<TextureHandle> GetWhiteTexture() const;
 		TShared<TextureHandle> GetBlackTexture() const;
 		TShared<TextureHandle> GetNormalTexture() const;
+
+		TShared<ModelHandle> GetCube() const;
+		TShared<ModelHandle> GetSphere() const;
+
+		TShared<MaterialHandle> GetDefaultMaterial() const;
+
 
 		TShared<AssetHandle> Load(StringView file_path);
 

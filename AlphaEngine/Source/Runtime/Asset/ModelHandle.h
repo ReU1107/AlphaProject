@@ -54,8 +54,9 @@ namespace Alpha
 
 		void SetIndices(TArray<UInt32>&& indices);
 
-		void SetMaterialTable(TShared<MaterialTableHandle>&& table);
+		void SetMaterialTable(TShared<MaterialTableHandle> table);
 		void SetSubMeshes(TArray<SubMeshHandle>&& sub_meshes);
+		void AddSubMesh(const SubMeshHandle& sub_mesh);
 
 		void BuildVertexAttributeBuffer();
 

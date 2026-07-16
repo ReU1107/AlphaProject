@@ -150,7 +150,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     AssetManager::Startup(asset_args);
     auto model1 = AssetManager::Get().Load<ModelHandle>(L"C:/Users/owner/Desktop/Asset/紲星☆あかり20180430/お宮式紲星☆あかりv1.00.pmx");
     auto model2 = AssetManager::Get().Load<ModelHandle>(L"C:/Users/owner/Desktop/Asset/パチュリーVer2.00/Model/パチュリーVer2.00_Type-C(フル_ポニテC_ミニスカ_ブーツC_パンプス)_サーモン.pmx");
-    
+    auto model3 = AssetManager::Get().GetCube();
     
     RenderCore::Args render_core_args = {};
     render_core_args.hWnd = (HWND)WindowSystem::Get().GetNativeHandle();
@@ -169,6 +169,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     UInt32 akari_index = RenderResourceManager::Get().RegisterMesh(model1);
     UInt32 patchouli_index = RenderResourceManager::Get().RegisterMesh(model2);
+    UInt32 sphere_index = RenderResourceManager::Get().RegisterMesh(model3);
 
 
     RenderCore::Get().PostInitialize();
@@ -215,7 +216,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         m_instance_allocator->Initialize(desc);
     }
     TArray<Renderer::InstanceData> instances{};
-    instances.reserve(1000);
+    instances.reserve(10000);
 
     struct Constants
     {
@@ -281,10 +282,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
                 Matrix4x4 pos = Matrix4x4::Identity;
                 pos._4() = float3(posX, posY, posZ);
    
+                const auto& table = RenderResourceManager::Get().GetMaterialTable(mesh1.default_table_offset);
+
+
                 Renderer::InstanceData instance = {};
                 instance.world_matrix = pos;
                 instance.mesh_index = akari_index;
-                instance.material_table_index = mesh1.default_table_offset;
+                instance.material_table_index = table.alloc.offset;
 
                 instances.push_back(instance);
             }
