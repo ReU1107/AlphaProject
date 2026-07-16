@@ -114,6 +114,6 @@ namespace Alpha::Renderer
 		TArray<UInt32> triangle_indices{};
 
 		MeshData data{};
-		MaterialTable default_table{};
+		UInt32 default_table_offset{};
 	};
 }

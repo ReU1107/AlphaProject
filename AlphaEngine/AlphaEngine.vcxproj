@@ -151,6 +151,7 @@
     <ClCompile Include="Source\Core\IO\BinaryReader.cpp" />
     <ClCompile Include="Source\Core\Log\Logger.cpp" />
     <ClCompile Include="Source\Core\Math\Color.cpp" />
+    <ClCompile Include="Source\Core\Math\GeometryUtil.cpp" />
     <ClCompile Include="Source\Core\Math\MathF.cpp" />
     <ClCompile Include="Source\Core\Math\MathUtil.cpp" />
     <ClCompile Include="Source\Core\Math\Quaternion.cpp" />
@@ -186,6 +187,7 @@
     <ClCompile Include="Source\Runtime\Asset\Importer\VMD\VMDParser.cpp" />
     <ClCompile Include="Source\Runtime\Asset\Importer\WIC\WICLoader.cpp" />
     <ClCompile Include="Source\Runtime\Asset\MaterialHandle.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\MaterialTableHandle.cpp" />
     <ClCompile Include="Source\Runtime\Asset\ModelHandle.cpp" />
     <ClCompile Include="Source\Runtime\Asset\MotionHandle.cpp" />
     <ClCompile Include="Source\Runtime\Asset\ShaderHandle.cpp" />
@@ -287,6 +289,7 @@
     <ClInclude Include="Source\Core\Literal.h" />
     <ClInclude Include="Source\Core\Log\Logger.h" />
     <ClInclude Include="Source\Core\Math\Color.h" />
+    <ClInclude Include="Source\Core\Math\GeometryUtil.h" />
     <ClInclude Include="Source\Core\Math\HashUtil.h" />
     <ClInclude Include="Source\Core\Math\MathF.h" />
     <ClInclude Include="Source\Core\Math\MathUtil.h" />
@@ -354,6 +357,7 @@
     <ClInclude Include="Source\Runtime\Asset\Importer\VMD\VMDParser.h" />
     <ClInclude Include="Source\Runtime\Asset\Importer\WIC\WICLoader.h" />
     <ClInclude Include="Source\Runtime\Asset\MaterialHandle.h" />
+    <ClInclude Include="Source\Runtime\Asset\MaterialTableHandle.h" />
     <ClInclude Include="Source\Runtime\Asset\ModelHandle.h" />
     <ClInclude Include="Source\Runtime\Asset\Module.h" />
     <ClInclude Include="Source\Runtime\Asset\MotionHandle.h" />

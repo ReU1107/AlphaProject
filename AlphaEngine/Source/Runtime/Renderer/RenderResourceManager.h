@@ -8,6 +8,7 @@ namespace Alpha
 {
     class ModelHandle;
     class MaterialHandle;
+    class MaterialTableHandle;
     class TextureHandle;
 
     class RenderCore;
@@ -47,8 +48,8 @@ namespace Alpha
         void Finalize();
 
         UInt32 RegisterMesh(TShared<ModelHandle> handle);
+        UInt32 RegisterMaterialTable(TShared<MaterialTableHandle> handle);
         UInt32 RegisterMaterial(TShared<MaterialHandle> handle);
-
         UInt32 RegisterTexture(TShared<TextureHandle> handle);
 
         const Renderer::Mesh& GetMesh(UInt64 id);

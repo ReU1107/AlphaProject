@@ -6,8 +6,13 @@
 #include "Importer/WIC/WICLoader.h"
 
 #include "TextureHandle.h"
+#include "MaterialHandle.h"
+#include "MaterialTableHandle.h"
+#include "ModelHandle.h"
 
-#include <filesystem>
+#include "Animation/Resource/Skeleton.h"
+
+#include "Core/Math/GeometryUtil.h"
 
 
 namespace Alpha
@@ -15,6 +20,9 @@ namespace Alpha
 	static String BuildInWhiteTexture = L"Alpha://White";
 	static String BuildInBlackTexture = L"Alpha://Black";
 	static String BuildInNormalTexture = L"Alpha://Normal";
+	static String BuildInMaterial = L"Alpha://Material";
+	static String BuildInCube = L"Alpha://Cube";
+	static String BuildInSphere = L"Alpha://Sphere";
 
 	bool AssetManager::Initialize(const Args& args)
 	{
@@ -60,6 +68,32 @@ namespace Alpha
 			uint32_t black = 0;
 			texture->SetPixels(reinterpret_cast<uint8_t*>(&black));
 			RegisterAsset(BuildInBlackTexture, texture);
+		}
+
+		{
+			auto material = std::make_shared<MaterialHandle>();
+			material->SetName(BuildInMaterial);
+
+			RegisterAsset(BuildInMaterial, material);
+		}
+
+		{
+			auto cube = std::make_shared<ModelHandle>();
+			cube->SetName(BuildInCube);
+			TArray<Vector3> positions;
+			TArray<Vector3> normals;
+			TArray<Vector2> texcoords;
+			TArray<UInt32> indices;
+			CreateUnitCube(&positions, &normals, &texcoords, &indices);
+
+			cube->SetBaseVeretices(std::move(positions), std::move(normals), std::move(texcoords));
+
+			cube->SetIndices(std::move(indices));
+
+			RegisterAsset(BuildInCube, cube);
+		}
+		{
+
 		}
 
 		return true;

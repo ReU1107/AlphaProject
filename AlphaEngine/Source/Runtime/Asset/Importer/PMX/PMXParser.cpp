@@ -4,6 +4,7 @@
 
 #include "Asset/AssetManager.h"
 #include "Asset/MaterialHandle.h"
+#include "Asset/MaterialTableHandle.h"
 #include "Asset/TextureHandle.h"
 
 #include "Core/Math/MathF.h"
@@ -100,9 +101,10 @@ namespace Alpha
 		return indices;
 	}
 
-	TSharedArray<MaterialHandle> PMXParser::CreateMaterials() const
+	TShared<MaterialTableHandle> PMXParser::CreateMaterials() const
 	{
-		TSharedArray<MaterialHandle> handles(m_materials.size());
+		TShared<MaterialTableHandle> table = std::make_shared<MaterialTableHandle>();
+		table->SetName(GetName() + L"MaterialTable");
 
 		for (const auto& [i, pmx] : m_materials | std::views::enumerate)
 		{
@@ -125,10 +127,7 @@ namespace Alpha
 			if (pmx.decalIndex >= 0 && pmx.decalIndex < m_textures.size())
 			{
 				String texture_path = folder_path + m_textures[pmx.decalIndex].textureFileName;
-				material->AddTexturePath(texture_path);
-				auto handle = AssetManager::Get().Load<TextureHandle>(texture_path);
-				handle->SetName(GetName() + m_textures[pmx.decalIndex].textureFileName);
-				handle->SetAttribute(ETextureAttribute::BaseColor);
+				material->AddTexturePath(ETextureAttribute::BaseColor, texture_path);
 			}
 
 			// トーンは一旦なし
@@ -141,10 +140,10 @@ namespace Alpha
 			//		material->GetTexture().push_back(std::static_pointer_cast<TextureHandle>(toon_ref));
 			//	}
 			//}
-			handles[i] = material;
+			table->AddMaterial(material);
 		}
 
-		return handles;
+		return table;
 	}
 
 	TArray<SubMeshHandle> PMXParser::CreateSubMeshes() const

@@ -42,13 +42,91 @@ using Microsoft::WRL::ComPtr;
 using namespace Alpha;
 using namespace Alpha::Renderer;
 
+// Work Graphsを管理するオブジェクト一式
+ComPtr<ID3D12StateObject>       g_pWorkGraphStateObject;
+ComPtr<ID3D12WorkGraphProperties> g_pWorkGraphProps;
+ComPtr<ID3D12Resource>          g_pBackingMemory;
 
-using Entity = UInt32;
-
-struct TransformComponent
+void InitializeWorkGraph(ID3D12Device9* device, const void* pShaderBytecode, SIZE_T bytecodeLength)
 {
-    Matrix4x4 matrix{ Matrix4x4::Identity };
-};
+
+    // サブオブジェクト（設定項目）の配列を用意
+    std::vector<D3D12_STATE_SUBOBJECT> subobjects;
+
+    // ① DXILライブラリ（コンパイル済みのHLSLバイナリ）を登録する設定
+    D3D12_DXIL_LIBRARY_DESC dxilDesc = {};
+    dxilDesc.DXILLibrary.pShaderBytecode = pShaderBytecode;
+    dxilDesc.DXILLibrary.BytecodeLength = bytecodeLength;
+
+    D3D12_STATE_SUBOBJECT dxilSubobject = {};
+    dxilSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
+    dxilSubobject.pDesc = &dxilDesc;
+    subobjects.push_back(dxilSubobject);
+
+    // ② 「Work Graphs」としてビルドすることを宣言する設定
+    D3D12_WORK_GRAPH_DESC wgDesc = {};
+    wgDesc.ProgramName = L"MyWorkGraph"; // グラフの名前（任意）
+    wgDesc.Flags = D3D12_WORK_GRAPH_FLAG_NONE;
+
+    D3D12_STATE_SUBOBJECT wgSubobject = {};
+    wgSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_WORK_GRAPH;
+    wgSubobject.pDesc = &wgDesc;
+    
+    subobjects.push_back(wgSubobject);
+
+    D3D12_GENERIC_PROGRAM_DESC drawingProgram = {};
+    drawingProgram.ProgramName = L"MyRenderNode"; // この名前がWork Graphのノード名になる
+
+    // 結合したい「MS」と「PS」の関数名を配列で指定
+    LPCWSTR programExports[] = { L"RenderNode", L"MyPixelShader" }; //
+    drawingProgram.pExports = programExports;
+    drawingProgram.NumExports = 2;
+
+    D3D12_STATE_SUBOBJECT programSubobject = {};
+    programSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_GENERIC_PROGRAM; // ★プログラムとして合体！
+    programSubobject.pDesc = &drawingProgram;
+    subobjects.push_back(programSubobject);
+
+
+    // 最上位の StateObject 記述子を組み立てる
+    D3D12_STATE_OBJECT_DESC stateObjectDesc = {};
+    stateObjectDesc.Type = D3D12_STATE_OBJECT_TYPE_COLLECTION; // グラフをまとめる形式
+    stateObjectDesc.NumSubobjects = static_cast<UINT>(subobjects.size());
+    stateObjectDesc.pSubobjects = subobjects.data();
+
+    // GPUドライバーにコンパイルさせてグラフ（State Object）を生成
+    device->CreateStateObject(&stateObjectDesc, IID_PPV_ARGS(&g_pWorkGraphStateObject));
+
+    // =========================================================================
+    // 2. メモリ見積もりとバッキングメモリの確保
+    // =========================================================================
+
+    // 作成したStateObjectから、Work Graphs専用のインターフェースを取り出す
+    g_pWorkGraphStateObject.As(&g_pWorkGraphProps);
+
+    // グラフのインデックスを取得
+    UINT programIndex = g_pWorkGraphProps->GetWorkGraphIndex(L"MyWorkGraph");
+
+    // GPUが内部でレコードをバケツリレーするのに必要な「作業用メモリ（バッキングメモリ）」のサイズを見積もる
+    D3D12_WORK_GRAPH_MEMORY_REQUIREMENTS memReqs = {};
+    g_pWorkGraphProps->GetWorkGraphMemoryRequirements(programIndex, &memReqs);
+
+    // 見積もられたサイズでVRAM上のバッファ（UAVフラグ付き）を確保する
+    D3D12_HEAP_PROPERTIES heapProps = { D3D12_HEAP_TYPE_DEFAULT };
+    D3D12_RESOURCE_DESC resDesc = {};
+    resDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+    resDesc.Width = memReqs.MaxSizeInBytes; // 要求された最大サイズ
+    resDesc.Height = 1;
+    resDesc.DepthOrArraySize = 1;
+    resDesc.MipLevels = 1;
+    resDesc.SampleDesc.Count = 1;
+    resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+    resDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS; // UAVが必要
+
+    device->CreateCommittedResource(
+        &heapProps, D3D12_HEAP_FLAG_NONE, &resDesc,
+        D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&g_pBackingMemory));
+}
 
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
@@ -148,7 +226,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     static float3 camera_pos = Vector3(0.0f, 10.0f, -25.0f);
 
-
     auto list = RenderCore::Get().GetCommandList();
     while (WindowSystem::Get().ProcessMessages() && !WindowSystem::Get().ShouldClose())
     {
@@ -156,7 +233,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         list->SetDescriptorHeap(RenderCore::Get().GetResourceHeap(), RenderCore::Get().GetSamplerHeap());
 
         list->SetGraphicsPipeline(pipeline.get());
-        auto nativeCmdList = static_cast<D3D12CommandBuffer*>(list->GetRHI())->GetNative();
+        auto native_list = static_cast<D3D12CommandBuffer*>(list->GetRHI())->GetNative();
 
         RenderContext ctx = {};
         ctx.command_list = RenderCore::Get().GetCommandList();
@@ -174,7 +251,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         camera.SetPosition(camera_pos);
 
         m_instance_allocator->Reset(ctx.current_frame_index);
-
 
         Constants constants = {};
         constants.ViewProj = camera.GetViewProjectionMatrix();
@@ -208,7 +284,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
                 Renderer::InstanceData instance = {};
                 instance.world_matrix = pos;
                 instance.mesh_index = akari_index;
-                instance.material_table_index = mesh1.default_table.alloc.offset;
+                instance.material_table_index = mesh1.default_table_offset;
 
                 instances.push_back(instance);
             }
@@ -216,7 +292,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         m_instance_allocator->WriteData(instances.data(), instances.size());
 
-        nativeCmdList->DispatchMesh(mesh1.meshlets.size(), instances.size(), 1);
+        native_list->DispatchMesh(mesh1.meshlets.size(), instances.size(), 1);
 
 		GUISystem::Get().BeginFrame();
 

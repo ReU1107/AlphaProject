@@ -14,8 +14,6 @@ namespace Alpha
 		ERHIResourceFormat m_format{ ERHIResourceFormat::RGBAUnorm };
 		ERHIResourceBindFlags m_bind_flags{ ERHIResourceBindFlags::ShaderResource };
 
-		ETextureAttribute m_attribute{ ETextureAttribute::None };	// 何用のテクスチャか
-
 		TArray<UInt8> m_pixels{};
 
 	public:
@@ -31,7 +29,6 @@ namespace Alpha
 		void SetDimension(ERHIResourceDimension dimension) { m_dimension = dimension; }
 		void SetFormat(ERHIResourceFormat format) { m_format = format; }
 		void SetBindFlags(ERHIResourceBindFlags flags) { m_bind_flags = flags; }
-		void SetAttribute(ETextureAttribute attribute) { m_attribute = attribute; }
 
 		void SetPixels(const UInt8* pixels)
 		{
@@ -50,7 +47,6 @@ namespace Alpha
 		ERHIResourceDimension GetDimension() const { return m_dimension; }
 		ERHIResourceFormat GetFormat() const { return m_format; }
 		ERHIResourceBindFlags GetBindFlags() const { return m_bind_flags; }
-		ETextureAttribute GetAttribute() const { return m_attribute; }
 
 		const UInt8* GetPixels() const { return m_pixels.data(); }
 		UInt8* GetPixels() { return m_pixels.data(); }

@@ -11,7 +11,7 @@ namespace Alpha
 		class Skeleton;
 	}
 
-	class MaterialHandle;
+	class MaterialTableHandle;
 	// handleって名前なだけで別に管理はしていませｎ
 	struct SubMeshHandle
 	{
@@ -31,7 +31,7 @@ namespace Alpha
 
 
 		TArray<UInt32> m_indices{};
-		TSharedArray<MaterialHandle> m_materials{};
+		TShared<MaterialTableHandle> m_material_table{ nullptr };
 		TArray<SubMeshHandle> m_sub_meshes{};
 
 		TUnique<Animation::Skeleton> m_skeleton{};
@@ -54,7 +54,7 @@ namespace Alpha
 
 		void SetIndices(TArray<UInt32>&& indices);
 
-		void SetMaterials(TSharedArray<MaterialHandle>&& materials);
+		void SetMaterialTable(TShared<MaterialTableHandle>&& table);
 		void SetSubMeshes(TArray<SubMeshHandle>&& sub_meshes);
 
 		void BuildVertexAttributeBuffer();
@@ -67,7 +67,7 @@ namespace Alpha
 		const TArray<Vector4>& GetBoneWeights() const { return m_bone_weights; }
 		const TArray<UInt32>& GetIndices() const { return m_indices; }
 
-		const TSharedArray<MaterialHandle>& GetMaterialHandles() const { return m_materials; }
+		const TShared<MaterialTableHandle>& GetMaterialTableHandle() const { return m_material_table; }
 
 		const TArray<SubMeshHandle>& GetSubMeshHandles() const { return m_sub_meshes; }
 

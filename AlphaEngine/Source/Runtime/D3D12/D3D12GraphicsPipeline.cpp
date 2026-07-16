@@ -339,6 +339,7 @@ namespace Alpha
 		}
 		return true;
 	}
+	D3D12_GENERIC_PROGRAM_DESC;
 }
 
 #endif

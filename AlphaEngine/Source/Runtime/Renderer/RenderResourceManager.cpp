@@ -1,6 +1,7 @@
 ﻿#include "RenderResourceManager.h"
 #include "Asset/ModelHandle.h"
 #include "Asset/MaterialHandle.h"
+#include "Asset/MaterialTableHandle.h"
 #include "Asset/TextureHandle.h"
 #include "Asset/AssetManager.h"
 
@@ -231,30 +232,48 @@ namespace Alpha
 
             mesh.data_alloc = alloc;
         }
+        // マテリアルテーブルの登録
+        mesh.default_table_offset = RegisterMaterialTable(handle->GetMaterialTableHandle());
+
+        return palette_index;
+	}
+
+    UInt32 RenderResourceManager::RegisterMaterialTable(TShared<MaterialTableHandle> handle)
+    {
+        UInt64 handle_id = handle->GetID();
+        UInt32 palette_index = 0;
+
+        if (m_material_table_palette.TryGetIndex(handle_id, &palette_index))
+        {
+            return palette_index;
+        }
+
+        MaterialTable& table = m_material_table_palette.Allocate(handle_id, palette_index);
 
         // マテリアルの登録とこのモデルのデフォルトのマテリアルテーブルの作成
         for (auto& material_handle : handle->GetMaterialHandles())
         {
             UInt32 mat_index = RegisterMaterial(material_handle);
 
-            mesh.default_table.material_indices[mesh.default_table.material_num++] = m_material_palette[mat_index].alloc.offset / sizeof(MaterialData);
+
+            table.material_indices[table.material_num++] = m_material_palette[mat_index].alloc.offset / sizeof(MaterialData);
         }
-        
+
         {
-            UInt32 size = sizeof(UInt32) * mesh.default_table.material_num;
+            UInt32 size = sizeof(UInt32) * table.material_num;
             Allocation alloc{};
             if (!m_material_table_allocator->AllocateBySize(size, &alloc))
             {
                 ALPHA_LOG_WARN(L"ModelHandleのリソース化に失敗しました");
                 // 
             }
-            RenderCore::Get().UploadBuffer(m_material_table_allocator->GetBuffer(), alloc.offset, mesh.default_table.material_indices, size);
+            RenderCore::Get().UploadBuffer(m_material_table_allocator->GetBuffer(), alloc.offset, table.material_indices, size);
 
-            mesh.default_table.alloc = alloc;
+            table.alloc = alloc;
         }
 
         return palette_index;
-	}
+    }
 
     UInt32 RenderResourceManager::RegisterMaterial(TShared<MaterialHandle> handle)
     {
@@ -270,13 +289,13 @@ namespace Alpha
 
         TMap<ETextureAttribute, UInt32> local_tex_cache;
 
-        for (auto& texture_handle : handle->GetTextureHandles())
+        for (auto& texture : handle->GetTextures())
         {
-            ETextureAttribute attr = texture_handle->GetAttribute();
+            ETextureAttribute attr = texture.attribute;
             if (attr == ETextureAttribute::None) 
                 continue;
 
-            local_tex_cache[attr] = RegisterTexture(texture_handle);
+            local_tex_cache[attr] = RegisterTexture(texture.handle);
         }
 
         auto white_tex = RegisterTexture(AssetManager::Get().GetWhiteTexture());

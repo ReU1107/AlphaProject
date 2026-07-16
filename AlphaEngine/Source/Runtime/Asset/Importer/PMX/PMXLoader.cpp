@@ -2,6 +2,7 @@
 
 #include "Asset/ModelHandle.h"
 #include "Asset/MaterialHandle.h"
+#include "Asset/MaterialTableHandle.h"
 #include "Asset/TextureHandle.h"
 #include "Asset/AssetManager.h"
 #include "Animation/AnimationResource.h"
@@ -62,20 +63,20 @@ namespace Alpha
             
         }
 
-        TSharedArray<MaterialHandle> materials = parser.CreateMaterials();
+        TShared<MaterialTableHandle> table = parser.CreateMaterials();
         TArray<SubMeshHandle> sub_meshes = parser.CreateSubMeshes();
 
-        for (auto& material : materials)
+        for (auto& material : table->GetMaterialHandles())
         {
-            for (const auto& path : material->GetTexturePaths())
+            for (auto& texture : material->GetTextures())
             {
-                auto tex_handle = AssetManager::Get().Load<TextureHandle>(path);
-                tex_handle->SetName(path);
-                material->LinkTexture(tex_handle);
+                auto tex_handle = AssetManager::Get().Load<TextureHandle>(texture.path);
+                tex_handle->SetName(texture.path);
+                texture.handle = tex_handle;
             }
         }
 
-        handle->SetMaterials(std::move(materials));
+        handle->SetMaterialTable(std::move(table));
         handle->SetSubMeshes(std::move(sub_meshes));
 
         handle->BuildVertexAttributeBuffer();

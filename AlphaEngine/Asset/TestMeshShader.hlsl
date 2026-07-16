@@ -101,7 +101,6 @@ void main(
 {
     StructuredBuffer<InstanceData> instance_buffer = ResourceDescriptorHeap[heap_indices.instance];
 
-    
     StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[heap_indices.position];
     ByteAddressBuffer attribute_buffer = ResourceDescriptorHeap[heap_indices.attribute];
     
