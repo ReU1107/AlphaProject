@@ -19,7 +19,7 @@ namespace Alpha
 
     public:
         // 外部の std::vector をそのまま参照して読み込む場合
-        ByteReader(const std::vector<UInt8>& data)
+        ByteReader(const TArray<UInt8>& data)
             : m_raw_data(data.data()), m_size(data.size()), m_cursor(0) 
         {
         }

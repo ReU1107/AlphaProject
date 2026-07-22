@@ -192,7 +192,8 @@ namespace Alpha
 		Pixel,	// 
 		Geometry,	// 
 		Hull,	// 
-		Domain,	// 
+		Domain,	//
+		Amplification,	// 
 		Mesh,	// 
 		Compute,	// 
 		RayTracing,	// 
@@ -207,10 +208,11 @@ namespace Alpha
 		Geometry			= 1 << 2,	// 
 		Hull				= 1 << 3,	// 
 		Domain				= 1 << 4,	// 
-		Mesh				= 1 << 5,	// 
-		Compute				= 1 << 6,	// 
-		RayTracing			= 1 << 7,	// 
-		Library				= 1 << 8,
+		Amplification		= 1 << 5,	// 
+		Mesh				= 1 << 6,	// 
+		Compute				= 1 << 7,	// 
+		RayTracing			= 1 << 8,	// 
+		Library				= 1 << 9,
 	};
 
 	EnumClassFlags(ERHIShaderFlags);

@@ -1,4 +1,35 @@
 ﻿
+struct MaterialProperties
+{
+    float3 base_color; // 12バイト - 基本色
+    float opacity; //  4バイト - 不透明度 (16バイト境界)
+
+    float metallic; //  4バイト - 金属感
+    float roughness; //  4バイト - 粗さ
+    float emissive_intensity; //  4バイト - 自発光の強さ
+    float occlusion; //  4バイト - アンビエントオクルージョン (32バイト境界)
+
+    float3 emissive_color; // 12バイト - 自発光の色
+    float refraction_index; //  4バイト - 屈折率 (48バイト境界)
+
+    float3 specular_tint; // 12バイト - 鏡面反射の微調整用
+};
+
+struct MaterialData
+{
+    MaterialProperties props; // 
+
+    uint base_color_tex_idx; //  4バイト - テクスチャバインドレスインデックス (0xFFFFFFFF = 無効)
+    uint normal_tex_idx; //  4バイト - 法線マップインデックス
+    uint metallic_roughness_tex_idx; // 4バイト
+    uint emissive_tex_idx; //  4バイト
+
+    uint occlusion_tex_idx; //  4バイト
+    uint toon_tex_idx; //  4バイト - MMD等のトゥーンテクスチャ用
+    uint sphere_tex_idx; //  4バイト - MMD等のスフィアマップ用
+    uint flags; //  4バイト - マテリアル判別フラグ
+};
+
 struct Meshlet
 {
     uint vertex_offset; //  4バイト - 頂点インデックスの開始オフセット
@@ -14,6 +45,12 @@ struct MeshData
     uint vertex_position_offset; // 4バイト - 巨大バッファ内での位置（XYZ）のバイトオフセット
     uint vertex_attribute_offset; // 4バイト - 巨大バッファ内での属性（UV/Normal等）のバイトオフセット
 
+    uint meshlet_offset;
+    uint meshlet_count;
+    
+    uint vertex_offset; // 巨大バッファ内でのメッシュレット頂点インデックスのバイトオフセット
+    uint triangle_offset; // 巨大バッファ内でのメッシュレット三角形インデックスのバイトオフセット
+    
     uint attribute_flags; // 4バイト - 頂点属性フラグ
     uint vertex_stride; // 4バイト - 頂点属性（1頂点あたり）のバイトサイズ（ストライド）
 };
@@ -25,7 +62,7 @@ struct InstanceData
     uint mesh_index;
 };
 
-struct HeapIndices
+struct SystemBufferIndices
 {
     uint position;
     uint attribute;
@@ -35,7 +72,18 @@ struct HeapIndices
     uint mesh;
     uint material;
     uint material_table;
+    uint instance;
 };
+
+struct FrameRenderContext
+{
+    float4x4 view_proj;
+    float4 camera_pos;
+    float4 frustum_planes;
+
+    uint instance_num;
+};
+
 
 #define MAX_VERTICES 64
 #define MAX_PRIMITIVES 126

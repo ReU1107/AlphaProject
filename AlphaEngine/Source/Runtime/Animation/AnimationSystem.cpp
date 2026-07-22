@@ -1,8 +1,12 @@
 ﻿#include "AnimationSystem.h"
 #include "AnimationComponent.h"
+#include "Asset/SkeletonHandle.h"
+#include "AnimationResource.h"
 
 namespace Alpha
 {
+	using namespace Animation;
+
 	bool AnimationSystem::Initialize(const Args& args)
 	{
 		return false;
@@ -10,7 +14,26 @@ namespace Alpha
 
 	void AnimationSystem::Finalize()
 	{
-	
+	}
+
+	UInt32 AnimationSystem::RegisterMesh(TShared<SkeletonHandle> handle)
+	{
+		UInt64 handle_id = handle->GetID();
+		UInt32 palette_index = 0;
+
+		if (m_skeleton_palette.TryGetIndex(handle_id, &palette_index))
+		{
+			return palette_index;
+		}
+
+		SkeletonResource& skeleton = m_skeleton_palette.Allocate(handle_id, palette_index);
+
+
+		/*
+		* Skeletonを構築してセットする
+		*/
+
+		return palette_index;
 	}
 
 	void AnimationSystem::Update(float delta_time)

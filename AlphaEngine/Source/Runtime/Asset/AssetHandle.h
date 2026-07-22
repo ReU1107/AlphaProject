@@ -14,6 +14,7 @@ namespace Alpha
 		Motion,
 		Texture,
 		Material,
+		MaterialTable,
 		Particle,
 		Skeleton,
 		Shader,

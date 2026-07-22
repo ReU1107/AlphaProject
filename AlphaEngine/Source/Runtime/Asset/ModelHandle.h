@@ -2,16 +2,17 @@
 #include "AssetHandle.h"
 #include "Renderer/Definitions.h"
 
-#include <meshoptimizer/meshoptimizer.h>
 
 namespace Alpha
 {
+	// SkeletonHandleに変える
 	namespace Animation
 	{
 		class Skeleton;
 	}
 
-	class MaterialHandle;
+	class MaterialTableHandle;
+
 	// handleって名前なだけで別に管理はしていませｎ
 	struct SubMeshHandle
 	{
@@ -29,15 +30,18 @@ namespace Alpha
 		TArray<UVector4> m_bone_indices{};
 		TArray<Vector4> m_bone_weights{};
 
-
 		TArray<UInt32> m_indices{};
-		TSharedArray<MaterialHandle> m_materials{};
+		TShared<MaterialTableHandle> m_material_table{ nullptr };
 		TArray<SubMeshHandle> m_sub_meshes{};
 
 		TUnique<Animation::Skeleton> m_skeleton{};
-		EMeshType m_mesh_type{};
+		TArray<Renderer::Meshlet> m_meshlets{};
+		TArray<UInt32> m_vertex_indices{};
+		TArray<UInt32> m_triangle_indices{};
 
 		ByteWriter m_vertex_attribute_serializer{};
+
+		EMeshType m_mesh_type{};
 		UInt32 m_vertex_attribute_stride{ 0 };
 		EVertexAttributeFlags m_vertex_attribute_flags{};
 
@@ -54,8 +58,9 @@ namespace Alpha
 
 		void SetIndices(TArray<UInt32>&& indices);
 
-		void SetMaterials(TSharedArray<MaterialHandle>&& materials);
+		void SetMaterialTable(TShared<MaterialTableHandle> table);
 		void SetSubMeshes(TArray<SubMeshHandle>&& sub_meshes);
+		void AddSubMesh(const SubMeshHandle& sub_mesh);
 
 		void BuildVertexAttributeBuffer();
 
@@ -67,11 +72,15 @@ namespace Alpha
 		const TArray<Vector4>& GetBoneWeights() const { return m_bone_weights; }
 		const TArray<UInt32>& GetIndices() const { return m_indices; }
 
-		const TSharedArray<MaterialHandle>& GetMaterialHandles() const { return m_materials; }
+		const TShared<MaterialTableHandle>& GetMaterialTableHandle() const { return m_material_table; }
 
 		const TArray<SubMeshHandle>& GetSubMeshHandles() const { return m_sub_meshes; }
 
 		Animation::Skeleton* GetSkeleton() const;
+
+		const TArray<Renderer::Meshlet>& GetMeshlets() const { return m_meshlets; }
+		const TArray<UInt32>& GetVertexIndices() const { return m_vertex_indices; }
+		const TArray<UInt32>& GetTriangleIndices() const { return m_triangle_indices; }
 
 		const TArray<UInt8>& GetPackData() const { return m_vertex_attribute_serializer.GetData(); }
 		EVertexAttributeFlags GetVertexAttributeFlags() const { return m_vertex_attribute_flags; }

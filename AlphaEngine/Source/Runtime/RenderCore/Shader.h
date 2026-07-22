@@ -21,6 +21,7 @@ namespace Alpha
 		{
 			RenderHardwareInterface* rhi{ nullptr };
 			const wchar_t* file_path{ nullptr };
+			const wchar_t* entry_point{ nullptr };
 			ERHIShaderType type{ ERHIShaderType::Vertex };
 		};
 		void Initialize(const Args& args);

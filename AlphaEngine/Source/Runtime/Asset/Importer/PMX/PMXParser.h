@@ -28,7 +28,7 @@ namespace Alpha
 		class Skeleton;
 	}
 
-	class MaterialHandle;
+	class MaterialTableHandle;
 
 	class PMXParser
 	{
@@ -63,7 +63,7 @@ namespace Alpha
 
 		TArray<uint32_t> CreateIndices() const;
 
-		TSharedArray<MaterialHandle> CreateMaterials() const;
+		TShared<MaterialTableHandle> CreateMaterials() const;
 
 		TArray<SubMeshHandle> CreateSubMeshes() const;
 

@@ -9,12 +9,17 @@ namespace Alpha
 
 	class MaterialHandle : public AssetHandle
 	{
+	public:
+		struct TextureInfo
+		{
+			ETextureAttribute attribute{};
+			String path{};
+			TShared<TextureHandle> handle;
+		};
+
 	private:
 		Renderer::MaterialProperties m_props{};
-		TArray<String> m_texture_paths{};
-
-		TSharedArray<TextureHandle> m_referenced_textures{};
-
+		TArray<TextureInfo> m_referenced_textures{};
 
 	public:
 		~MaterialHandle();
@@ -26,14 +31,10 @@ namespace Alpha
 		Renderer::MaterialProperties& GetProperties() { return m_props; }
 		const Renderer::MaterialProperties& GetProperties() const { return m_props; }
 
-		void AddTexturePath(StringView path) { m_texture_paths.push_back(path); }
-		const TArray<String>& GetTexturePaths() const { return m_texture_paths; }
+		void AddTexturePath(ETextureAttribute attribute, StringView path);
 
-		void LinkTexture(TShared<TextureHandle> texture) { m_referenced_textures.push_back(texture); }
-
-		TSharedArray<TextureHandle>& GetTextureHandles() { return m_referenced_textures; }
-
-		const TSharedArray<TextureHandle>& GetTextureHandles() const { return m_referenced_textures; }
+		TArray<TextureInfo>& GetTextures() { return m_referenced_textures; }
+		const TArray<TextureInfo>& GetTextures() const { return m_referenced_textures; }
 
 		void Accept(IVisitor* visitor) override {}
 
