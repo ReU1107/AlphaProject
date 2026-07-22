@@ -73,8 +73,9 @@ namespace Alpha::Renderer
 		Matrix4x4 world_matrix{};
 		// 属性フラグ
 		// 行列パレットの場所を指すindex
-		UInt32 material_table_index{};
-		UInt32 mesh_index{};
+
+		UInt32 material_table_offset{};
+		UInt32 mesh_offset{};
 	};
 
 	/*
@@ -91,7 +92,7 @@ namespace Alpha::Renderer
 	struct MaterialTable
 	{
 		Allocation alloc{};
-		UInt32 material_indices[64];
+		UInt32 material_indices[64]{};
 		UInt32 material_num{ 0 };
 	};
 
@@ -110,6 +111,6 @@ namespace Alpha::Renderer
 		Allocation data_alloc{};
 
 		MeshData data{};
-		UInt32 default_table_offset{};
+		UInt32 default_table_index{};
 	};
 }

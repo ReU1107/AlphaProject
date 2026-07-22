@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "Core/Subsystem.h"
-#include "Definitions.h"
+#include "Renderer/Definitions.h"
 
 namespace Alpha
 {
@@ -23,7 +23,7 @@ namespace Alpha
 		bool Initialize(const Args& args);
 		void Finalize();
 
-		void Render(RenderContext& ctx);
+		//void Render(RenderContext& ctx);
 
 
 	};

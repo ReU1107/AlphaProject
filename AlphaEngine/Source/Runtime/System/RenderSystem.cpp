@@ -1,5 +1,4 @@
 ﻿#include "RenderSystem.h"
-#include "RenderContext.h"
 #include "RenderCore/Module.h"
 
 namespace Alpha
@@ -30,17 +29,17 @@ namespace Alpha
 	{
 	}
 
-	void RenderSystem::Render(RenderContext& ctx)
-	{
-		m_instance_allocator->Reset(ctx.current_frame_index);
+	//void RenderSystem::Render(RenderContext& ctx)
+	//{
+	//	m_instance_allocator->Reset(ctx.current_frame_index);
 
-		m_instances.clear();
+	//	m_instances.clear();
 
-		// このフレームで描画する可能性のあるオブジェクトを全部詰め込む
+	//	// このフレームで描画する可能性のあるオブジェクトを全部詰め込む
 
-		m_instance_allocator->WriteData(m_instances.data(), m_instances.size());
+	//	m_instance_allocator->WriteData(m_instances.data(), m_instances.size());
 
 
 
-	}
+	//}
 }

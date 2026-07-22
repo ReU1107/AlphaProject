@@ -155,7 +155,7 @@ namespace Alpha
             mesh.data_alloc = alloc;
         }
         // マテリアルテーブルの登録
-        mesh.default_table_offset = RegisterMaterialTable(handle->GetMaterialTableHandle());
+        mesh.default_table_index = RegisterMaterialTable(handle->GetMaterialTableHandle());
 
         return palette_index;
 	}
@@ -283,19 +283,66 @@ namespace Alpha
         return palette_index;
     }
 
-    const Mesh& RenderResourceManager::GetMesh(UInt64 index)
+    const Renderer::Mesh& RenderResourceManager::GetMeshByHandle(TShared<ModelHandle> handle)
+    {
+        UInt64 handle_id = handle->GetID();
+
+        return GetMeshByHandle(handle_id);
+    }
+
+    const Renderer::Mesh& RenderResourceManager::GetMeshByHandle(UInt64 handle_id)
+    {
+        UInt32 palette_index = 0;
+
+        if (!m_mesh_palette.TryGetIndex(handle_id, &palette_index))
+        {
+            ALPHA_LOG_WARN(L"");
+        }
+
+
+        return GetMeshByIndex(palette_index);
+    }
+
+    const Mesh& RenderResourceManager::GetMeshByIndex(UInt64 index)
     {
         return m_mesh_palette.GetAt(index);
     }
 
-    const Renderer::Material& RenderResourceManager::GetMaterial(UInt64 index)
+    UInt32 RenderResourceManager::GetMaterialTableIndexByMesh(UInt64 index)
+    {
+        auto& mesh = GetMeshByIndex(index);
+
+        return mesh.default_table_index;
+    }
+
+    const Renderer::Material& RenderResourceManager::GetMaterialByIndex(UInt64 index)
     {
         return m_material_palette.GetAt(index);
     }
 
-    const Renderer::MaterialTable& RenderResourceManager::GetMaterialTable(UInt64 index)
+    const Renderer::MaterialTable& RenderResourceManager::GetMaterialTableByIndex(UInt64 index)
     {
         return m_material_table_palette.GetAt(index);
+    }
+
+    const Renderer::MaterialTable& RenderResourceManager::GetMaterialTableByMeshIndex(UInt64 index)
+    {
+        auto& mesh = GetMeshByIndex(index);
+
+        return GetMaterialTableByIndex(mesh.default_table_index);
+    }
+
+    UInt32 RenderResourceManager::GetGPUMeshOffset(UInt64 index)
+    {
+        auto& mesh = GetMeshByIndex(index);
+
+        return mesh.data_alloc.offset / sizeof(MeshData);
+    }
+
+    UInt32 RenderResourceManager::GetGPUMaterialTableOffset(UInt64 index)
+    {
+        auto& material_table = GetMaterialTableByIndex(index);
+        return material_table.alloc.offset;
     }
 
     RenderResourceManager::BufferIndices RenderResourceManager::GetBufferIndices() const

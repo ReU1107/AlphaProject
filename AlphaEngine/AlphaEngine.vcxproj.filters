@@ -372,7 +372,7 @@
     <ClCompile Include="Source\Core\Math\Random.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Renderer\RenderSystem.cpp">
+    <ClCompile Include="Source\Runtime\System\RenderSystem.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Asset\MaterialTableHandle.cpp">
@@ -388,6 +388,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Asset\Importer\FBX\FBXLoader.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\System\TransformComponent.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -926,7 +929,7 @@
     <ClInclude Include="Source\Core\Allocator\SlotAllocator.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Core\Component\MeshComponent.h">
+    <ClInclude Include="Source\Runtime\Renderer\MeshComponent.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Asset\ShaderHandle.h">
@@ -935,10 +938,10 @@
     <ClInclude Include="Source\Core\Math\Random.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Core\Component\TransformComponent.h">
+    <ClInclude Include="Source\Runtime\System\TransformComponent.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Renderer\RenderSystem.h">
+    <ClInclude Include="Source\Runtime\System\RenderSystem.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\Container\SlotPalette.h">
@@ -963,6 +966,12 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RenderCore\WorkGraph.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\entt\entt.hpp">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Renderer\Module.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
