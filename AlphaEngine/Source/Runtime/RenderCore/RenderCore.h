@@ -110,7 +110,7 @@ namespace Alpha
 
 		void UploadTexture(Texture* texture, void* pixels);
 
-		TUnique<Shader> CreateShader(const std::wstring& file_path, ERHIShaderType shader_type);
+		TUnique<Shader> CreateShader(const std::wstring& file_path, ERHIShaderType shader_type, const std::wstring& entry_point = L"main");
 
 		TUnique<PipelineLayout> CreatePipelineLayout(std::function<void(PipelineLayout&)> config_func);
 

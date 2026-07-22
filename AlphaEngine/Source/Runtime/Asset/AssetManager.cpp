@@ -4,12 +4,14 @@
 #include "Importer/PMX/PMXLoader.h"
 #include "Importer/VMD/VMDLoader.h"
 #include "Importer/WIC/WICLoader.h"
+#include "Importer/HLSL/HLSLLoader.h"
 
 #include "TextureHandle.h"
 #include "MaterialHandle.h"
 #include "MaterialTableHandle.h"
 #include "ModelHandle.h"
 #include "SkeletonHandle.h"
+#include "ShaderHandle.h"
 
 #include "Animation/Resource/Skeleton.h"
 
@@ -40,6 +42,8 @@ namespace Alpha
 		RegisterLoader(L".jpg", wic);
 		RegisterLoader(L".bmp", wic);
 		RegisterLoader(L".jpeg", wic);
+
+		RegisterLoader(L".hlsl", new HLSLLoader());
 
 		// BuildIn用のハンドル生成
 		{

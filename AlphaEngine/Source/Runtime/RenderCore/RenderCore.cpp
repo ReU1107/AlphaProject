@@ -317,13 +317,14 @@ namespace Alpha
 		m_gpu_data_transfer->AddTexture(texture, pixels);
 	}
 
-	TUnique<Shader> RenderCore::CreateShader(const std::wstring& file_path, ERHIShaderType shader_type)
+	TUnique<Shader> RenderCore::CreateShader(const std::wstring& file_path, ERHIShaderType shader_type, const std::wstring& entry_point)
 	{
 		auto shader = std::make_unique<Shader>();
 
 		Shader::Args desc = {};
 		desc.rhi = m_rhi.get();
 		desc.file_path = file_path.c_str();
+		desc.entry_point = entry_point.c_str();
 		desc.type = shader_type;
 		shader->Initialize(desc);
 

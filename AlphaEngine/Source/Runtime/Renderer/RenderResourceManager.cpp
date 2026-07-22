@@ -94,90 +94,15 @@ namespace Alpha
             mesh.vertex_attribute_alloc = alloc;
 		}
 
-        // メッシュレットの生成(Handle側に移すかも)
-        const size_t max_vertices = 64;
-        const size_t max_primitives = 126;
-
-        // 
-        const float* mesh_vertices = reinterpret_cast<const float*>(handle->GetPositions().data());
-        size_t mesh_vertex_count = handle->GetPositions().size();
-
-        for (const auto& submesh : handle->GetSubMeshHandles())
-        {
-            // このサブメッシュが使用しているインデックス範囲だけを指すポインタを作る
-            const unsigned int* submesh_indices = handle->GetIndices().data() + submesh.index_offset;
-            size_t submesh_index_count = submesh.index_count;
-
-            // このサブメッシュに必要な最大の Meshlet 数を計算
-            size_t max_meshlets = meshopt_buildMeshletsBound(submesh_index_count, max_vertices, max_primitives);
-
-            // 先にこれくらいつくられるかもで用意しておく
-            TArray<meshopt_Meshlet> local_meshlets(max_meshlets);
-            TArray<UInt32> local_vertices(max_meshlets * max_vertices);
-            TArray<UInt8> local_triangles(max_meshlets * max_primitives * 3);
-
-            // メッシュレットの構築
-            size_t local_count = meshopt_buildMeshlets(
-                local_meshlets.data(), local_vertices.data(), local_triangles.data(),
-                submesh_indices, submesh_index_count,
-                mesh_vertices, mesh_vertex_count, sizeof(Vector3),
-                max_vertices, max_primitives, 0.5f
-            );
-
-            local_meshlets.resize(local_count);
-
-            // 既に生成されている分のオフセット
-            UInt32 submesh_vert_idx_offset = static_cast<UInt32>(mesh.vertex_indices.size());
-            UInt32 submesh_tri_idx_offset = static_cast<UInt32>(mesh.triangle_indices.size());
-
-            size_t valid_vertex_num = 0;
-            size_t valid_triangle_num = 0;
-
-            for (size_t i = 0; i < local_count; ++i)
-            {
-                const auto& opt_meshlet = local_meshlets[i];
-                Meshlet meshlet = {};
-                meshlet.vertex_offset = submesh_vert_idx_offset + opt_meshlet.vertex_offset;
-                meshlet.vertex_count = opt_meshlet.vertex_count;
-                meshlet.triangle_offset = submesh_tri_idx_offset + (opt_meshlet.triangle_offset / 3);
-                meshlet.triangle_count = opt_meshlet.triangle_count;
-                meshlet.material_index = submesh.material_index;
-
-                mesh.meshlets.push_back(meshlet);
-                valid_vertex_num += meshlet.vertex_count;
-                valid_triangle_num += meshlet.triangle_count;
-            }
-            // 実際に使われてる分だけに縮める
-            local_vertices.resize(valid_vertex_num);
-
-            TArray<UInt32> local_packed_triangles;
-            local_packed_triangles.reserve(valid_triangle_num);
-
-            // 有効な三角形数（1プリミティブ = 3つのインデックス）の分だけパッキング
-            for (size_t i = 0; i < valid_triangle_num; ++i)
-            {
-                size_t tri_idx = i * 3;
-                UInt32 packed = 0;
-                packed |= (static_cast<UInt32>(local_triangles[tri_idx + 0] & 0xff) << 0);  // 1番目の頂点ID
-                packed |= (static_cast<UInt32>(local_triangles[tri_idx + 1] & 0xff) << 8);  // 2番目の頂点ID
-                packed |= (static_cast<UInt32>(local_triangles[tri_idx + 2] & 0xff) << 16); // 3番目の頂点ID
-
-                local_packed_triangles.push_back(packed);
-            }
-
-            mesh.vertex_indices.insert(mesh.vertex_indices.end(), local_vertices.begin(), local_vertices.end());
-            mesh.triangle_indices.insert(mesh.triangle_indices.end(), local_packed_triangles.begin(), local_packed_triangles.end());
-        }
-
         // メッシュレットの頂点index
         {
             /*
             * m_vertex_indicesの中身に対してglobal_vertex_offsetを加算した値が全体の頂点バッファのオフセットになる
             */
-            UInt32 num = mesh.vertex_indices.size();
+            UInt32 num = handle->GetVertexIndices().size();
             Allocation alloc = {};
             m_vertex_indices_allocator->AllocateByNum(num, &alloc);
-            RenderCore::Get().UploadBuffer(m_vertex_indices_allocator->GetBuffer(), alloc.offset, mesh.vertex_indices.data(), sizeof(UInt32) * num);
+            RenderCore::Get().UploadBuffer(m_vertex_indices_allocator->GetBuffer(), alloc.offset, handle->GetVertexIndices().data(), sizeof(UInt32) * num);
             
             /*
             * meshletのoffsetは頂点バッファのオフセットではなく、頂点インデックスバッファのオフセットを指す必要がある
@@ -188,10 +113,10 @@ namespace Alpha
         }
         // メッシュレットの三角形index
         {
-            UInt32 num = mesh.triangle_indices.size();
+            UInt32 num = handle->GetTriangleIndices().size();
             Allocation alloc = {};
             m_triangle_indices_allocator->AllocateByNum(num, &alloc);
-            RenderCore::Get().UploadBuffer(m_triangle_indices_allocator->GetBuffer(), alloc.offset, mesh.triangle_indices.data(), sizeof(UInt32) * num);
+            RenderCore::Get().UploadBuffer(m_triangle_indices_allocator->GetBuffer(), alloc.offset, handle->GetTriangleIndices().data(), sizeof(UInt32) * num);
             /*
             * meshletのtriangle_offsetは三角形インデックスバッファのオフセットを指す必要がある
             * そのためこのoffsetをmeshletのtriangle_offsetに加算して設定する必要がある
@@ -201,18 +126,10 @@ namespace Alpha
 
         // メッシュレット
         {
-            UInt64 vertex_offset = mesh.vertex_inidices_alloc.offset / sizeof(UInt32);
-            UInt64 triangle_offset = mesh.triangle_indices_alloc.offset / sizeof(UInt32);
-
-            for (auto& meshlet : mesh.meshlets)
-            {
-                meshlet.vertex_offset += static_cast<UInt32>(vertex_offset);
-                meshlet.triangle_offset += static_cast<UInt32>(triangle_offset);
-            }
             Allocation alloc = {};
-            UInt32 num = mesh.meshlets.size();
+            UInt32 num = handle->GetMeshlets().size();
             m_meshlet_allocator->AllocateByNum(num, &alloc);
-            RenderCore::Get().UploadBuffer(m_meshlet_allocator->GetBuffer(), alloc.offset, mesh.meshlets.data(), sizeof(Meshlet) * num);
+            RenderCore::Get().UploadBuffer(m_meshlet_allocator->GetBuffer(), alloc.offset, handle->GetMeshlets().data(), sizeof(Meshlet) * num);
 
             mesh.meshlet_alloc = alloc;
         }
@@ -221,9 +138,14 @@ namespace Alpha
         {
             mesh.data.vertex_position_offset = mesh.vertex_position_alloc.offset / sizeof(Vector3);
             mesh.data.vertex_attribute_offset = mesh.vertex_attribute_alloc.offset;  // ByteAddressBufferだからそのまま
+
+            mesh.data.meshlet_offset = mesh.meshlet_alloc.offset / sizeof(Meshlet);
+            mesh.data.meshlet_count = handle->GetMeshlets().size();
+            mesh.data.vertex_offset = mesh.vertex_inidices_alloc.offset / sizeof(UInt32);
+            mesh.data.triangle_offset = mesh.triangle_indices_alloc.offset / sizeof(UInt32);
+
             mesh.data.vertex_stride = handle->GetVertexAttributeStride();
             mesh.data.attribute_flags = handle->GetVertexAttributeFlags().GetValue();
-            mesh.data.meshlet_offset = mesh.meshlet_alloc.offset / sizeof(Meshlet);
 
             Allocation alloc{};
             m_mesh_allocator->AllocateByNum(1, &alloc);
@@ -376,9 +298,9 @@ namespace Alpha
         return m_material_table_palette.GetAt(index);
     }
 
-    RenderResourceManager::HeapIndices RenderResourceManager::GetBufferHeapIndices() const
+    RenderResourceManager::BufferIndices RenderResourceManager::GetBufferIndices() const
     {
-        return HeapIndices{
+        return BufferIndices{
             .position = m_vertex_position_allocator->GetBuffer()->GetSRVHandle().index,
             .attribute = m_vertex_attribute_allocator->GetBuffer()->GetSRVHandle().index,
             .vertex_indices = m_vertex_indices_allocator->GetBuffer()->GetSRVHandle().index,
@@ -389,45 +311,4 @@ namespace Alpha
             .material_table = m_material_table_allocator->GetBuffer()->GetSRVHandle().index
         };
     }
-
-    UInt32 RenderResourceManager::GetPositionBufferIndex() const
-    {
-        return m_vertex_position_allocator->GetBuffer()->GetSRVHandle().index;
-    }
-
-    UInt32 RenderResourceManager::GetAttributeBufferIndex() const
-    {
-        return m_vertex_attribute_allocator->GetBuffer()->GetSRVHandle().index;
-    }
-
-    UInt32 RenderResourceManager::GetVertexIndicesBufferIndex() const
-    {
-        return m_vertex_indices_allocator->GetBuffer()->GetSRVHandle().index;
-    }
-
-    UInt32 RenderResourceManager::GetTriangleIndicesBufferIndex() const
-    {
-        return m_triangle_indices_allocator->GetBuffer()->GetSRVHandle().index;
-    }
-
-    UInt32 RenderResourceManager::GetMeshletBufferIndex() const
-    {
-        return m_meshlet_allocator->GetBuffer()->GetSRVHandle().index;
-    }
-
-    UInt32 RenderResourceManager::GetMeshBufferIndex() const
-    {
-        return m_mesh_allocator->GetBuffer()->GetSRVHandle().index;
-    }
-
-    UInt32 RenderResourceManager::GetMaterialBufferIndex() const
-    {
-        return m_material_allocator->GetBuffer()->GetSRVHandle().index;
-    }
-
-    UInt32 RenderResourceManager::GetMaterialTableBufferIndex() const
-    {
-        return m_material_table_allocator->GetBuffer()->GetSRVHandle().index;
-    }
-
 }

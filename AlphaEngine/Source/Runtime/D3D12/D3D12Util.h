@@ -14,6 +14,13 @@ namespace Alpha
 		T data{};
 	};
 
+	template<D3D12_STATE_SUBOBJECT_TYPE Type, typename T>
+	struct StateSubobject
+	{
+		D3D12_STATE_SUBOBJECT_TYPE type = Type;
+		T data{};
+	};
+
 
 	//https://microsoft.github.io/DirectX-Specs/d3d/DepthBoundsTest.html
 

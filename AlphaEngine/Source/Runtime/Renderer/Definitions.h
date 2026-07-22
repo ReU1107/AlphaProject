@@ -28,9 +28,6 @@ namespace Alpha::Renderer
 		float  refraction_index{ 1.5f };			// 屈折率 (IOR)
 
 		float3 specular_tint{ 1.0f, 1.0f, 1.0f };	// 鏡面反射の微調整用
-		float  padding{ 0.0f };						// 16バイト境界合わせ
-
-		bool operator==(const MaterialProperties&) const = default;
 	};
 
 	struct MaterialData
@@ -63,6 +60,9 @@ namespace Alpha::Renderer
 		UInt32 vertex_attribute_offset{};
 
 		UInt32 meshlet_offset{};
+		UInt32 meshlet_count{};
+		UInt32 vertex_offset{};
+		UInt32 triangle_offset{};
 
 		UInt32 attribute_flags{};	// このモデルが持つ頂点属性のフラグ
 		UInt32 vertex_stride{};	// 頂点属性のバイト数
@@ -108,10 +108,6 @@ namespace Alpha::Renderer
 		Allocation triangle_indices_alloc{};
 		Allocation meshlet_alloc{};
 		Allocation data_alloc{};
-
-		TArray<Meshlet> meshlets{};     
-		TArray<UInt32> vertex_indices{}; 
-		TArray<UInt32> triangle_indices{};
 
 		MeshData data{};
 		UInt32 default_table_offset{};

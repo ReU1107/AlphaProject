@@ -14,14 +14,15 @@ namespace
 	{
 		switch (stage)
 		{
-		case Alpha::ERHIShaderType::Vertex		: return L"vs_";
-		case Alpha::ERHIShaderType::Pixel		: return L"ps_";
-		case Alpha::ERHIShaderType::Geometry	: return L"gs_";
-		case Alpha::ERHIShaderType::Hull		: return L"hs_";
-		case Alpha::ERHIShaderType::Mesh		: return L"ms_";
-		case Alpha::ERHIShaderType::Compute		: return L"cs_";
-		case Alpha::ERHIShaderType::RayTracing	: return L"lib_";
-		case Alpha::ERHIShaderType::Library		: return L"lib_";
+		case Alpha::ERHIShaderType::Vertex			: return L"vs_";
+		case Alpha::ERHIShaderType::Pixel			: return L"ps_";
+		case Alpha::ERHIShaderType::Geometry		: return L"gs_";
+		case Alpha::ERHIShaderType::Hull			: return L"hs_";
+		case Alpha::ERHIShaderType::Amplification	: return L"as_";
+		case Alpha::ERHIShaderType::Mesh			: return L"ms_";
+		case Alpha::ERHIShaderType::Compute			: return L"cs_";
+		case Alpha::ERHIShaderType::RayTracing		: return L"lib_";
+		case Alpha::ERHIShaderType::Library			: return L"lib_";
 		default:
 			break;
 		}
@@ -69,6 +70,7 @@ namespace
 		IDxcIncludeHandler* include_handler = nullptr;
 		utils->CreateDefaultIncludeHandler(&include_handler);
 
+
 		hr = library->CreateBlobFromFile(desc.file_directory.c_str(), nullptr, &source_blob);
 		if (FAILED(hr))
 			return false;
@@ -84,7 +86,7 @@ namespace
 		}
 
 		std::wstring target = GetShaderTarget(desc.type);
-		target += L"6_8";	// シェーダータイプ + シェーダーモデル
+		target += L"6_9";	// シェーダータイプ + シェーダーモデル
 
 		arguments.push_back(L"-T");						 
 		arguments.push_back(target.c_str());	// シェーダータイプ + モデル
@@ -92,6 +94,7 @@ namespace
 		arguments.push_back(L"-O3");
 		arguments.push_back(L"-HV");
 		arguments.push_back(L"2021"); // これを追加
+
 		if (desc.enable_debug)
 		{
 			arguments.push_back(L"-Zi");					// デバッグ情報を有効化
@@ -105,9 +108,11 @@ namespace
 
 		for (auto path : desc.includes)
 		{
-			arguments.push_back(L"-I");
-			arguments.push_back(path.c_str());
+
 		}
+
+		arguments.push_back(L"-I");
+		arguments.push_back(L"Asset");
 
 
 		DxcBuffer source_buffer = {};
@@ -116,7 +121,7 @@ namespace
 		source_buffer.Encoding = DXC_CP_UTF8;
 
 		IDxcResult* result = nullptr;
-		hr = compiler->Compile(&source_buffer, arguments.data(), (UINT32)arguments.size(), nullptr, IID_PPV_ARGS(&result));
+		hr = compiler->Compile(&source_buffer, arguments.data(), (UINT32)arguments.size(), include_handler, IID_PPV_ARGS(&result));
 		HRESULT hr_status;
 		result->GetStatus(&hr_status);
 		if (FAILED(hr_status)) {
@@ -125,8 +130,27 @@ namespace
 			result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&error_blob), nullptr);
 			if (error_blob && error_blob->GetStringLength() > 0) 
 			{
-				ALPHA_LOG_ERROR(L"Shader Compile Error:\n{}", Alpha::Text(error_blob->GetStringPointer()).c_str());
+				const char* utf8Str = error_blob->GetStringPointer();
+				int utf8Len = static_cast<int>(error_blob->GetStringLength());
+
+				// 2. 必要なバッファサイズを計算
+				int wlen = MultiByteToWideChar(CP_UTF8, 0, utf8Str, utf8Len, nullptr, 0);
+
+				std::wstring wErrorMsg;
+				if (wlen > 0) {
+					wErrorMsg.resize(wlen);
+					// 3. 安全にワイド文字に変換（例外は発生しません）
+					MultiByteToWideChar(CP_UTF8, 0, utf8Str, utf8Len, &wErrorMsg[0], wlen);
+				}
+
+				// 4. 安全になった文字列でログ出力
+				ALPHA_LOG_ERROR(L"Shader Compile Error:\n{}", wErrorMsg.c_str());
+
 				error_blob->Release();
+
+				// 日本語が含まれるとエラーになる
+				//ALPHA_LOG_ERROR(L"Shader Compile Error:\n{}", Alpha::Text(error_blob->GetStringPointer()).c_str());
+				//error_blob->Release();
 			}
 			return false; // ここで失敗を返すようにする
 		}
@@ -166,7 +190,7 @@ namespace Alpha
 		}
 
 		m_shader_blob = shader_blob;
-
+		m_entry_point = desc.entry_point;
 		return true;
 	}
 }

@@ -211,6 +211,11 @@ namespace Alpha
 		UInt8 write_mask{ 0x0F };
 	};
 
+	struct RHIComputeSettings 
+	{
+		RHIShader* compute_shader{ nullptr };
+	};
+
 	struct RHIGraphicsPipelineDesc
 	{
 		RHIPipelineLayout* layout{ nullptr };

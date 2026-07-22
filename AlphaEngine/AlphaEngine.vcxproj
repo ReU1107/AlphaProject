@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Core\Assertion.cpp" />
     <ClCompile Include="Source\Core\IO\BinaryReader.cpp" />
+    <ClCompile Include="Source\Core\IO\StreamReader.cpp" />
     <ClCompile Include="Source\Core\Log\Logger.cpp" />
     <ClCompile Include="Source\Core\Math\Color.cpp" />
     <ClCompile Include="Source\Core\Math\GeometryUtil.cpp" />
@@ -181,6 +182,8 @@
     <ClCompile Include="Source\Runtime\Animation\Resource\Track.cpp" />
     <ClCompile Include="Source\Runtime\Asset\AssetManager.cpp" />
     <ClCompile Include="Source\Runtime\Asset\AudioHandle.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\Importer\FBX\FBXLoader.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\Importer\HLSL\HLSLLoader.cpp" />
     <ClCompile Include="Source\Runtime\Asset\Importer\PMX\PMXLoader.cpp" />
     <ClCompile Include="Source\Runtime\Asset\Importer\PMX\PMXParser.cpp" />
     <ClCompile Include="Source\Runtime\Asset\Importer\VMD\VMDLoader.cpp" />
@@ -285,6 +288,7 @@
     <ClInclude Include="Source\Core\EnumClassUtil.h" />
     <ClInclude Include="Source\Core\IO\BinaryReader.h" />
     <ClInclude Include="Source\Core\IO\BinaryWriter.h" />
+    <ClInclude Include="Source\Core\IO\StreamReader.h" />
     <ClInclude Include="Source\Core\IVisitor.h" />
     <ClInclude Include="Source\Core\Literal.h" />
     <ClInclude Include="Source\Core\Log\Logger.h" />
@@ -350,6 +354,8 @@
     <ClInclude Include="Source\Runtime\Asset\AssetLoader.h" />
     <ClInclude Include="Source\Runtime\Asset\AssetManager.h" />
     <ClInclude Include="Source\Runtime\Asset\AudioHandle.h" />
+    <ClInclude Include="Source\Runtime\Asset\Importer\FBX\FBXLoader.h" />
+    <ClInclude Include="Source\Runtime\Asset\Importer\HLSL\HLSLLoader.h" />
     <ClInclude Include="Source\Runtime\Asset\Importer\PMX\PMXData.h" />
     <ClInclude Include="Source\Runtime\Asset\Importer\PMX\PMXLoader.h" />
     <ClInclude Include="Source\Runtime\Asset\Importer\PMX\PMXParser.h" />
@@ -388,6 +394,7 @@
     <ClInclude Include="Source\Runtime\D3D12\D3D12Util.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12WorkGraphPipeline.h" />
     <ClInclude Include="Source\Runtime\RenderCore\PersistentBufferAllocator.h" />
+    <ClInclude Include="Source\Runtime\RenderCore\WorkGraph.h" />
     <ClInclude Include="Source\Runtime\Renderer\Camera.h" />
     <ClInclude Include="Source\Runtime\Renderer\DebugRenderer.h" />
     <ClInclude Include="Source\Runtime\Renderer\Definitions.h" />

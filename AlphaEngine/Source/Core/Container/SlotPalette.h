@@ -64,7 +64,7 @@ namespace Alpha
             if (!m_allocator.Allocate(&index))
             {
                 ALPHA_LOG_WARN(L"想定した量を超えています初期化時の数を増やすなどし対処してください");
-                // 動的拡張などのフォールバック処理...
+                // 動的拡張をとりあえずするけど...
             }
 
             m_key_to_index_map[key] = index;
