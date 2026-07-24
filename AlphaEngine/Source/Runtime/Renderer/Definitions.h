@@ -2,6 +2,7 @@
 #include "Core/Common.h"
 #include "Core/Allocator/Allocator.h"
 #include "Types.h"
+#include "RHI/Definitions.h"
 
 namespace Alpha
 {
@@ -73,8 +74,9 @@ namespace Alpha::Renderer
 		Matrix4x4 world_matrix{};
 		// 属性フラグ
 		// 行列パレットの場所を指すindex
-		UInt32 material_table_index{};
-		UInt32 mesh_index{};
+
+		UInt32 material_table_offset{};
+		UInt32 mesh_offset{};
 	};
 
 	/*
@@ -91,7 +93,7 @@ namespace Alpha::Renderer
 	struct MaterialTable
 	{
 		Allocation alloc{};
-		UInt32 material_indices[64];
+		UInt32 material_indices[64]{};
 		UInt32 material_num{ 0 };
 	};
 
@@ -100,16 +102,29 @@ namespace Alpha::Renderer
 		TUnique<Texture> tex{ nullptr };
 	};
 
+	struct SubMesh
+	{
+		UInt32 offset{ 0 };
+		UInt32 count{ 0 };
+	};
+
 	struct Mesh
 	{
 		Allocation vertex_position_alloc{};
 		Allocation vertex_attribute_alloc{};
+
+		Allocation index_alloc{};
+
 		Allocation vertex_inidices_alloc{};
 		Allocation triangle_indices_alloc{};
 		Allocation meshlet_alloc{};
+
 		Allocation data_alloc{};
 
+		ASData as_data{};
+
 		MeshData data{};
-		UInt32 default_table_offset{};
+		TArray<SubMesh> submeshes{};
+		UInt32 default_table_index{};
 	};
 }

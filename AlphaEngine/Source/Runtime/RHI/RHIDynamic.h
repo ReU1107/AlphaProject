@@ -40,6 +40,10 @@ namespace Alpha
 
 		virtual TUnique<RHIComputePipeline> CreateComputePipeline(const RHIComputePipelineDesc& desc) = 0;
 
+		virtual void RequestTopLevelASSize(const RHITopLevelASDesc& desc, ASData* data) = 0;
+
+		virtual void RequestBottomLevelASSize(const RHIBottomLevelASDesc& desc, ASData* data) = 0;
+
 	};
 
 	// RHIオブジェクトで必ず実装すべき関数群コンセプト requres を使ってみた

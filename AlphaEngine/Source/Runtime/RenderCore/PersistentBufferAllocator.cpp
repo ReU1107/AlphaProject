@@ -1,6 +1,6 @@
 ﻿#include "PersistentBufferAllocator.h"
-#include "RenderCore/RenderCore.h"
-#include "RenderCore/Buffer.h"
+#include "RenderCore.h"
+#include "Buffer.h"
 namespace Alpha
 {
     PersistentBufferAllocator::~PersistentBufferAllocator() = default;
@@ -46,5 +46,10 @@ namespace Alpha
     void PersistentBufferAllocator::Free(const Allocation& allocation)
     {
         m_allocator.Free(allocation);
+    }
+
+    void PersistentBufferAllocator::SetName(StringView name)
+    {
+        m_buffer->SetName(name);
     }
 }

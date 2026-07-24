@@ -165,27 +165,24 @@ namespace Alpha
 	{
 		ERHIFillMode fill_mode{ ERHIFillMode::Solid };
 		ERHICullMode cull_mode{ ERHICullMode::Back };
-		Bool front_counter_clockwise{ false };
 		Int32 depth_bias{ 0 };
 		Float depth_bias_clamp{ 0.0f };
 		Float slope_scaled_depth_bias{ 0.0f };
+		UInt32 forced_sample_count{ 0 };
+		Bool front_counter_clockwise{ false };
 		Bool depth_clip_enable{ true };
 		Bool multisample_enable{ false };
 		Bool antialiased_line_enable{ false };
-		UInt32 forced_sample_count{ 0 };
 		Bool conservative_raster_enable{ false };
 	};
 
 	struct RHIVertexElementDesc
 	{
 		String semantic_name{L""};				// セマンティクス名
-		UInt32 semantic_index{ 0 };				// セマンティクス番号(名前が被った時に使用する基本的には０)
+		UInt32 semantic_index{ 0 };				// セマンティクス番号(名前が被った時に使用する基本的には0)
 		ERHIResourceFormat format{ ERHIResourceFormat::RGBFloat };				// フォーマット
 		UInt32 input_slot{ 0 };					// bind番号
 		UInt32 aligned_offset{ 0xffffffff };				// 基本0xffffffff(自動計算)
-		//InputClassification classification;		// 分類
-
-		//UInt32 instanceCount;					// インスタンスの時に使用(それ以外の時は0固定)
 	};
 
 	struct RHIVertexLayoutDesc
@@ -197,9 +194,6 @@ namespace Alpha
 
 	struct RHIBlendStateDesc
 	{
-		Bool blend_enable{ false };
-		Bool logic_op_enable{ false };
-
 		ERHIBlend src_blend{ ERHIBlend::One };
 		ERHIBlend dest_blend{ ERHIBlend::Zero };
 		ERHIBlendOp blend_op{ ERHIBlendOp::Add };
@@ -208,6 +202,8 @@ namespace Alpha
 		ERHIBlend dest_blend_alpha{ ERHIBlend::Zero };
 		ERHIBlendOp blend_op_alpha{ ERHIBlendOp::Add };
 
+		Bool blend_enable{ false };
+		Bool logic_op_enable{ false };
 		UInt8 write_mask{ 0x0F };
 	};
 
@@ -248,19 +244,43 @@ namespace Alpha
 	{
 		RHIPipelineLayout* layout{ nullptr };
 		RHIShader* compute_shader{ nullptr };
-		RHIDescriptorView* View{ nullptr };
+		//RHIDescriptorView* View{ nullptr };		
 	};
 
-	struct RHIWorkGraphPipelineDesc
-	{
-		RHIPipelineLayout* layout{ nullptr };
-		RHIShader* compute_shader{ nullptr };
-		RHIDescriptorView* View{ nullptr };
-	};
+	//struct RHIWorkGraphPipelineDesc
+	//{
+	//	RHIPipelineLayout* layout{ nullptr };
+	//};
 
 	struct RHIRayTracingPipelineDesc
 	{
 		RHIShader* RayTracingShader{ nullptr };
-		RHIDescriptorView* View{ nullptr };
+		//RHIDescriptorView* View{ nullptr };
 	};
+
+	struct RHITopLevelASDesc
+	{
+		UInt32 instance_count{ 0 };
+	};
+
+	struct RHIBottomLevelGeometryDesc
+	{
+		UInt32 index_count{};
+		bool is_opaque{ false };
+	};
+
+	struct RHIBottomLevelASDesc
+	{
+		TArray<RHIBottomLevelGeometryDesc> geometries{};
+		UInt32 vertex_count{ 0 };
+		bool is_static{ false };
+	};
+
+	struct ASData
+	{
+		UInt64 size{ 0 };
+		UInt64 scratch_size{ 0 };
+		UInt64 update_size{ 0 };
+	};
+
 }

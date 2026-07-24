@@ -1,4 +1,5 @@
 ﻿#include "D3D12Device.h"
+#include "RHI/Definitions.h"
 
 #if RHI_D3D12
 
@@ -83,7 +84,71 @@ namespace Alpha
 			info->PushStorageFilter(&filter);
 		}
 
+		D3D12_FEATURE_DATA_D3D12_OPTIONS5 options = {};
+		m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &options, sizeof(options));
+
+		if (options.RaytracingTier < D3D12_RAYTRACING_TIER_1_2)
+		{
+			ALPHA_LOG_ERROR(L"meshshadernodeが対応していません;;");
+		}
+
 		return true;
+	}
+
+	void D3D12Device::RequestTopLevelASSize(const RHITopLevelASDesc& desc, ASData* data)
+	{
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+		inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+		inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+		inputs.NumDescs = desc.instance_count;
+		inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info = {};
+		m_device->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
+
+		data->size = info.ResultDataMaxSizeInBytes;
+		data->scratch_size = info.ScratchDataSizeInBytes;
+		data->update_size = info.UpdateScratchDataSizeInBytes;
+	}
+
+	void D3D12Device::RequestBottomLevelASSize(const RHIBottomLevelASDesc& desc, ASData* data)
+	{
+		UInt32 geometry_count = desc.geometries.size();
+		TArray<D3D12_RAYTRACING_GEOMETRY_DESC> geometry_desc(geometry_count);
+
+		for (UInt32 i = 0; i < geometry_count; ++i)
+		{
+			auto& geometry = geometry_desc[i];
+			geometry.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+			geometry.Flags = (desc.geometries[i].is_opaque) ? D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE : D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
+
+			geometry.Triangles.VertexBuffer.StrideInBytes = sizeof(Vector3);
+			geometry.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+			geometry.Triangles.VertexCount = desc.vertex_count;
+
+
+			geometry.Triangles.IndexCount = desc.geometries[i].index_count;
+			geometry.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
+	
+		}
+
+		// 一旦updateにしとく
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+		inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+		inputs.Flags = flags;
+		inputs.NumDescs = geometry_count;
+		inputs.pGeometryDescs = geometry_desc.data();
+		inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info = {};
+		m_device->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
+
+		data->size = info.ResultDataMaxSizeInBytes;
+		data->scratch_size = info.ScratchDataSizeInBytes;
+		data->update_size = info.UpdateScratchDataSizeInBytes;
+
 	}
 
 }

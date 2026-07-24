@@ -35,5 +35,7 @@ namespace Alpha
         void Free(const Allocation& allocation);
 
         Buffer* GetBuffer() const { return m_buffer.get(); }
+
+        void SetName(StringView name);
     };
 }

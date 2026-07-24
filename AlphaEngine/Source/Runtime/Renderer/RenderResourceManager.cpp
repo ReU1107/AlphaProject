@@ -14,31 +14,20 @@ namespace Alpha
 
 	bool RenderResourceManager::Initialize(const Args& args)
 	{
-		auto CreateAllocator = [](size_t alignment, size_t max_size, EBufferPresetType preset, const wchar_t* name) 
-		{
-			auto allocator = std::make_unique<PersistentBufferAllocator>();
-			allocator->Initialize({
-				.render_core = RenderCore::GetPtr(),
-				.alignment = alignment,
-				.max_size = max_size,
-				.preset = preset,
-				});
-			allocator->GetBuffer()->SetName(name);
-			return allocator;
-		};
 
-		m_vertex_position_allocator	= CreateAllocator(sizeof(Vector3), 12_MB, EBufferPresetType::ROStructured, L"VertexPositionBuffer");
-		m_vertex_attribute_allocator= CreateAllocator(sizeof(UInt32), 12_MB, EBufferPresetType::ROByteAddress, L"VertexAttributeBuffer");
+        m_vertex_position_allocator = CreatePersistentAllocator(args.render_core, sizeof(Vector3), 12_MB, EBufferPresetType::ROStructured, L"VertexPositionBuffer");
+		m_vertex_attribute_allocator= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 12_MB, EBufferPresetType::ROByteAddress, L"VertexAttributeBuffer");
 		
-        m_vertex_indices_allocator	= CreateAllocator(sizeof(UInt32), 12_MB, EBufferPresetType::ROStructured, L"VertexIndicesBuffer");
-		m_triangle_indices_allocator= CreateAllocator(sizeof(UInt32), 12_MB, EBufferPresetType::ROStructured, L"TriangleIndicesBuffer");
-		m_meshlet_allocator			= CreateAllocator(sizeof(Meshlet), 12_MB, EBufferPresetType::ROStructured, L"MeshletBuffer");
+        m_vertex_indices_allocator	= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 12_MB, EBufferPresetType::ROStructured, L"VertexIndicesBuffer");
+		m_triangle_indices_allocator= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 12_MB, EBufferPresetType::ROStructured, L"TriangleIndicesBuffer");
+		m_meshlet_allocator			= CreatePersistentAllocator(args.render_core, sizeof(Meshlet), 12_MB, EBufferPresetType::ROStructured, L"MeshletBuffer");
+		m_index_allocator			= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 8_MB, EBufferPresetType::ROStructured, L"IndexBuffer");
 		
-        m_mesh_allocator			= CreateAllocator(sizeof(MeshData), 4_MB, EBufferPresetType::ROStructured, L"ModelBuffer");
+        m_mesh_allocator			= CreatePersistentAllocator(args.render_core, sizeof(MeshData), 4_MB, EBufferPresetType::ROStructured, L"ModelBuffer");
 		
-        m_material_allocator		= CreateAllocator(sizeof(MaterialData), 4_MB, EBufferPresetType::ROStructured, L"MaterialBuffer");
+        m_material_allocator		= CreatePersistentAllocator(args.render_core, sizeof(MaterialData), 4_MB, EBufferPresetType::ROStructured, L"MaterialBuffer");
 
-        m_material_table_allocator  = CreateAllocator(sizeof(UInt32), 4_MB, EBufferPresetType::ROByteAddress, L"MaterialTableBuffer");
+        m_material_table_allocator  = CreatePersistentAllocator(args.render_core, sizeof(UInt32), 4_MB, EBufferPresetType::ROByteAddress, L"MaterialTableBuffer");
 
         m_mesh_palette.Initialize(100);
         m_material_palette.Initialize(100);
@@ -75,7 +64,7 @@ namespace Alpha
 				// 
 			}
 			
-			RenderCore::Get().UploadBuffer(m_vertex_position_allocator->GetBuffer(), alloc.offset, handle->GetPositions().data(), sizeof(Vector3) * num);
+            RenderCore::Get().UploadBuffer(m_vertex_position_allocator->GetBuffer(), alloc.offset, handle->GetPositions().data(), alloc.size);
 
             mesh.vertex_position_alloc = alloc;
 		}
@@ -89,10 +78,24 @@ namespace Alpha
 				ALPHA_LOG_WARN(L"ModelHandleのリソース化に失敗しました");
 				// 
 			}
-			RenderCore::Get().UploadBuffer(m_vertex_attribute_allocator->GetBuffer(), alloc.offset, handle->GetPackData().data(), size);
+			RenderCore::Get().UploadBuffer(m_vertex_attribute_allocator->GetBuffer(), alloc.offset, handle->GetPackData().data(), alloc.size);
 
             mesh.vertex_attribute_alloc = alloc;
 		}
+
+        // indexデータ(DXR用)
+        {
+            UInt32 size = handle->GetIndices().size();
+            Allocation alloc{};
+            if (!m_index_allocator->AllocateByNum(size, &alloc))
+            {
+                ALPHA_LOG_WARN(L"ModelHandleのリソース化に失敗しました");
+                // 
+            }
+            RenderCore::Get().UploadBuffer(m_index_allocator->GetBuffer(), alloc.offset, handle->GetIndices().data(), alloc.size);
+
+            mesh.index_alloc = alloc;
+        }
 
         // メッシュレットの頂点index
         {
@@ -102,7 +105,7 @@ namespace Alpha
             UInt32 num = handle->GetVertexIndices().size();
             Allocation alloc = {};
             m_vertex_indices_allocator->AllocateByNum(num, &alloc);
-            RenderCore::Get().UploadBuffer(m_vertex_indices_allocator->GetBuffer(), alloc.offset, handle->GetVertexIndices().data(), sizeof(UInt32) * num);
+            RenderCore::Get().UploadBuffer(m_vertex_indices_allocator->GetBuffer(), alloc.offset, handle->GetVertexIndices().data(), alloc.size);
             
             /*
             * meshletのoffsetは頂点バッファのオフセットではなく、頂点インデックスバッファのオフセットを指す必要がある
@@ -116,7 +119,7 @@ namespace Alpha
             UInt32 num = handle->GetTriangleIndices().size();
             Allocation alloc = {};
             m_triangle_indices_allocator->AllocateByNum(num, &alloc);
-            RenderCore::Get().UploadBuffer(m_triangle_indices_allocator->GetBuffer(), alloc.offset, handle->GetTriangleIndices().data(), sizeof(UInt32) * num);
+            RenderCore::Get().UploadBuffer(m_triangle_indices_allocator->GetBuffer(), alloc.offset, handle->GetTriangleIndices().data(), alloc.size);
             /*
             * meshletのtriangle_offsetは三角形インデックスバッファのオフセットを指す必要がある
             * そのためこのoffsetをmeshletのtriangle_offsetに加算して設定する必要がある
@@ -129,7 +132,7 @@ namespace Alpha
             Allocation alloc = {};
             UInt32 num = handle->GetMeshlets().size();
             m_meshlet_allocator->AllocateByNum(num, &alloc);
-            RenderCore::Get().UploadBuffer(m_meshlet_allocator->GetBuffer(), alloc.offset, handle->GetMeshlets().data(), sizeof(Meshlet) * num);
+            RenderCore::Get().UploadBuffer(m_meshlet_allocator->GetBuffer(), alloc.offset, handle->GetMeshlets().data(), alloc.size);
 
             mesh.meshlet_alloc = alloc;
         }
@@ -150,13 +153,34 @@ namespace Alpha
             Allocation alloc{};
             m_mesh_allocator->AllocateByNum(1, &alloc);
 
-            RenderCore::Get().UploadBuffer(m_mesh_allocator->GetBuffer(), alloc.offset, &mesh.data, sizeof(MeshData));
+            RenderCore::Get().UploadBuffer(m_mesh_allocator->GetBuffer(), alloc.offset, &mesh.data, alloc.size);
 
             mesh.data_alloc = alloc;
         }
         // マテリアルテーブルの登録
-        mesh.default_table_offset = RegisterMaterialTable(handle->GetMaterialTableHandle());
+        mesh.default_table_index = RegisterMaterialTable(handle->GetMaterialTableHandle());
 
+        {
+            RHIBottomLevelASDesc desc = {};
+            desc.vertex_count = handle->GetPositions().size();
+            for (auto& sub_mesh_handle : handle->GetSubMeshHandles())
+            {
+                SubMesh sub_mesh = {
+                    .offset = sub_mesh_handle.index_offset,
+                    .count = sub_mesh_handle.index_count,
+                };
+                RHIBottomLevelGeometryDesc geometry = {
+                    .index_count = sub_mesh_handle.index_count,
+                };
+
+                desc.geometries.push_back(geometry);
+                mesh.submeshes.push_back(sub_mesh);
+            }
+            ASData data = {};
+            RenderCore::Get().RequestBottomLevelASSize(desc, &data);
+
+            mesh.as_data = data;
+        }
         return palette_index;
 	}
 
@@ -189,7 +213,7 @@ namespace Alpha
                 ALPHA_LOG_WARN(L"ModelHandleのリソース化に失敗しました");
                 // 
             }
-            RenderCore::Get().UploadBuffer(m_material_table_allocator->GetBuffer(), alloc.offset, table.material_indices, size);
+            RenderCore::Get().UploadBuffer(m_material_table_allocator->GetBuffer(), alloc.offset, table.material_indices, alloc.size);
 
             table.alloc = alloc;
         }
@@ -249,7 +273,7 @@ namespace Alpha
         Allocation alloc{};
         m_material_allocator->AllocateByNum(1, &alloc);
 
-        RenderCore::Get().UploadBuffer(m_material_allocator->GetBuffer(), alloc.offset, &material.data, sizeof(MaterialData));
+        RenderCore::Get().UploadBuffer(m_material_allocator->GetBuffer(), alloc.offset, &material.data, alloc.size);
 
         material.alloc = alloc;
         return palette_index;
@@ -283,19 +307,66 @@ namespace Alpha
         return palette_index;
     }
 
-    const Mesh& RenderResourceManager::GetMesh(UInt64 index)
+    const Renderer::Mesh& RenderResourceManager::GetMeshByHandle(TShared<ModelHandle> handle)
+    {
+        UInt64 handle_id = handle->GetID();
+
+        return GetMeshByHandle(handle_id);
+    }
+
+    const Renderer::Mesh& RenderResourceManager::GetMeshByHandle(UInt64 handle_id)
+    {
+        UInt32 palette_index = 0;
+
+        if (!m_mesh_palette.TryGetIndex(handle_id, &palette_index))
+        {
+            ALPHA_LOG_WARN(L"");
+        }
+
+
+        return GetMeshByIndex(palette_index);
+    }
+
+    const Mesh& RenderResourceManager::GetMeshByIndex(UInt64 index)
     {
         return m_mesh_palette.GetAt(index);
     }
 
-    const Renderer::Material& RenderResourceManager::GetMaterial(UInt64 index)
+    UInt32 RenderResourceManager::GetMaterialTableIndexByMesh(UInt64 index)
+    {
+        auto& mesh = GetMeshByIndex(index);
+
+        return mesh.default_table_index;
+    }
+
+    const Renderer::Material& RenderResourceManager::GetMaterialByIndex(UInt64 index)
     {
         return m_material_palette.GetAt(index);
     }
 
-    const Renderer::MaterialTable& RenderResourceManager::GetMaterialTable(UInt64 index)
+    const Renderer::MaterialTable& RenderResourceManager::GetMaterialTableByIndex(UInt64 index)
     {
         return m_material_table_palette.GetAt(index);
+    }
+
+    const Renderer::MaterialTable& RenderResourceManager::GetMaterialTableByMeshIndex(UInt64 index)
+    {
+        auto& mesh = GetMeshByIndex(index);
+
+        return GetMaterialTableByIndex(mesh.default_table_index);
+    }
+
+    UInt32 RenderResourceManager::GetGPUMeshOffset(UInt64 index)
+    {
+        auto& mesh = GetMeshByIndex(index);
+
+        return mesh.data_alloc.offset / sizeof(MeshData);
+    }
+
+    UInt32 RenderResourceManager::GetGPUMaterialTableOffset(UInt64 index)
+    {
+        auto& material_table = GetMaterialTableByIndex(index);
+        return material_table.alloc.offset;
     }
 
     RenderResourceManager::BufferIndices RenderResourceManager::GetBufferIndices() const

@@ -3,6 +3,8 @@
 
 namespace Alpha
 {
+	// Vulkan用の時で書いてたけど使ってない
+
 	class RHIDescriptorView
 	{
 	public:

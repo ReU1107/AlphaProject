@@ -54,6 +54,9 @@ namespace Alpha
 
 		TUnique<RHIComputePipeline> CreateComputePipeline(const RHIComputePipelineDesc& desc);
 
+		void RequestTopLevelASSize(const RHITopLevelASDesc& desc, ASData* data);
+
+		void RequestBottomLevelASSize(const RHIBottomLevelASDesc& desc, ASData* data);
 
 		// テストコード用で外部に公開
 		RHIDynamic* GetDynamic() const { return m_dynamic.get(); }

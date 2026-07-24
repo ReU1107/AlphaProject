@@ -118,6 +118,10 @@ namespace Alpha
 
 		TUnique<ComputePipeline> CreateComputePipeline(ComputePipelineArgs args);
 
+		void RequestTopLevelASSize(const RHITopLevelASDesc& desc, ASData* data);
+
+		void RequestBottomLevelASSize(const RHIBottomLevelASDesc& desc, ASData* data);
+
 		ERHIResourceFormat GetBackBufferFormat() const { return m_back_buffer_format; }
 
 		UINT32 GetCurrentBackBufferIndex() const;
