@@ -133,17 +133,14 @@ namespace
 				const char* utf8Str = error_blob->GetStringPointer();
 				int utf8Len = static_cast<int>(error_blob->GetStringLength());
 
-				// 2. 必要なバッファサイズを計算
 				int wlen = MultiByteToWideChar(CP_UTF8, 0, utf8Str, utf8Len, nullptr, 0);
 
 				std::wstring wErrorMsg;
 				if (wlen > 0) {
 					wErrorMsg.resize(wlen);
-					// 3. 安全にワイド文字に変換（例外は発生しません）
 					MultiByteToWideChar(CP_UTF8, 0, utf8Str, utf8Len, &wErrorMsg[0], wlen);
 				}
 
-				// 4. 安全になった文字列でログ出力
 				ALPHA_LOG_ERROR(L"Shader Compile Error:\n{}", wErrorMsg.c_str());
 
 				error_blob->Release();

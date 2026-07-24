@@ -1,17 +1,11 @@
 ﻿#include "TransientBufferAllocator.h"
-#include "RenderCore/RenderCore.h"
-#include "RenderCore/Buffer.h"
+#include "RenderCore.h"
+#include "Buffer.h"
 #include "Core/Math/MathUtil.h"
 
 namespace Alpha
 {
-	TransientBufferAllocator::TransientBufferAllocator()
-	{
-	}
-
-	TransientBufferAllocator::~TransientBufferAllocator()
-	{
-	}
+	TransientBufferAllocator::~TransientBufferAllocator() = default;
 
 	void TransientBufferAllocator::Initialize(const Args& args)
 	{
@@ -55,5 +49,13 @@ namespace Alpha
 	{
 		m_blocks[current_buffer_index].current_offset = 0;
 		m_current_block_index = current_buffer_index;
+	}
+
+	void TransientBufferAllocator::SetName(StringView name)
+	{
+		for (auto& block : m_blocks)
+		{
+			block.buffer->SetName(name);
+		}
 	}
 }

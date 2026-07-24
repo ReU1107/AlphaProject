@@ -44,11 +44,14 @@ namespace Alpha
 
         TUnique<RHIComputePipeline> CreateComputePipeline(const RHIComputePipelineDesc& desc) final;
 
+        void RequestTopLevelASSize(const RHITopLevelASDesc& desc, ASData* data) final;
+
+        void RequestBottomLevelASSize(const RHIBottomLevelASDesc& desc, ASData* data) final;
 
 	public:
 		TUnique<D3D12Device> m_device{ nullptr };
 
-		D3D12Device* GetDevice() { return m_device.get(); }
+		D3D12Device* GetDevice() const { return m_device.get(); }
 	};
 
 

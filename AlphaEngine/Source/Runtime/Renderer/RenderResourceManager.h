@@ -26,12 +26,12 @@ namespace Alpha
         TSlotPalette<Renderer::MaterialTable> m_material_table_palette{};
         TSlotPalette<Renderer::TextureResource> m_texture_palette{};
 
-
         TUnique<PersistentBufferAllocator> m_vertex_position_allocator{ nullptr };
         TUnique<PersistentBufferAllocator> m_vertex_attribute_allocator{ nullptr };
         TUnique<PersistentBufferAllocator> m_vertex_indices_allocator{ nullptr };
         TUnique<PersistentBufferAllocator> m_triangle_indices_allocator{ nullptr };
         TUnique<PersistentBufferAllocator> m_meshlet_allocator{ nullptr };
+        TUnique<PersistentBufferAllocator> m_index_allocator{ nullptr };
 
         TUnique<PersistentBufferAllocator> m_mesh_allocator{ nullptr };
         TUnique<PersistentBufferAllocator> m_material_allocator{ nullptr };

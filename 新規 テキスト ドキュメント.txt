@@ -3,6 +3,8 @@ https://github.com/GPUOpen-LibrariesAndSDKs/WorkGraphPlayground
 https://github.com/GPUOpen-LibrariesAndSDKs/WorkGraphsHelloWorkGraphs/blob/main/HelloWorkGraph.cpp
 https://github.com/GPUOpen-LibrariesAndSDKs/WorkGraphsDirectX-Graphics-Samples/blob/main/Samples/Desktop/D3D12GPUWorkGraphs/SimpleClassify/src/D3D12WorkGraphHelper.cpp
 
+
+
 D3D12_SET_WORK_GRAPH_FLAG_INITIALIZE;
 workgraphの開始時点で
 
@@ -50,3 +52,7 @@ void Entry(
 8.1と同じ手順でdispatchgraphを呼び出します
 9.ここで疑問同じ流れだと1フレーム目で生成したパーティクルの更新ができなくない???
 それともう一つ仮に更新ノードで何かに当たったから新しいパーティクルを生成してくださいの場合何が呼ばれるの?
+
+
+
+https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html

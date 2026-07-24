@@ -214,6 +214,7 @@
     <ClCompile Include="Source\Runtime\D3D12\D3D12Timeline.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\DescriptorHandle.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\PersistentBufferAllocator.cpp" />
+    <ClCompile Include="Source\Runtime\RenderCore\Util.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\Camera.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\DebugRenderer.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\GUISystem.cpp" />
@@ -281,6 +282,8 @@
     <ClInclude Include="Source\Core\Assertion.h" />
     <ClInclude Include="Source\Core\Common.h" />
     <ClInclude Include="Source\Core\Component.h" />
+    <ClInclude Include="Source\Core\Math\AxisAlignedBoundingBox.h" />
+    <ClInclude Include="Source\Runtime\RenderCore\Util.h" />
     <ClInclude Include="Source\Runtime\Renderer\Module.h" />
     <ClInclude Include="Source\Runtime\System\TransformComponent.h" />
     <ClInclude Include="Source\Core\Container\Array.h" />

@@ -37,4 +37,9 @@ namespace Alpha
 	struct RHISwapChainDesc;
 	struct RHITextureDesc;
 	struct RHITimelineDesc;
+
+	struct RHITopLevelASDesc;
+	struct RHIBottomLevelASDesc;
+	struct ASData;
+
 }

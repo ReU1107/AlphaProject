@@ -5,6 +5,7 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include "Core/Common.h"
+#include "RHI/Declarations.h"
 
 
 namespace Alpha
@@ -20,6 +21,11 @@ namespace Alpha
 		ID3D12Device15* GetDevice() const { return m_device.Get(); }
 		IDXGIAdapter4* GetAdapter() const { return m_adapter.Get(); }
 		IDXGIFactory7* GetFactory() const { return m_factory.Get(); }
+
+		void RequestTopLevelASSize(const RHITopLevelASDesc& desc, ASData* data);
+
+		void RequestBottomLevelASSize(const RHIBottomLevelASDesc& desc, ASData* data);
+
 
 	private:
 

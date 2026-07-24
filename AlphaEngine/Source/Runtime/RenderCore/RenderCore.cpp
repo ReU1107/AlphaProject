@@ -363,6 +363,16 @@ namespace Alpha
 		return pipeline;
 	}
 
+	void RenderCore::RequestTopLevelASSize(const RHITopLevelASDesc& desc, ASData* data)
+	{
+		m_rhi->RequestTopLevelASSize(desc, data);
+	}
+
+	void RenderCore::RequestBottomLevelASSize(const RHIBottomLevelASDesc& desc, ASData* data)
+	{
+		m_rhi->RequestBottomLevelASSize(desc, data);
+	}
+
 	UINT32 RenderCore::GetCurrentBackBufferIndex() const
 	{
 		return m_swap_chain->GetCurrentBackBufferIndex();

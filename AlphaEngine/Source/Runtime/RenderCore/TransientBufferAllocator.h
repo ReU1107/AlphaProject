@@ -22,7 +22,6 @@ namespace Alpha
 		UInt32 m_current_block_index{ 0 };
 
 	public:
-		TransientBufferAllocator();
 		~TransientBufferAllocator();
 
 		struct Args
@@ -38,7 +37,9 @@ namespace Alpha
 		};
 
 		void Initialize(const Args& args);
-
+		/*
+		* WriteDataはBufferTypeがUpload
+		*/
 		template<typename T>
 		UInt64 WriteData(const T* data)
 		{
@@ -64,6 +65,8 @@ namespace Alpha
 		Buffer* GetBuffer() const;
 
 		void Reset(UInt32 current_buffer_index);
+
+		void SetName(StringView name);
 	};
 }
 /*
