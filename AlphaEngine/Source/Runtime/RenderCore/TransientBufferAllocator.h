@@ -62,6 +62,8 @@ namespace Alpha
 
 		UInt8* Allocate(UInt64 size, UInt64* out_offset);
 
+		UInt64 AllocateOffset(UInt64 size);
+
 		Buffer* GetBuffer() const;
 
 		void Reset(UInt32 current_buffer_index);

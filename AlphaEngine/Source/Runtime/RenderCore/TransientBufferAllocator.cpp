@@ -40,6 +40,19 @@ namespace Alpha
 		return dest;
 	}
 
+	UInt64 TransientBufferAllocator::AllocateOffset(UInt64 size)
+	{
+		auto& block = m_blocks[m_current_block_index];
+
+		UInt64 aligned_offset = Alignment(block.current_offset, m_alignment);
+
+		UInt64 aligned_size = Alignment(size, m_alignment);
+
+		block.current_offset = aligned_offset + aligned_size;
+
+		return aligned_offset;
+	}
+
 	Buffer* TransientBufferAllocator::GetBuffer() const
 	{
 		return m_blocks[m_current_block_index].buffer.get();

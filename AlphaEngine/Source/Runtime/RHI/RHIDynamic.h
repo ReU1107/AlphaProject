@@ -40,9 +40,9 @@ namespace Alpha
 
 		virtual TUnique<RHIComputePipeline> CreateComputePipeline(const RHIComputePipelineDesc& desc) = 0;
 
-		virtual void RequestTopLevelASSize(const RHITopLevelASDesc& desc, ASData* data) = 0;
+		virtual void RequestTopLevelASSize(const RHITopLevelASDesc& desc, RHIASMemoryInfo* info) = 0;
 
-		virtual void RequestBottomLevelASSize(const RHIBottomLevelASDesc& desc, ASData* data) = 0;
+		virtual void RequestBottomLevelASSize(const RHIBuildASDesc& desc, RHIASMemoryInfo* info) = 0;
 
 	};
 

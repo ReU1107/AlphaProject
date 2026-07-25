@@ -510,8 +510,6 @@ namespace Alpha
 	void D3D12CommandBuffer::Draw(UInt32 vertex_count, UInt32 instance_count, UInt32 start_vertex, UInt32 start_instance)
 	{
 		m_list->DrawInstanced(vertex_count, instance_count, start_vertex, start_instance);
-		//m_list->DrawIndexedInstanced(3, 1, 0, 0, 0);
-
 	}
 
 	void D3D12CommandBuffer::DrawIndexed(UInt32 index_count, UInt32 start_index, int32_t base_vertex)
@@ -522,6 +520,69 @@ namespace Alpha
 	void D3D12CommandBuffer::Dispatch(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z)
 	{
 		m_list->Dispatch(thread_group_x, thread_group_y, thread_group_z);
+	}
+
+	void D3D12CommandBuffer::DispatchMesh(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z)
+	{
+		m_list->DispatchMesh(thread_group_x, thread_group_y, thread_group_z);
+	}
+
+	void D3D12CommandBuffer::BuildRaytracingAccelerationStructure(const RHIBuildASDesc& desc)
+	{
+		UInt32 geometry_count = desc.geometries.size();
+		TArray<D3D12_RAYTRACING_GEOMETRY_DESC> geometry_desc(geometry_count);
+
+		D3D12_GPU_VIRTUAL_ADDRESS vertex_address = desc.vertex_buffer->GetGPUAddress() + desc.vertex_offset;
+		D3D12_GPU_VIRTUAL_ADDRESS index_address = desc.index_buffer->GetGPUAddress() + desc.index_offset;
+
+
+		for (UInt32 i = 0; i < geometry_count; ++i)
+		{
+			auto& geometry = geometry_desc[i];
+			geometry.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+			geometry.Flags = (desc.geometries[i].is_opaque) ? D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE : D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
+
+			geometry.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+			geometry.Triangles.VertexCount = desc.vertex_count;
+
+			geometry.Triangles.VertexBuffer.StartAddress = vertex_address;
+			geometry.Triangles.VertexBuffer.StrideInBytes = sizeof(Vector3);
+			
+			geometry.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
+			geometry.Triangles.IndexCount = desc.geometries[i].index_count;
+
+			geometry.Triangles.IndexBuffer = index_address + desc.geometries[i].index_offset;
+
+		}
+
+		// 一旦updateにしとく
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+		inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+		inputs.Flags = flags;
+		inputs.NumDescs = geometry_count;
+		inputs.pGeometryDescs = geometry_desc.data();
+		inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+
+		D3D12_GPU_VIRTUAL_ADDRESS result_as_address = desc.result_as_buffer->GetGPUAddress() + desc.result_as_offset;
+		D3D12_GPU_VIRTUAL_ADDRESS scratcht_as_address = desc.scratch_as_buffer->GetGPUAddress() + desc.scratch_as_offset;
+
+		// 
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC as_desc = {};
+		as_desc.Inputs = inputs;
+		as_desc.DestAccelerationStructureData = result_as_address;
+		as_desc.ScratchAccelerationStructureData = scratcht_as_address;
+
+		if (desc.source_as_buffer)
+		{
+			D3D12_GPU_VIRTUAL_ADDRESS source_as_address = desc.source_as_buffer->GetGPUAddress() + desc.source_as_offset;
+
+			as_desc.SourceAccelerationStructureData = source_as_address;
+		}
+
+
+		m_list->BuildRaytracingAccelerationStructure(&as_desc, 0, nullptr);
 	}
 
 	void D3D12CommandBuffer::Close()

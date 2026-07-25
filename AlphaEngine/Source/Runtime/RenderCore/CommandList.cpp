@@ -11,9 +11,9 @@
 #include "Buffer.h"
 
 
-#include "Pipeline/GraphicsPipeline.h"
-#include "Pipeline/ComputePipeline.h"
-#include "Pipeline/PipelineLayout.h"
+#include "GraphicsPipeline.h"
+#include "ComputePipeline.h"
+#include "PipelineLayout.h"
 
 namespace Alpha
 {
@@ -220,6 +220,16 @@ namespace Alpha
 	void CommandList::Dispatch(UInt32 group_count_x, UInt32 group_count_y, UInt32 group_count_z)
 	{
 		m_rhi->Dispatch(group_count_x, group_count_y, group_count_z);
+	}
+
+	void CommandList::DispatchMesh(UInt32 group_count_x, UInt32 group_count_y, UInt32 group_count_z)
+	{
+		m_rhi->DispatchMesh(group_count_x, group_count_y, group_count_z);
+	}
+
+	void CommandList::BuildRaytracingAccelerationStructure(const RHIBuildASDesc& desc)
+	{
+		m_rhi->BuildRaytracingAccelerationStructure(desc);
 	}
 
 	void CommandList::SetName(StringView name)

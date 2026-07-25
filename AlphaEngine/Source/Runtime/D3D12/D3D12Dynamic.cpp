@@ -99,14 +99,14 @@ namespace Alpha
         return CreateRHIObject<D3D12ComputePipeline>(m_device.get(), desc);
     }
     
-    void D3D12Dynamic::RequestTopLevelASSize(const RHITopLevelASDesc& desc, ASData* data)
+    void D3D12Dynamic::RequestTopLevelASSize(const RHITopLevelASDesc& desc, RHIASMemoryInfo* info)
     {
-        m_device->RequestTopLevelASSize(desc, data);
+        m_device->RequestTopLevelASSize(desc, info);
     }
 
-    void D3D12Dynamic::RequestBottomLevelASSize(const RHIBottomLevelASDesc& desc, ASData* data)
+    void D3D12Dynamic::RequestBottomLevelASSize(const RHIBuildASDesc& desc, RHIASMemoryInfo* info)
     {
-        m_device->RequestBottomLevelASSize(desc, data);
+        m_device->RequestBottomLevelASSize(desc, info);
     }
 }
 #endif

@@ -28,6 +28,12 @@ namespace Alpha
         m_material_allocator		= CreatePersistentAllocator(args.render_core, sizeof(MaterialData), 4_MB, EBufferPresetType::ROStructured, L"MaterialBuffer");
 
         m_material_table_allocator  = CreatePersistentAllocator(args.render_core, sizeof(UInt32), 4_MB, EBufferPresetType::ROByteAddress, L"MaterialTableBuffer");
+        
+        
+        m_source_as_allocator = CreatePersistentAllocator(args.render_core, 256, 32_MB, EBufferPresetType::RTAccelStructure, L"SourceASBuffer");
+
+
+
 
         m_mesh_palette.Initialize(100);
         m_material_palette.Initialize(100);
@@ -67,6 +73,7 @@ namespace Alpha
             RenderCore::Get().UploadBuffer(m_vertex_position_allocator->GetBuffer(), alloc.offset, handle->GetPositions().data(), alloc.size);
 
             mesh.vertex_position_alloc = alloc;
+            mesh.vertex_count = num;
 		}
 
         // 頂点属性データ
@@ -160,26 +167,43 @@ namespace Alpha
         // マテリアルテーブルの登録
         mesh.default_table_index = RegisterMaterialTable(handle->GetMaterialTableHandle());
 
+        // レイトレ用のAS作成
         {
-            RHIBottomLevelASDesc desc = {};
-            desc.vertex_count = handle->GetPositions().size();
+            BLASRequest request = {
+                .vertex_buffer = m_vertex_position_allocator->GetBuffer(),
+                .vertex_offset = mesh.vertex_position_alloc.offset,
+                .index_buffer = m_index_allocator->GetBuffer(),
+                .index_offset = mesh.index_alloc.offset,
+                .result_buffer = m_source_as_allocator->GetBuffer(),
+                .vertex_count = mesh.vertex_count,
+            };
+
             for (auto& sub_mesh_handle : handle->GetSubMeshHandles())
             {
-                SubMesh sub_mesh = {
-                    .offset = sub_mesh_handle.index_offset,
-                    .count = sub_mesh_handle.index_count,
-                };
-                RHIBottomLevelGeometryDesc geometry = {
+                BLASRequest::Sub sub = {
+                    .index_offset = sub_mesh_handle.index_offset * sizeof(UInt32),
                     .index_count = sub_mesh_handle.index_count,
                 };
-
-                desc.geometries.push_back(geometry);
-                mesh.submeshes.push_back(sub_mesh);
+               
+                request.geometries.push_back(sub);
             }
-            ASData data = {};
-            RenderCore::Get().RequestBottomLevelASSize(desc, &data);
 
-            mesh.as_data = data;
+            ASBuildSize build_size = RenderCore::Get().PreBuildBLAS(request);
+
+
+            Allocation alloc{};
+            m_source_as_allocator->AllocateBySize(build_size.result, &alloc);
+
+            mesh.as.size = build_size.result;
+            mesh.as.scratch_size = build_size.scratch;
+            mesh.as.source_alloc = alloc;
+
+            request.result_offset = mesh.as.source_alloc.offset;
+            request.scratch_size = mesh.as.scratch_size,
+
+            RenderCore::Get().BuildBLAS(request);
+
+
         }
         return palette_index;
 	}

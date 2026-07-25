@@ -95,7 +95,7 @@ namespace Alpha
 		return true;
 	}
 
-	void D3D12Device::RequestTopLevelASSize(const RHITopLevelASDesc& desc, ASData* data)
+	void D3D12Device::RequestTopLevelASSize(const RHITopLevelASDesc& desc, RHIASMemoryInfo* info)
 	{
 		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
 		inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
@@ -103,15 +103,15 @@ namespace Alpha
 		inputs.NumDescs = desc.instance_count;
 		inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
 
-		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info = {};
-		m_device->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO build_info = {};
+		m_device->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &build_info);
 
-		data->size = info.ResultDataMaxSizeInBytes;
-		data->scratch_size = info.ScratchDataSizeInBytes;
-		data->update_size = info.UpdateScratchDataSizeInBytes;
+		info->size = build_info.ResultDataMaxSizeInBytes;
+		info->scratch_size = build_info.ScratchDataSizeInBytes;
+		info->update_size = build_info.UpdateScratchDataSizeInBytes;
 	}
 
-	void D3D12Device::RequestBottomLevelASSize(const RHIBottomLevelASDesc& desc, ASData* data)
+	void D3D12Device::RequestBottomLevelASSize(const RHIBuildASDesc& desc, RHIASMemoryInfo* info)
 	{
 		UInt32 geometry_count = desc.geometries.size();
 		TArray<D3D12_RAYTRACING_GEOMETRY_DESC> geometry_desc(geometry_count);
@@ -142,12 +142,12 @@ namespace Alpha
 		inputs.pGeometryDescs = geometry_desc.data();
 		inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
 
-		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info = {};
-		m_device->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO build_info = {};
+		m_device->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &build_info);
 
-		data->size = info.ResultDataMaxSizeInBytes;
-		data->scratch_size = info.ScratchDataSizeInBytes;
-		data->update_size = info.UpdateScratchDataSizeInBytes;
+		info->size = build_info.ResultDataMaxSizeInBytes;
+		info->scratch_size = build_info.ScratchDataSizeInBytes;
+		info->update_size = build_info.UpdateScratchDataSizeInBytes;
 
 	}
 

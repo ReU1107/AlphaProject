@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "Core/Common.h"
-#include "PipelineArgs.h"
+#include "Definitions.h"
 
 namespace Alpha
 {

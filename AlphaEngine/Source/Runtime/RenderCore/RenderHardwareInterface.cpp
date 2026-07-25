@@ -105,13 +105,13 @@ namespace Alpha
 		return m_dynamic->CreateComputePipeline(desc);
 	}
 
-	void RenderHardwareInterface::RequestTopLevelASSize(const RHITopLevelASDesc& desc, ASData* data)
+	void RenderHardwareInterface::RequestTopLevelASSize(const RHITopLevelASDesc& desc, RHIASMemoryInfo* info)
 	{
-		m_dynamic->RequestTopLevelASSize(desc, data);
+		m_dynamic->RequestTopLevelASSize(desc, info);
 	}
 
-	void RenderHardwareInterface::RequestBottomLevelASSize(const RHIBottomLevelASDesc& desc, ASData* data)
+	void RenderHardwareInterface::RequestBottomLevelASSize(const RHIBuildASDesc& desc, RHIASMemoryInfo* info)
 	{
-		m_dynamic->RequestBottomLevelASSize(desc, data);
+		m_dynamic->RequestBottomLevelASSize(desc, info);
 	}
 }

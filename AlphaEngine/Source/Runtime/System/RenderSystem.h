@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Core/Subsystem.h"
-#include "Renderer/Definitions.h"
+#include "Definitions.h"
+#include <entt/entt.hpp>
 
 namespace Alpha
 {
@@ -9,19 +10,20 @@ namespace Alpha
 	class RenderCore;
 	class PersistentBufferAllocator;
 	class TransientBufferAllocator;
+	class PipelineLayout;
+	class GraphicsPipeline;
 
 	class RenderSystem : public Subsystem<RenderSystem>
 	{
 	private:
 		TUnique<TransientBufferAllocator> m_instance_allocator{ nullptr };
 		TUnique<PersistentBufferAllocator> m_result_as_allocator{ nullptr };
-		TUnique<TransientBufferAllocator> m_scratch_as_allocator{ nullptr };
 		TUnique<TransientBufferAllocator> m_update_as_allocator{ nullptr };
 
 		TUnique<TransientBufferAllocator> m_dynamic_vertex_allocator{ nullptr };
-
-
-		TArray<Renderer::InstanceData> m_instances{};
+		TUnique<PipelineLayout> m_layout{ nullptr };
+		TUnique<GraphicsPipeline> m_pipeline{ nullptr };
+		TArray<InstanceData> m_instances{};
 	public:
 		~RenderSystem();
 		struct Args
@@ -31,7 +33,7 @@ namespace Alpha
 		bool Initialize(const Args& args);
 		void Finalize();
 
-		void Render(RenderContext& ctx);
+		void Render(entt::registry& registry, RenderContext& ctx);
 
 
 	};

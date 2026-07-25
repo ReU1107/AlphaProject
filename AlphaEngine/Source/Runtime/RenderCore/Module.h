@@ -2,10 +2,10 @@
 
 #include "RenderCore.h"
 
-#include "Pipeline/ComputePipeline.h"
-#include "Pipeline/GraphicsPipeline.h"
-#include "Pipeline/PipelineLayout.h"
-#include "Pipeline/VertexLayout.h"
+#include "ComputePipeline.h"
+#include "GraphicsPipeline.h"
+#include "PipelineLayout.h"
+#include "VertexLayout.h"
 
 #include "CommandList.h"
 #include "CommandQueue.h"
@@ -16,6 +16,8 @@
 #include "Buffer.h"
 #include "Texture.h"
 #include "Timeline.h"
+
+#include "ASBuilder.h"
 
 #include "TransientBufferAllocator.h"
 #include "PersistentBufferAllocator.h"

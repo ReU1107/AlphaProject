@@ -20,6 +20,7 @@ namespace Alpha
 
 		ERHIResourceState GetCurrentState() const { return m_current_state; }
 
+		ERHIResourceAccessType GetAccessType() const { return m_access; }
 		ERHIResourceBindFlags GetFlags() const { return m_flags; }
 
 		template<typename T>

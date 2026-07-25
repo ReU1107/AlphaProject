@@ -60,11 +60,12 @@ struct InstanceData
     float4x4 world_matrix; // 64バイト - ワールド変換行列
     uint material_table_index; //  4バイト - 使用するマテリアルテーブルのインデックス
     uint mesh_index;
+    uint vertex_offset; // 実際に描画に使用される頂点バッファオフセット
 };
 
 struct SystemBufferIndices
 {
-    uint position;
+    uint position;              // このpositionはあくまでも読み込み時の状態の
     uint attribute;
     uint vertex_indices;
     uint triangle_indices;

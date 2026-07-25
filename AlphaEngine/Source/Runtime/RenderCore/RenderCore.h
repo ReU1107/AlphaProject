@@ -3,7 +3,7 @@
 #include "Core/Common.h"
 #include "RHI/Types.h"
 #include "Types.h"
-#include "Pipeline/PipelineArgs.h"
+#include "Definitions.h"
 
 #include <functional>
 
@@ -34,6 +34,7 @@ namespace Alpha
 	class ComputePipeline;
 
 	class GPUDataTransfer;
+	class ASBuilder;
 	class TransientBufferAllocator;
 
 	class RenderCore : public Subsystem<RenderCore>
@@ -58,6 +59,8 @@ namespace Alpha
 		TUniqueArray<SamplerState> m_preset_samplers{};
 
 		TUnique<GPUDataTransfer> m_gpu_data_transfer{};
+		TUnique<ASBuilder> m_as_builder{};
+
 		TUnique<TransientBufferAllocator> m_transient_allocator{};
 
 		UInt32 m_width{ 0 };
@@ -99,6 +102,10 @@ namespace Alpha
 
 		void UploadBuffer(Buffer* buffer, UInt64 offset, const void* data, UInt64 data_size);
 
+		ASBuildSize PreBuildBLAS(const BLASRequest& request);
+
+		void BuildBLAS(const BLASRequest& request);
+
 		TUnique<SamplerState> CreateSamplerState(ERHIFilter filter, ERHIAddressMode address);
 
 		TUnique<Texture> CreateTexture(UInt32 width,
@@ -118,10 +125,6 @@ namespace Alpha
 
 		TUnique<ComputePipeline> CreateComputePipeline(ComputePipelineArgs args);
 
-		void RequestTopLevelASSize(const RHITopLevelASDesc& desc, ASData* data);
-
-		void RequestBottomLevelASSize(const RHIBottomLevelASDesc& desc, ASData* data);
-
 		ERHIResourceFormat GetBackBufferFormat() const { return m_back_buffer_format; }
 
 		UINT32 GetCurrentBackBufferIndex() const;
@@ -137,6 +140,8 @@ namespace Alpha
 		DescriptorHeap* GetSamplerHeap() const { return m_sampler_heap.get(); }
 
 		SamplerState* GetPresetSampler(ESamplerPresetType type) { return m_preset_samplers[+type].get(); }
+
+		ASBuilder* GetASBuilder() const { return m_as_builder.get(); }
 
 		TransientBufferAllocator* GetTransientAllocator() const { return m_transient_allocator.get(); }
 

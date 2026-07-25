@@ -81,6 +81,9 @@ namespace Alpha
 		void DrawIndexed(UInt32 index_count, UInt32 start_index, int32_t base_vertex) final;
 
 		void Dispatch(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z) final;
+		void DispatchMesh(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z) final;
+
+		void BuildRaytracingAccelerationStructure(const RHIBuildASDesc& desc) final;
 
 		void Close() final;
 		void Reset() final;
