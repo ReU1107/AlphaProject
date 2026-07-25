@@ -24,6 +24,9 @@ namespace
 		D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
 		if (EnumHasFlag(bind, ERHIResourceBindFlags::UnorderedAccess))
 			flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		if(EnumHasFlag(bind,ERHIResourceBindFlags::RayTracingAS))
+			flags |= D3D12_RESOURCE_FLAG_RAYTRACING_ACCELERATION_STRUCTURE;
+
 		return flags;
 	}
 
@@ -36,6 +39,88 @@ namespace
 		case ERHIResourceAccessType::Staging: return D3D12_RESOURCE_STATE_COPY_DEST;
 		default:						return D3D12_RESOURCE_STATE_COMMON;
 		}
+	}
+
+	static ERHIResourceState GetResourceStates(D3D12_RESOURCE_STATES d3d12_states)
+	{
+		if (d3d12_states == D3D12_RESOURCE_STATE_COMMON)
+		{
+			return ERHIResourceState::Common;
+		}
+		if (d3d12_states == D3D12_RESOURCE_STATE_PRESENT)
+		{
+			return ERHIResourceState::Present;
+		}
+		if (d3d12_states == D3D12_RESOURCE_STATE_GENERIC_READ)
+		{
+			return ERHIResourceState::GenericRead;
+		}
+
+		ERHIResourceState result = ERHIResourceState::Common;
+
+		if (d3d12_states & D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER)
+		{
+			result |= ERHIResourceState::VertexConstantBuffer;
+		}
+		if (d3d12_states & D3D12_RESOURCE_STATE_INDEX_BUFFER)
+		{
+			result |= ERHIResourceState::IndexBuffer;
+		}
+		if (d3d12_states & D3D12_RESOURCE_STATE_RENDER_TARGET)
+		{
+			result |= ERHIResourceState::RenderTarget;
+		}
+		if (d3d12_states & D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+		{
+			result |= ERHIResourceState::UnorderedAccess;
+		}
+		if (d3d12_states & D3D12_RESOURCE_STATE_DEPTH_WRITE)
+		{
+			result |= ERHIResourceState::DepthWrite;
+		}
+		if (d3d12_states & D3D12_RESOURCE_STATE_DEPTH_READ)
+		{
+			result |= ERHIResourceState::DepthRead;
+		}
+		if (d3d12_states & D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
+		{
+			result |= ERHIResourceState::NonPixelShaderResource;
+		}
+		if (d3d12_states & D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
+		{
+			result |= ERHIResourceState::PixelShaderResource;
+		}
+		if (d3d12_states & D3D12_RESOURCE_STATE_STREAM_OUT)
+		{
+			result |= ERHIResourceState::StreamOut;
+		}
+		if (d3d12_states & D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT)
+		{
+			result |= ERHIResourceState::IndirectArgument;
+		}
+		if (d3d12_states & D3D12_RESOURCE_STATE_COPY_DEST)
+		{
+			result |= ERHIResourceState::CopyDestination;
+		}
+		if (d3d12_states & D3D12_RESOURCE_STATE_COPY_SOURCE)
+		{
+			result |= ERHIResourceState::CopySource;
+		}
+		if (d3d12_states & D3D12_RESOURCE_STATE_RESOLVE_DEST)
+		{
+			result |= ERHIResourceState::ResolveDestination;
+		}
+		if (d3d12_states & D3D12_RESOURCE_STATE_RESOLVE_SOURCE)
+		{
+			result |= ERHIResourceState::ResolveSource;
+		}
+		if (d3d12_states & D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE)
+		{
+			result |= ERHIResourceState::RaytracingStructure;
+		}
+
+		return result;
+
 	}
 
 	static ERHIResourceState GetRHIResourceState(ERHIResourceAccessType access)
@@ -88,6 +173,14 @@ namespace Alpha
 
 		auto states = GetD3D12ResourceStates(desc.access);
 
+		if (EnumHasFlag(desc.flags, ERHIResourceBindFlags::UnorderedAccess))
+		{
+			states = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+		}
+		if (EnumHasFlag(desc.flags, ERHIResourceBindFlags::RayTracingAS))
+		{
+			states = D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
+		}
 		auto hr = device->CreateCommittedResource(&properties, D3D12_HEAP_FLAG_NONE, &resource_desc, states, nullptr, IID_PPV_ARGS(&m_resource));
 		if (ALPHA_CHECK_ERROR(FAILED(hr), L"リソースの作成に失敗しました"))
 		{
@@ -98,7 +191,7 @@ namespace Alpha
 		SetAccessType(desc.access);
 		SetFlags(desc.flags);
 
-		SetState(GetRHIResourceState(desc.access));
+		SetState(GetResourceStates(states));
 
 		return true;
 	}
@@ -124,6 +217,9 @@ namespace Alpha
 
 	uint8_t* D3D12Buffer::Map(uint64_t read_begin, uint64_t read_end)
 	{
+		if (GetAccessType() != ERHIResourceAccessType::Dynamic)
+			return nullptr;
+
 		uint8_t* map_data = nullptr;
 
 		D3D12_RANGE range = {};

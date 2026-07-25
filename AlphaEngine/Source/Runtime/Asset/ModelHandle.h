@@ -17,7 +17,7 @@ namespace Alpha
 	struct SubMeshHandle
 	{
 		UInt32 material_index{};
-		UInt32 index_offset{ 0 };
+		UInt32 index_element_offset{ 0 };
 		UInt32 index_count{ 0 };
 	};
 

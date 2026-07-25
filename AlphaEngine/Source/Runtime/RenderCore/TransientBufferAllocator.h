@@ -2,6 +2,7 @@
 #include "Core/Common.h"
 #include "Core/Allocator/FreeListAllocator.h"
 #include "RenderCore/Types.h"
+#include <algorithm>
 
 namespace Alpha
 {
@@ -60,9 +61,26 @@ namespace Alpha
 			return offset;
 		}
 
+		template<typename T>
+		UInt64 FillData(const T& data, UInt32 num)
+		{
+			UInt64 offset = 0;
+			UInt64 size = sizeof(T) * num;
+			T* dest = reinterpret_cast<T*>(Allocate(size, &offset));
+
+			std::fill_n(dest, num, data);
+
+			return offset;
+		}
+
 		UInt8* Allocate(UInt64 size, UInt64* out_offset);
 
+		UInt64 AllocateOffset(UInt64 size);
+
 		Buffer* GetBuffer() const;
+
+		UInt32 GetSRVIndex() const;
+		UInt32 GetUAVIndex() const;
 
 		void Reset(UInt32 current_buffer_index);
 

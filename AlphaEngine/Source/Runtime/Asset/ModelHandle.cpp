@@ -106,7 +106,7 @@ namespace Alpha
 		for (const auto& submesh : m_sub_meshes)
 		{
 			// このサブメッシュが使用しているインデックス範囲だけを指すポインタを作る
-			const unsigned int* submesh_indices = m_indices.data() + submesh.index_offset;
+			const unsigned int* submesh_indices = m_indices.data() + submesh.index_element_offset;
 			size_t submesh_index_count = submesh.index_count;
 
 			// このサブメッシュに必要な最大の Meshlet 数を計算
@@ -138,9 +138,9 @@ namespace Alpha
 			{
 				const auto& opt_meshlet = local_meshlets[i];
 				Renderer::Meshlet meshlet = {};
-				meshlet.vertex_offset = submesh_vert_idx_offset + opt_meshlet.vertex_offset;
+				meshlet.vertex_element_offset = submesh_vert_idx_offset + opt_meshlet.vertex_offset;
 				meshlet.vertex_count = opt_meshlet.vertex_count;
-				meshlet.triangle_offset = submesh_tri_idx_offset + (opt_meshlet.triangle_offset / 3);
+				meshlet.triangle_element_offset = submesh_tri_idx_offset + (opt_meshlet.triangle_offset / 3);
 				meshlet.triangle_count = opt_meshlet.triangle_count;
 				meshlet.material_index = submesh.material_index;
 

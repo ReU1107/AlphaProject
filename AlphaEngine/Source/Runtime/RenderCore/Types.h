@@ -18,6 +18,8 @@ namespace Alpha
 		RWByteAddress,          // GPU側で読み書き可能なRawバッファ (UAV用)
 		RWStructured,           // GPU側で読み書き可能な構造化バッファ (UAV用)
 
+		RTAccelStructure,
+
 		// GPU書き込み → CPU読み込み (Readback Heap)
 
 		Readback,               // GPUの計算結果（Structured/Raw問わず）をCPUに引き戻すための一時バッファ

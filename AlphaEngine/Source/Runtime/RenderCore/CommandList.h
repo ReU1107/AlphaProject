@@ -97,6 +97,9 @@ namespace Alpha
 		void DrawIndexed(UInt32 index_count, UInt32 start_index, int32_t base_vertex);
 
 		void Dispatch(UInt32 group_count_x, UInt32 group_count_y, UInt32 group_count_z);
+		void DispatchMesh(UInt32 group_count_x, UInt32 group_count_y, UInt32 group_count_z);
+
+		void BuildRaytracingAccelerationStructure(const RHIBuildASDesc& desc);
 
 		void SetName(StringView name);
 	};

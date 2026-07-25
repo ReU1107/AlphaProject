@@ -2,7 +2,6 @@
 #include "Core/Common.h"
 #include "Core/Allocator/Allocator.h"
 #include "Types.h"
-#include "RHI/Definitions.h"
 
 namespace Alpha
 {
@@ -13,6 +12,8 @@ namespace Alpha::Renderer
 {
 	/*
 	* GPU側に贈る時のデータ構造
+	* element_offset:要素単位
+	* byte_offset:バイト単位
 	*/
 
 	struct MaterialProperties
@@ -47,8 +48,8 @@ namespace Alpha::Renderer
 
 	struct Meshlet
 	{
-		UInt32 vertex_offset{};
-		UInt32 triangle_offset{};
+		UInt32 vertex_element_offset{};
+		UInt32 triangle_element_offset{};
 		UInt32 vertex_count{};
 		UInt32 triangle_count{};
 
@@ -57,26 +58,17 @@ namespace Alpha::Renderer
 
 	struct MeshData
 	{
-		UInt32 vertex_position_offset{};
-		UInt32 vertex_attribute_offset{};
+		UInt32 vertex_position_element_offset{};
+		UInt32 vertex_attribute_byte_offset{};
 
-		UInt32 meshlet_offset{};
+		UInt32 meshlet_element_offset{};
 		UInt32 meshlet_count{};
-		UInt32 vertex_offset{};
-		UInt32 triangle_offset{};
+
+		UInt32 vertex_element_offset{};
+		UInt32 triangle_element_offset{};
 
 		UInt32 attribute_flags{};	// このモデルが持つ頂点属性のフラグ
 		UInt32 vertex_stride{};	// 頂点属性のバイト数
-	};
-
-	struct InstanceData
-	{
-		Matrix4x4 world_matrix{};
-		// 属性フラグ
-		// 行列パレットの場所を指すindex
-
-		UInt32 material_table_offset{};
-		UInt32 mesh_offset{};
 	};
 
 	/*
@@ -108,6 +100,13 @@ namespace Alpha::Renderer
 		UInt32 count{ 0 };
 	};
 
+	struct AccelerationStructure
+	{
+		Allocation source_alloc{};
+		UInt64 size{ 0 };
+		UInt64 scratch_size{ 0 };
+	};
+
 	struct Mesh
 	{
 		Allocation vertex_position_alloc{};
@@ -121,10 +120,13 @@ namespace Alpha::Renderer
 
 		Allocation data_alloc{};
 
-		ASData as_data{};
+		AccelerationStructure as{};
+
+		TArray<SubMesh> submeshes{};
 
 		MeshData data{};
-		TArray<SubMesh> submeshes{};
+		
+		UInt32 vertex_count{};
 		UInt32 default_table_index{};
 	};
 }

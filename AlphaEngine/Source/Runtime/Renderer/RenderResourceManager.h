@@ -33,6 +33,8 @@ namespace Alpha
         TUnique<PersistentBufferAllocator> m_meshlet_allocator{ nullptr };
         TUnique<PersistentBufferAllocator> m_index_allocator{ nullptr };
 
+        TUnique<PersistentBufferAllocator> m_source_as_allocator{ nullptr };
+
         TUnique<PersistentBufferAllocator> m_mesh_allocator{ nullptr };
         TUnique<PersistentBufferAllocator> m_material_allocator{ nullptr };
         TUnique<PersistentBufferAllocator> m_material_table_allocator{ nullptr };

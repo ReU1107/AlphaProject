@@ -265,22 +265,36 @@ namespace Alpha
 
 	struct RHIBottomLevelGeometryDesc
 	{
+		UInt64 index_byte_offset{};
 		UInt32 index_count{};
 		bool is_opaque{ false };
 	};
 
-	struct RHIBottomLevelASDesc
-	{
-		TArray<RHIBottomLevelGeometryDesc> geometries{};
-		UInt32 vertex_count{ 0 };
-		bool is_static{ false };
-	};
-
-	struct ASData
+	struct RHIASMemoryInfo
 	{
 		UInt64 size{ 0 };
 		UInt64 scratch_size{ 0 };
 		UInt64 update_size{ 0 };
+	};
+
+	struct RHIBuildASDesc
+	{
+		RHIBuffer* vertex_buffer{ nullptr };
+		RHIBuffer* index_buffer{ nullptr };
+		RHIBuffer* result_as_buffer{ nullptr };
+		RHIBuffer* scratch_as_buffer{ nullptr };
+		RHIBuffer* source_as_buffer{ nullptr };
+
+		UInt64 vertex_offset{};
+		UInt64 index_offset{};
+		UInt64 result_as_offset{};
+		UInt64 scratch_as_offset{};
+		UInt64 source_as_offset{};
+
+		TArray<RHIBottomLevelGeometryDesc> geometries{};
+
+		UInt32 vertex_count{ 0 };
+		
 	};
 
 }

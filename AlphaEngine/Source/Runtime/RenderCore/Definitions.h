@@ -4,11 +4,13 @@
 #include "RHI/Definitions.h"
 #include "VertexLayout.h"
 
+
 namespace Alpha
 {
 	class RenderHardwareInterface;
 	class Shader;
 	class PipelineLayout;
+	class Buffer;
 
 
 	struct GraphicsPipelineArgs
@@ -60,7 +62,54 @@ namespace Alpha
 		PipelineLayout* pipeline_layout{ nullptr };
 		Shader* compute_shader{ nullptr };
 
-
 	};
+
+	struct ASBuildSize
+	{
+		UInt64 result{ 0 };
+		UInt64 scratch{ 0 };
+		UInt64 update{ 0 };
+	};
+
+	struct BLASRequest
+	{
+		Buffer* vertex_buffer{ nullptr };
+		UInt64 vertex_offset{ 0 };
+
+		Buffer* index_buffer{ nullptr };
+		UInt64 index_offset{ 0 };
+
+		Buffer* result_buffer{ nullptr };
+		UInt64 result_offset{ 0 };
+
+		Buffer* source_as_buffer{ nullptr };
+		UInt64 source_as_offset{ 0 };
+
+		UInt64 scratch_size{ 0 };
+
+		struct Sub
+		{
+			UInt64 index_byte_offset{};
+			UInt32 index_count{};
+			bool is_opaque{ false };
+		};
+
+		TArray<Sub> geometries{};
+
+		UInt32 vertex_count{ 0 };
+	};
+
+	struct TLASRequest
+	{
+		Buffer* instance_desc_buffer{ nullptr };
+		UInt64 instance_desc_offset{ 0 };
+
+		Buffer* result_buffer{ nullptr };
+		UInt64 result_offset{ 0 };
+
+		UInt64 scratch_size{ 0 };
+		UInt32 instance_count{ 0 };
+	};
+
 
 }

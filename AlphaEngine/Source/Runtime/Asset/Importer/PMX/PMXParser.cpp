@@ -154,7 +154,7 @@ namespace Alpha
 		{
 			SubMeshHandle mesh = {};
 			mesh.material_index = (uint32_t)i;
-			mesh.index_offset = location;
+			mesh.index_element_offset = location;
 			mesh.index_count = pmx.indexCount;
 			location += pmx.indexCount;
 			sub_meshes[i] = mesh;

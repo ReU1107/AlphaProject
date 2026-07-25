@@ -16,12 +16,14 @@
 
 #include "Shader.h"
 
-#include "Pipeline/VertexLayout.h"
-#include "Pipeline/PipelineLayout.h"
-#include "Pipeline/GraphicsPipeline.h"
-#include "Pipeline/ComputePipeline.h"
+#include "VertexLayout.h"
+#include "PipelineLayout.h"
+#include "GraphicsPipeline.h"
+#include "ComputePipeline.h"
 
 #include "GPUDataTransfer.h"
+#include "ASBuilder.h"
+
 #include "TransientBufferAllocator.h"
 
 #include "Core/Math/Vector.h"
@@ -99,6 +101,15 @@ namespace Alpha
 		m_preset_samplers[+ESamplerPresetType::LinearWrap]	= CreateSamplerState(ERHIFilter::Linear, ERHIAddressMode::Wrap);
 		m_preset_samplers[+ESamplerPresetType::AnisoWrap]	= CreateSamplerState(ERHIFilter::Anisotropic, ERHIAddressMode::Wrap);
 		m_preset_samplers[+ESamplerPresetType::Shadow]		= CreateSamplerState(ERHIFilter::ComparisonLinear, ERHIAddressMode::Border);
+
+		m_as_builder = std::make_unique<ASBuilder>();
+		{
+			ASBuilder::Args desc = {
+				.render_core = this,
+				.staging_buffer_size = 32_MB,
+			};
+			m_as_builder->Initialize(desc);
+		}
 
 		m_transient_allocator = std::make_unique<TransientBufferAllocator>();
 		{
@@ -254,6 +265,14 @@ namespace Alpha
 			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
 			desc.bind_flags |= ERHIResourceBindFlags::UnorderedAccess; // UAV追加
 			break;
+		case EBufferPresetType::RTAccelStructure:
+			desc.access_type = ERHIResourceAccessType::Static;
+			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
+			desc.bind_flags |= ERHIResourceBindFlags::UnorderedAccess; // UAV追加
+			desc.bind_flags |= ERHIResourceBindFlags::RayTracingAS; // レイトレ追加
+			desc.size = Alignment(desc.size, 256);
+			desc.stride = 1;
+			break;
 		case EBufferPresetType::Readback:
 			desc.access_type = ERHIResourceAccessType::Staging;
 			break;
@@ -271,6 +290,40 @@ namespace Alpha
 	void RenderCore::UploadBuffer(Buffer* buffer, UInt64 offset, const void* data, UInt64 data_size)
 	{
 		m_gpu_data_transfer->AddBufferRegion(buffer, offset, data, data_size);
+	}
+
+	ASBuildSize RenderCore::PreBuildBLAS(const BLASRequest& request)
+	{
+		RHIBuildASDesc build_desc = {};
+
+		build_desc.vertex_count = request.vertex_count;
+
+		for (auto& geo : request.geometries)
+		{
+			RHIBottomLevelGeometryDesc geometry =
+			{
+				.index_count = geo.index_count,
+				.is_opaque = geo.is_opaque,
+			};
+
+			build_desc.geometries.push_back(geometry);
+		}
+
+		RHIASMemoryInfo info = {};
+
+		m_rhi->RequestBottomLevelASSize(build_desc, &info);
+
+		ASBuildSize size = {};
+		size.result = info.size;
+		size.scratch = info.scratch_size;
+		size.update = info.update_size;
+
+		return size;
+	}
+
+	void RenderCore::BuildBLAS(const BLASRequest& request)
+	{
+		m_as_builder->AddRequest(request);
 	}
 
 	TUnique<SamplerState> RenderCore::CreateSamplerState(ERHIFilter filter, ERHIAddressMode address)
@@ -363,16 +416,6 @@ namespace Alpha
 		return pipeline;
 	}
 
-	void RenderCore::RequestTopLevelASSize(const RHITopLevelASDesc& desc, ASData* data)
-	{
-		m_rhi->RequestTopLevelASSize(desc, data);
-	}
-
-	void RenderCore::RequestBottomLevelASSize(const RHIBottomLevelASDesc& desc, ASData* data)
-	{
-		m_rhi->RequestBottomLevelASSize(desc, data);
-	}
-
 	UINT32 RenderCore::GetCurrentBackBufferIndex() const
 	{
 		return m_swap_chain->GetCurrentBackBufferIndex();
@@ -417,6 +460,8 @@ namespace Alpha
 
 		m_transient_allocator->Reset(current_buffer_index);
 
+		m_as_builder->Reset(current_buffer_index);
+
 		m_command_list->Begin(current_buffer_index);
 
 		m_command_list->Transition(GetCurrentRenderTarget(), ERHIResourceState::RenderTarget);
@@ -428,6 +473,8 @@ namespace Alpha
 		m_command_list->SetViewport(Viewport(0, 0, (float)m_width, (float)m_height, 0.0f, 1.0f));
 
 		m_command_list->SetScissorRect(0, 0, m_width, m_height);
+
+		m_command_list->SetDescriptorHeap(m_resource_heap.get(), m_sampler_heap.get());
 
 	}
 

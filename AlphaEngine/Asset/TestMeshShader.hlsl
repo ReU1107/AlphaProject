@@ -39,7 +39,7 @@ void main(
 {
     StructuredBuffer<InstanceData> instance_buffer = ResourceDescriptorHeap[buffer_indices.instance];
 
-    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[buffer_indices.position];
+    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[buffer_indices.dyanmic_position_srv];
     ByteAddressBuffer attribute_buffer = ResourceDescriptorHeap[buffer_indices.attribute];
     
     StructuredBuffer<MeshData> mesh_buffer = ResourceDescriptorHeap[buffer_indices.mesh];
@@ -56,11 +56,11 @@ void main(
     
     MeshData mesh = mesh_buffer[instance.mesh_index];
 
-    Meshlet meshlet = meshlet_buffer[mesh.meshlet_offset + local_mesh_id];
+    Meshlet meshlet = meshlet_buffer[mesh.meshlet_element_offset + local_mesh_id];
     
     SetMeshOutputCounts(meshlet.vertex_count, meshlet.triangle_count);
 
-    uint vertex_index_offset = mesh.vertex_offset + meshlet.vertex_offset;
+    uint vertex_index_offset = mesh.vertex_element_offset + meshlet.vertex_element_offset;
     
     
     
@@ -72,10 +72,10 @@ void main(
         uint vertex_index = vertex_indices_buffer[vertex_index_offset + gtid];
                 
         // 位置は元々の頂点番号で引く
-        float3 position = position_buffer[mesh.vertex_position_offset + vertex_index];
+        float3 position = position_buffer[instance.vertex_element_offset + vertex_index];
 
         // 頂点属性が入っているであろう先頭アドレスからこの頂点index分オフセット
-        uint base_offset = mesh.vertex_attribute_offset + (vertex_index * mesh.vertex_stride);
+        uint base_offset = mesh.vertex_attribute_byte_offset + (vertex_index * mesh.vertex_stride);
 
         uint normal_offset = 0;
         uint bone_offset = normal_offset + ((mesh.attribute_flags & VERTEX_ATTR_NORMALS) ? 12 : 0);
@@ -107,7 +107,7 @@ void main(
         outputs[gtid].MaterialID = meshlet.material_index;
     }
 
-    uint triangle_index_offset = mesh.triangle_offset + meshlet.triangle_offset;
+    uint triangle_index_offset = mesh.triangle_element_offset + meshlet.triangle_element_offset;
     
     if (gtid < meshlet.triangle_count)
     {

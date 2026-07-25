@@ -68,8 +68,11 @@ namespace Alpha
 		virtual void Draw(UInt32 vertex_count, UInt32 instance_count, UInt32 start_vertex, UInt32 start_instance) = 0;
 		virtual void DrawIndexed(UInt32 index_count, UInt32 start_index, int32_t base_vertex) = 0;
 
-
 		virtual void Dispatch(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z) = 0;
+
+		virtual void DispatchMesh(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z) = 0;
+
+		virtual void BuildRaytracingAccelerationStructure(const RHIBuildASDesc& desc) = 0;
 
 		virtual void Close() = 0;
 		virtual void Reset() = 0;

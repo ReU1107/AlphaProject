@@ -40,6 +40,7 @@ namespace Alpha
 
 	struct RHITopLevelASDesc;
 	struct RHIBottomLevelASDesc;
-	struct ASData;
+	struct RHIBuildASDesc;
+	struct RHIASMemoryInfo;
 
 }

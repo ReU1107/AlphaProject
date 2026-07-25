@@ -33,14 +33,14 @@ namespace Alpha
             .stride = alignment,
             .size = max_size,
             .alignment = alignment,
-            .type = EBufferPresetType::UploadStructured,
+            .type = preset,
         };
 
         allocator->Initialize(desc);
 
         allocator->SetName(name);
 
-        return TUnique<TransientBufferAllocator>();
+        return allocator;
     }
 
 }

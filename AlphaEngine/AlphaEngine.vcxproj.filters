@@ -57,16 +57,16 @@
     <ClCompile Include="Source\Runtime\RenderCore\Buffer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\Pipeline\ComputePipeline.cpp">
+    <ClCompile Include="Source\Runtime\RenderCore\ComputePipeline.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\Pipeline\GraphicsPipeline.cpp">
+    <ClCompile Include="Source\Runtime\RenderCore\GraphicsPipeline.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\Pipeline\PipelineLayout.cpp">
+    <ClCompile Include="Source\Runtime\RenderCore\PipelineLayout.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\Pipeline\VertexLayout.cpp">
+    <ClCompile Include="Source\Runtime\RenderCore\VertexLayout.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\RenderCore\Texture.cpp">
@@ -85,9 +85,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\RenderCore\GPUResource.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\IndirectCommandSignature.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\RenderCore\RenderCore.cpp">
@@ -396,6 +393,9 @@
     <ClCompile Include="Source\Runtime\RenderCore\Util.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\RenderCore\ASBuilder.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\IO\BinaryReader.h">
@@ -497,19 +497,16 @@
     <ClInclude Include="Source\Runtime\RenderCore\Buffer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\Pipeline\ComputePipeline.h">
+    <ClInclude Include="Source\Runtime\RenderCore\ComputePipeline.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\Pipeline\GraphicsPipeline.h">
+    <ClInclude Include="Source\Runtime\RenderCore\GraphicsPipeline.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\Pipeline\PipelineArgs.h">
+    <ClInclude Include="Source\Runtime\RenderCore\PipelineLayout.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\Pipeline\PipelineLayout.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\Pipeline\VertexLayout.h">
+    <ClInclude Include="Source\Runtime\RenderCore\VertexLayout.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RenderCore\Texture.h">
@@ -531,9 +528,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RenderCore\GPUResource.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\RenderCore\IndirectCommandSignature.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RenderCore\Module.h">
@@ -981,6 +975,18 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RenderCore\Util.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\System\Definitions.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\RenderCore\ASBuilder.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\RenderCore\Definitions.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\RenderCore\BufferAllocator.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
