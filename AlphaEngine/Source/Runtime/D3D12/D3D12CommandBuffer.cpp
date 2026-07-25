@@ -551,7 +551,7 @@ namespace Alpha
 			geometry.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
 			geometry.Triangles.IndexCount = desc.geometries[i].index_count;
 
-			geometry.Triangles.IndexBuffer = index_address + desc.geometries[i].index_offset;
+			geometry.Triangles.IndexBuffer = index_address + desc.geometries[i].index_byte_offset;
 
 		}
 

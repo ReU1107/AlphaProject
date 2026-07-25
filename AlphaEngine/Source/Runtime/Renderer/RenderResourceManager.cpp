@@ -30,7 +30,7 @@ namespace Alpha
         m_material_table_allocator  = CreatePersistentAllocator(args.render_core, sizeof(UInt32), 4_MB, EBufferPresetType::ROByteAddress, L"MaterialTableBuffer");
         
         
-        m_source_as_allocator = CreatePersistentAllocator(args.render_core, 256, 32_MB, EBufferPresetType::RTAccelStructure, L"SourceASBuffer");
+        m_source_as_allocator       = CreatePersistentAllocator(args.render_core, 256, 32_MB, EBufferPresetType::RTAccelStructure, L"SourceASBuffer");
 
 
 
@@ -146,13 +146,13 @@ namespace Alpha
 
         // メッシュデータ
         {
-            mesh.data.vertex_position_offset = mesh.vertex_position_alloc.offset / sizeof(Vector3);
-            mesh.data.vertex_attribute_offset = mesh.vertex_attribute_alloc.offset;  // ByteAddressBufferだからそのまま
+            mesh.data.vertex_position_element_offset = mesh.vertex_position_alloc.offset / sizeof(Vector3);
+            mesh.data.vertex_attribute_byte_offset = mesh.vertex_attribute_alloc.offset;  // ByteAddressBufferだからそのまま
 
-            mesh.data.meshlet_offset = mesh.meshlet_alloc.offset / sizeof(Meshlet);
+            mesh.data.meshlet_element_offset = mesh.meshlet_alloc.offset / sizeof(Meshlet);
             mesh.data.meshlet_count = handle->GetMeshlets().size();
-            mesh.data.vertex_offset = mesh.vertex_inidices_alloc.offset / sizeof(UInt32);
-            mesh.data.triangle_offset = mesh.triangle_indices_alloc.offset / sizeof(UInt32);
+            mesh.data.vertex_element_offset = mesh.vertex_inidices_alloc.offset / sizeof(UInt32);
+            mesh.data.triangle_element_offset = mesh.triangle_indices_alloc.offset / sizeof(UInt32);
 
             mesh.data.vertex_stride = handle->GetVertexAttributeStride();
             mesh.data.attribute_flags = handle->GetVertexAttributeFlags().GetValue();
@@ -181,7 +181,7 @@ namespace Alpha
             for (auto& sub_mesh_handle : handle->GetSubMeshHandles())
             {
                 BLASRequest::Sub sub = {
-                    .index_offset = sub_mesh_handle.index_offset * sizeof(UInt32),
+                    .index_byte_offset = sub_mesh_handle.index_element_offset * sizeof(UInt32),
                     .index_count = sub_mesh_handle.index_count,
                 };
                
@@ -396,14 +396,14 @@ namespace Alpha
     RenderResourceManager::BufferIndices RenderResourceManager::GetBufferIndices() const
     {
         return BufferIndices{
-            .position = m_vertex_position_allocator->GetBuffer()->GetSRVHandle().index,
-            .attribute = m_vertex_attribute_allocator->GetBuffer()->GetSRVHandle().index,
-            .vertex_indices = m_vertex_indices_allocator->GetBuffer()->GetSRVHandle().index,
-            .triangle_indices = m_triangle_indices_allocator->GetBuffer()->GetSRVHandle().index,
-            .meshlet = m_meshlet_allocator->GetBuffer()->GetSRVHandle().index,
-            .mesh = m_mesh_allocator->GetBuffer()->GetSRVHandle().index,
-            .material = m_material_allocator->GetBuffer()->GetSRVHandle().index,
-            .material_table = m_material_table_allocator->GetBuffer()->GetSRVHandle().index
+            .position = m_vertex_position_allocator->GetSRVIndex(),
+            .attribute = m_vertex_attribute_allocator->GetSRVIndex(),
+            .vertex_indices = m_vertex_indices_allocator->GetSRVIndex(),
+            .triangle_indices = m_triangle_indices_allocator->GetSRVIndex(),
+            .meshlet = m_meshlet_allocator->GetSRVIndex(),
+            .mesh = m_mesh_allocator->GetSRVIndex(),
+            .material = m_material_allocator->GetSRVIndex(),
+            .material_table = m_material_table_allocator->GetSRVIndex()
         };
     }
 }

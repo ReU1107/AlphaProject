@@ -13,7 +13,7 @@ namespace Alpha
 
 		UInt32 material_table_offset{};
 		UInt32 mesh_offset{};
-		UINT32 vertex_offset{};
+		UINT32 vertex_element_offset{};
 	};
 
 }

@@ -56,7 +56,7 @@ namespace Alpha
 			{
 				RHIBottomLevelGeometryDesc geometry =
 				{
-					.index_offset = geo.index_offset,
+					.index_byte_offset = geo.index_byte_offset,
 					.index_count = geo.index_count,
 					.is_opaque = geo.is_opaque,
 				};
@@ -69,5 +69,10 @@ namespace Alpha
 		}
 
 		m_requests.clear();
+	}
+
+	void ASBuilder::Reset(UInt32 current_buffer_index)
+	{
+		m_scratch_as_allocator->Reset(current_buffer_index);
 	}
 }

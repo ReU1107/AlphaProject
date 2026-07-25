@@ -89,7 +89,7 @@ namespace Alpha
 
 		struct Sub
 		{
-			UInt64 index_offset{};
+			UInt64 index_byte_offset{};
 			UInt32 index_count{};
 			bool is_opaque{ false };
 		};

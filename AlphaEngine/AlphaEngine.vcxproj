@@ -284,6 +284,7 @@
     <ClInclude Include="Source\Core\Component.h" />
     <ClInclude Include="Source\Core\Math\AxisAlignedBoundingBox.h" />
     <ClInclude Include="Source\Runtime\RenderCore\ASBuilder.h" />
+    <ClInclude Include="Source\Runtime\RenderCore\BufferAllocator.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Definitions.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Util.h" />
     <ClInclude Include="Source\Runtime\Renderer\Module.h" />

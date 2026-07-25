@@ -986,6 +986,9 @@
     <ClInclude Include="Source\Runtime\RenderCore\Definitions.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\RenderCore\BufferAllocator.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

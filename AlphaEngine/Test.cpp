@@ -65,17 +65,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     AssetManager::Startup(asset_args);
     auto model1 = AssetManager::Get().Load<ModelHandle>(L"C:/Users/owner/Desktop/Asset/紲星☆あかり20180430/お宮式紲星☆あかりv1.00.pmx");
     auto model2 = AssetManager::Get().Load<ModelHandle>(L"C:/Users/owner/Desktop/Asset/パチュリーVer2.00/Model/パチュリーVer2.00_Type-C(フル_ポニテC_ミニスカ_ブーツC_パンプス)_サーモン.pmx");
-    auto model3 = AssetManager::Get().GetCube();
+    auto model3 = AssetManager::Get().GetSphere();
     
     RenderCore::Args render_core_args = {};
     render_core_args.hWnd = (HWND)WindowSystem::Get().GetNativeHandle();
     render_core_args.transient_buffer_size = 1_MB;
     RenderCore::Startup(render_core_args);
-
-    auto d = static_cast<D3D12Dynamic*>(RenderCore::Get().GetRHI()->GetDynamic());
-
-    auto device = d->GetDevice()->GetDevice();
-
 
     GUISystem::Args gui_args = {
         .render_core = RenderCore::GetPtr(),
@@ -104,6 +99,30 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         auto& transform = registry.emplace<TransformComponent>(entity);
         transform.SetLocalPosition(Vector3(10.0f, 0.0f, 0.0f));
+
+    }
+
+    {
+        const auto entity = registry.create();
+
+        auto& mesh = registry.emplace<MeshComponent>(entity);
+        mesh.mesh_index = patchouli_index;
+        mesh.material_table_index = RenderResourceManager::Get().GetMaterialTableIndexByMesh(patchouli_index);
+
+        auto& transform = registry.emplace<TransformComponent>(entity);
+        transform.SetLocalPosition(Vector3(-10.0f, 0.0f, 0.0f));
+
+    }
+
+    {
+        const auto entity = registry.create();
+
+        auto& mesh = registry.emplace<MeshComponent>(entity);
+        mesh.mesh_index = sphere_index;
+        mesh.material_table_index = RenderResourceManager::Get().GetMaterialTableIndexByMesh(sphere_index);
+
+        auto& transform = registry.emplace<TransformComponent>(entity);
+        transform.SetLocalPosition(Vector3(-10.0f, 0.0f, 10.0f));
 
     }
 

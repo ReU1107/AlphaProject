@@ -1,72 +1,74 @@
 ﻿
 struct MaterialProperties
 {
-    float3 base_color; // 12バイト - 基本色
-    float opacity; //  4バイト - 不透明度 (16バイト境界)
+    float3 base_color;          // 基本色
+    float opacity;              // 不透明度
 
-    float metallic; //  4バイト - 金属感
-    float roughness; //  4バイト - 粗さ
-    float emissive_intensity; //  4バイト - 自発光の強さ
-    float occlusion; //  4バイト - アンビエントオクルージョン (32バイト境界)
+    float metallic;             // 金属感
+    float roughness;            // 粗さ
+    float emissive_intensity;   // 自発光の強さ
+    float occlusion;            // アンビエントオクルージョン
 
-    float3 emissive_color; // 12バイト - 自発光の色
-    float refraction_index; //  4バイト - 屈折率 (48バイト境界)
+    float3 emissive_color;      // 自発光の色
+    float refraction_index;     // 屈折率
 
-    float3 specular_tint; // 12バイト - 鏡面反射の微調整用
+    float3 specular_tint;       // 鏡面反射
 };
 
 struct MaterialData
 {
     MaterialProperties props; // 
 
-    uint base_color_tex_idx; //  4バイト - テクスチャバインドレスインデックス (0xFFFFFFFF = 無効)
-    uint normal_tex_idx; //  4バイト - 法線マップインデックス
-    uint metallic_roughness_tex_idx; // 4バイト
-    uint emissive_tex_idx; //  4バイト
+    uint base_color_tex_idx;            // テクスチャバインドレスインデックス (0xFFFFFFFF = 無効)
+    uint normal_tex_idx;                // 法線マップインデックス
+    uint metallic_roughness_tex_idx;    // 
+    uint emissive_tex_idx;              //  
 
-    uint occlusion_tex_idx; //  4バイト
-    uint toon_tex_idx; //  4バイト - MMD等のトゥーンテクスチャ用
-    uint sphere_tex_idx; //  4バイト - MMD等のスフィアマップ用
-    uint flags; //  4バイト - マテリアル判別フラグ
+    uint occlusion_tex_idx;             // 
+    uint toon_tex_idx;                  // MMD等のトゥーンテクスチャ用
+    uint sphere_tex_idx;                // MMD等のスフィアマップ用
+    uint flags;                         // マテリアル判別フラグ
 };
 
 struct Meshlet
 {
-    uint vertex_offset; //  4バイト - 頂点インデックスの開始オフセット
-    uint triangle_offset; //  4バイト - 三角形インデックスの開始オフセット
-    uint vertex_count; //  4バイト - このメッシュレット内の頂点数
-    uint triangle_count; //  4バイト - このメッシュレット内の三角形（プリミティブ）数
+    uint vertex_element_offset;     // 頂点インデックスの開始オフセット
+    uint triangle_element_offset;   // 三角形インデックスの開始オフセット
+    uint vertex_count;              // このメッシュレット内の頂点数
+    uint triangle_count;            // このメッシュレット内の三角形（プリミティブ）数
 
-    uint material_index; //  4バイト - 使用するマテリアルデータのローカルインデックス
+    uint material_index;            // 使用するマテリアルデータのローカルインデックス
 };
 
 struct MeshData
 {
-    uint vertex_position_offset; // 4バイト - 巨大バッファ内での位置（XYZ）のバイトオフセット
-    uint vertex_attribute_offset; // 4バイト - 巨大バッファ内での属性（UV/Normal等）のバイトオフセット
+    uint vertex_position_element_offset;   // 位置（XYZ）のオフセット
+    uint vertex_attribute_byte_offset;     // 属性（UV/Normal等）オフセット
 
-    uint meshlet_offset;
-    uint meshlet_count;
+    uint meshlet_element_offset;    // メッシュレット
+    uint meshlet_count;             // メッシュレット数
     
-    uint vertex_offset; // 巨大バッファ内でのメッシュレット頂点インデックスのバイトオフセット
-    uint triangle_offset; // 巨大バッファ内でのメッシュレット三角形インデックスのバイトオフセット
+    uint vertex_element_offset;     // メッシュレット頂点インデックスのオフセット
+    uint triangle_element_offset;   // メッシュレット三角形インデックスのオフセット
     
-    uint attribute_flags; // 4バイト - 頂点属性フラグ
-    uint vertex_stride; // 4バイト - 頂点属性（1頂点あたり）のバイトサイズ（ストライド）
+    uint attribute_flags;           // 頂点属性フラグ
+    uint vertex_stride;             // 頂点属性ストライド
 };
 
 struct InstanceData
 {
-    float4x4 world_matrix; // 64バイト - ワールド変換行列
-    uint material_table_index; //  4バイト - 使用するマテリアルテーブルのインデックス
+    float4x4 world_matrix;      // ワールド変換行列
+    
+    uint material_table_index;  // 使用するマテリアルテーブルのインデックス
     uint mesh_index;
-    uint vertex_offset; // 実際に描画に使用される頂点バッファオフセット
+    
+    uint vertex_element_offset;         // 実際に描画に使用される頂点バッファオフセット
 };
 
 struct SystemBufferIndices
 {
     uint position;              // このpositionはあくまでも読み込み時の状態の
-    uint attribute;
+    uint attribute;             // 頂点属性
     uint vertex_indices;
     uint triangle_indices;
     uint meshlet;
@@ -74,6 +76,9 @@ struct SystemBufferIndices
     uint material;
     uint material_table;
     uint instance;
+    uint vertex_to_instance;
+    uint dyanmic_position_srv;      // csから書き込む時用
+    uint dyanmic_position_uav;      // 描画時に使用するのはこっち
 };
 
 struct FrameRenderContext

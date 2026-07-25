@@ -36,6 +36,9 @@ namespace Alpha
 
         Buffer* GetBuffer() const { return m_buffer.get(); }
 
+        UInt32 GetSRVIndex() const;
+        UInt32 GetUAVIndex() const;
+
         void SetName(StringView name);
     };
 }

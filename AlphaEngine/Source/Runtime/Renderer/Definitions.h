@@ -12,6 +12,8 @@ namespace Alpha::Renderer
 {
 	/*
 	* GPU側に贈る時のデータ構造
+	* element_offset:要素単位
+	* byte_offset:バイト単位
 	*/
 
 	struct MaterialProperties
@@ -46,8 +48,8 @@ namespace Alpha::Renderer
 
 	struct Meshlet
 	{
-		UInt32 vertex_offset{};
-		UInt32 triangle_offset{};
+		UInt32 vertex_element_offset{};
+		UInt32 triangle_element_offset{};
 		UInt32 vertex_count{};
 		UInt32 triangle_count{};
 
@@ -56,13 +58,14 @@ namespace Alpha::Renderer
 
 	struct MeshData
 	{
-		UInt32 vertex_position_offset{};
-		UInt32 vertex_attribute_offset{};
+		UInt32 vertex_position_element_offset{};
+		UInt32 vertex_attribute_byte_offset{};
 
-		UInt32 meshlet_offset{};
+		UInt32 meshlet_element_offset{};
 		UInt32 meshlet_count{};
-		UInt32 vertex_offset{};
-		UInt32 triangle_offset{};
+
+		UInt32 vertex_element_offset{};
+		UInt32 triangle_element_offset{};
 
 		UInt32 attribute_flags{};	// このモデルが持つ頂点属性のフラグ
 		UInt32 vertex_stride{};	// 頂点属性のバイト数

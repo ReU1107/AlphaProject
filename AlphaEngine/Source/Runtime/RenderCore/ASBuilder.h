@@ -29,5 +29,7 @@ namespace Alpha
 
 		void RecordBuildCommands(CommandList* command_list);
 
+		void Reset(UInt32 current_buffer_index);
+
 	};
 }

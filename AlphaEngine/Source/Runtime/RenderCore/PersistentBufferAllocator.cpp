@@ -48,6 +48,18 @@ namespace Alpha
         m_allocator.Free(allocation);
     }
 
+    UInt32 PersistentBufferAllocator::GetSRVIndex() const
+    {
+        return m_buffer->GetSRVHandle().index;
+    }
+
+    UInt32 PersistentBufferAllocator::GetUAVIndex() const
+    {
+        // 必ずBufferがWrite系であることを確認してから使う
+
+        return m_buffer->GetUAVHandle().index;
+    }
+
     void PersistentBufferAllocator::SetName(StringView name)
     {
         m_buffer->SetName(name);

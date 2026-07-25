@@ -58,6 +58,16 @@ namespace Alpha
 		return m_blocks[m_current_block_index].buffer.get();
 	}
 
+	UInt32 TransientBufferAllocator::GetSRVIndex() const
+	{
+		return GetBuffer()->GetSRVHandle().index;
+	}
+
+	UInt32 TransientBufferAllocator::GetUAVIndex() const
+	{
+		return GetBuffer()->GetUAVHandle().index;
+	}
+
 	void TransientBufferAllocator::Reset(UInt32 current_buffer_index)
 	{
 		m_blocks[current_buffer_index].current_offset = 0;

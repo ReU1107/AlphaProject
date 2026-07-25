@@ -15,10 +15,12 @@ namespace Alpha
 	static TUnique<Shader> as;
 	static TUnique<Shader> ms;
 	static TUnique<Shader> ps;
+	static TUnique<Shader> cs;
 
 	bool RenderSystem::Initialize(const Args& args)
 	{
 		m_instance_allocator = CreateTransientAllocator(args.render_core, sizeof(InstanceData), 4_MB, EBufferPresetType::UploadStructured, L"Instance");
+		m_vert_to_inst_allocator = CreateTransientAllocator(args.render_core, sizeof(UInt32), 4_MB, EBufferPresetType::UploadStructured, L"VertexToInstance");
 
 		m_result_as_allocator = CreatePersistentAllocator(args.render_core, 256, 64_MB, EBufferPresetType::RTAccelStructure, L"ASResult");
 
@@ -61,6 +63,16 @@ namespace Alpha
 			}
 		);
 
+		cs = RenderCore::Get().CreateShader(L"Asset/AlignVertices.hlsl", ERHIShaderType::Compute);
+
+
+		m_align_vertex_pipeline = RenderCore::Get().CreateComputePipeline(
+			{
+				.pipeline_layout = m_layout.get(),
+				.compute_shader = cs.get(),
+			}
+		);
+
 		return true;
 
 	}
@@ -73,6 +85,9 @@ namespace Alpha
 	{
 		RenderResourceManager::BufferIndices render_resourcce{};
 		UInt32 instance{};
+		UInt32 vertex_to_instance{};
+		UInt32 dyanmic_position_srv{};      // 書き込まれた頂点
+		UInt32 dyanmic_position_uav{};      // 書き込まれた頂点
 	};
 
 	struct Constants
@@ -88,28 +103,36 @@ namespace Alpha
 
 	void RenderSystem::Render(entt::registry& registry, RenderContext& ctx)
 	{
-		RenderCore::Get().GetASBuilder()->RecordBuildCommands(ctx.command_list);
+		//RenderCore::Get().GetASBuilder()->RecordBuildCommands(ctx.command_list);
 
-		return;
+		//return;
 
 
 
 		m_instance_allocator->Reset(ctx.current_frame_index);
+		m_vert_to_inst_allocator->Reset(ctx.current_frame_index);
 		m_dynamic_vertex_allocator->Reset(ctx.current_frame_index);
 
 		m_instances.clear();
 
 		BufferIndices indices = {
 			.render_resourcce = RenderResourceManager::Get().GetBufferIndices(),
-			.instance = m_instance_allocator->GetBuffer()->GetSRVHandle().index,
+			.instance = m_instance_allocator->GetSRVIndex(),
+			.vertex_to_instance = m_vert_to_inst_allocator->GetSRVIndex(),
+			.dyanmic_position_srv = m_dynamic_vertex_allocator->GetSRVIndex(),
+			.dyanmic_position_uav = m_dynamic_vertex_allocator->GetUAVIndex(),
 		};
 
 
 		auto view = registry.view<MeshComponent, TransformComponent>();
 
+		UInt64 vertex_count = 0;
+
 		// このフレームで描画する可能性のあるオブジェクトを全部詰め込む
 		for (auto [ent, mesh_com, transform] : view.each())
 		{
+			uint32_t current_instance_id = static_cast<uint32_t>(m_instances.size());
+
 			InstanceData instance = {};
 			instance.world_matrix = transform.GetLocalToWorld();
 			instance.mesh_offset = RenderResourceManager::Get().GetGPUMeshOffset(mesh_com.mesh_index);
@@ -118,30 +141,41 @@ namespace Alpha
 			// このメッシュの頂点データを書き込む場所を予約する
 			const auto& mesh = RenderResourceManager::Get().GetMeshByIndex(mesh_com.mesh_index);
 			
-			UInt64 offset = 0;
-			m_dynamic_vertex_allocator->Allocate(mesh.vertex_position_alloc.size, &offset);
+			instance.vertex_element_offset = m_dynamic_vertex_allocator->AllocateOffset(mesh.vertex_position_alloc.size) / sizeof(Vector3);
 
-			instance.vertex_offset = offset;
-			// 一旦読み込んだままの情報で表示
-			instance.vertex_offset = mesh.vertex_position_alloc.offset;
+			m_vert_to_inst_allocator->FillData(current_instance_id, mesh.vertex_count);
+
+			vertex_count += mesh.vertex_count;
 
 			m_instances.push_back(instance);
-
-			//m_result_as_allocator->AllocateBySize(mesh.as.size, );
-
-
 		}
 
 		m_instance_allocator->WriteData(m_instances.data(), m_instances.size());
 
-		/*
-		* ComputeShaderでのスキニングを行うにしろしないにしろこの頂点バッファに書き込む
-		*/
-		m_dynamic_vertex_allocator->GetBuffer()->GetUAVHandle().index;
+		// ComputeShaderでのスキニングを行うにしろしないにしろこの頂点バッファに書き込む
+
+		ctx.command_list->SetComputePipeline(m_align_vertex_pipeline.get());
+
+		{
+			auto offset = RenderCore::Get().GetTransientAllocator()->WriteData<BufferIndices>(&indices);
+
+			ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 0);
+		}
+
+		ctx.command_list->Transition(m_dynamic_vertex_allocator->GetBuffer(), ERHIResourceState::UnorderedAccess);
+
+		uint32_t dispatch_x = (vertex_count + 63) / 64;
+
+		ctx.command_list->Dispatch(dispatch_x, 1, 1);
 
 
+		ctx.command_list->UAVBarrier(m_dynamic_vertex_allocator->GetBuffer());
 
-		ctx.command_list->UAVBarrier(m_result_as_allocator->GetBuffer());
+		ctx.command_list->Transition(m_dynamic_vertex_allocator->GetBuffer(), ERHIResourceState::NonPixelShaderResource);
+
+		//return;
+
+		//ctx.command_list->UAVBarrier(m_result_as_allocator->GetBuffer());
 
 
 		ctx.command_list->SetGraphicsPipeline(m_pipeline.get());

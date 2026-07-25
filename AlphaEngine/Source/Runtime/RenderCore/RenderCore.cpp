@@ -460,6 +460,8 @@ namespace Alpha
 
 		m_transient_allocator->Reset(current_buffer_index);
 
+		m_as_builder->Reset(current_buffer_index);
+
 		m_command_list->Begin(current_buffer_index);
 
 		m_command_list->Transition(GetCurrentRenderTarget(), ERHIResourceState::RenderTarget);
