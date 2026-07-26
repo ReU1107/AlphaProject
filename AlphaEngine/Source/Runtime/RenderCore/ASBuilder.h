@@ -26,6 +26,7 @@ namespace Alpha
 
 		void Initialize(const Args& args);
 		void AddRequest(const BLASRequest& request);
+		void AddRequest(const TLASRequest& request);
 
 		void RecordBuildCommands(CommandList* command_list);
 

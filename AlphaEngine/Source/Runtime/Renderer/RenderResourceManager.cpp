@@ -104,6 +104,16 @@ namespace Alpha
             mesh.index_alloc = alloc;
         }
 
+        for (auto& sub_mesh_handle : handle->GetSubMeshHandles())
+        {
+            SubMesh sub_mesh = {
+                .index_element_offset = sub_mesh_handle.index_element_offset,
+                .index_count = sub_mesh_handle.index_count,
+            };
+
+            mesh.submeshes.push_back(sub_mesh);
+        }
+
         // メッシュレットの頂点index
         {
             /*
@@ -178,14 +188,15 @@ namespace Alpha
                 .vertex_count = mesh.vertex_count,
             };
 
-            for (auto& sub_mesh_handle : handle->GetSubMeshHandles())
+
+            for (auto& sub : mesh.submeshes)
             {
-                BLASRequest::Sub sub = {
-                    .index_byte_offset = sub_mesh_handle.index_element_offset * sizeof(UInt32),
-                    .index_count = sub_mesh_handle.index_count,
-                };
-               
-                request.geometries.push_back(sub);
+                request.geometries.push_back(
+                    {
+                        .index_byte_offset = sub.index_element_offset * sizeof(UInt32),
+                        .index_count = sub.index_count,
+                    }
+                );
             }
 
             ASBuildSize build_size = RenderCore::Get().PreBuildBLAS(request);
@@ -391,6 +402,16 @@ namespace Alpha
     {
         auto& material_table = GetMaterialTableByIndex(index);
         return material_table.alloc.offset;
+    }
+
+    RenderResourceManager::Buffers RenderResourceManager::GetBuffers() const
+    {
+        return Buffers{
+            .position = m_vertex_position_allocator->GetBuffer(),
+            .attribute = m_vertex_attribute_allocator->GetBuffer(),
+            .index = m_index_allocator->GetBuffer(),
+            .source_as = m_source_as_allocator->GetBuffer(),
+        };
     }
 
     RenderResourceManager::BufferIndices RenderResourceManager::GetBufferIndices() const

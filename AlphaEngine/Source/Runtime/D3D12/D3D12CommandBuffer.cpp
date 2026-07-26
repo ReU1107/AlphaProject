@@ -579,6 +579,7 @@ namespace Alpha
 			D3D12_GPU_VIRTUAL_ADDRESS source_as_address = desc.source_as_buffer->GetGPUAddress() + desc.source_as_offset;
 
 			as_desc.SourceAccelerationStructureData = source_as_address;
+			as_desc.Inputs.Flags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE;
 		}
 
 

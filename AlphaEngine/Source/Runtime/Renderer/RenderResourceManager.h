@@ -12,6 +12,7 @@ namespace Alpha
     class TextureHandle;
 
     class RenderCore;
+    class Buffer;
     class PersistentBufferAllocator;
 
     /*
@@ -65,6 +66,16 @@ namespace Alpha
 
         UInt32 GetGPUMeshOffset(UInt64 index);
         UInt32 GetGPUMaterialTableOffset(UInt64 index);
+
+        struct Buffers
+        {
+            Buffer* position{ nullptr };
+            Buffer* attribute{ nullptr };
+            Buffer* index{ nullptr };
+            Buffer* source_as{ nullptr };
+        };
+
+        Buffers GetBuffers() const;
 
 
         struct BufferIndices

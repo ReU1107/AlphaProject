@@ -436,6 +436,21 @@ namespace Alpha
 	{
 		if (m_gpu_data_transfer->HasUpload())
 			m_gpu_data_transfer->Upload();
+
+
+		auto list = GetCommandList();
+		list->Begin(0);
+
+		m_as_builder->RecordBuildCommands(list);
+
+		list->End();
+
+		m_command_queue->Execute(list);
+		m_command_queue->Signal(m_timeline.get());
+
+		m_timeline->WaitCPU();
+
+
 		return true;
 	}
 

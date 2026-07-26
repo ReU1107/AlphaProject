@@ -22,7 +22,7 @@ namespace Alpha
 		m_instance_allocator = CreateTransientAllocator(args.render_core, sizeof(InstanceData), 4_MB, EBufferPresetType::UploadStructured, L"Instance");
 		m_vert_to_inst_allocator = CreateTransientAllocator(args.render_core, sizeof(UInt32), 4_MB, EBufferPresetType::UploadStructured, L"VertexToInstance");
 
-		m_result_as_allocator = CreatePersistentAllocator(args.render_core, 256, 64_MB, EBufferPresetType::RTAccelStructure, L"ASResult");
+		m_result_as_allocator = CreateTransientAllocator(args.render_core, 256, 64_MB, EBufferPresetType::RTAccelStructure, L"ASResult");
 
 		// 一旦updateは使わんか?
 		//m_update_as_allocator = CreateTransientAllocator(args.render_core, 256, 4_MB, EBufferPresetType::RWByteAddress, L"ASUpdate");
@@ -79,6 +79,7 @@ namespace Alpha
 
 	void RenderSystem::Finalize()
 	{
+
 	}
 
 	struct BufferIndices
@@ -103,15 +104,10 @@ namespace Alpha
 
 	void RenderSystem::Render(entt::registry& registry, RenderContext& ctx)
 	{
-		//RenderCore::Get().GetASBuilder()->RecordBuildCommands(ctx.command_list);
-
-		//return;
-
-
-
 		m_instance_allocator->Reset(ctx.current_frame_index);
 		m_vert_to_inst_allocator->Reset(ctx.current_frame_index);
 		m_dynamic_vertex_allocator->Reset(ctx.current_frame_index);
+		m_result_as_allocator->Reset(ctx.current_frame_index);
 
 		m_instances.clear();
 
@@ -123,6 +119,7 @@ namespace Alpha
 			.dyanmic_position_uav = m_dynamic_vertex_allocator->GetUAVIndex(),
 		};
 
+		auto buffers = RenderResourceManager::Get().GetBuffers();
 
 		auto view = registry.view<MeshComponent, TransformComponent>();
 
@@ -141,11 +138,39 @@ namespace Alpha
 			// このメッシュの頂点データを書き込む場所を予約する
 			const auto& mesh = RenderResourceManager::Get().GetMeshByIndex(mesh_com.mesh_index);
 			
-			instance.vertex_element_offset = m_dynamic_vertex_allocator->AllocateOffset(mesh.vertex_position_alloc.size) / sizeof(Vector3);
+			UInt64 vertex_byte_offset = m_dynamic_vertex_allocator->AllocateOffset(mesh.vertex_position_alloc.size);
+			instance.vertex_element_offset = vertex_byte_offset / sizeof(Vector3);
 
 			m_vert_to_inst_allocator->FillData(current_instance_id, mesh.vertex_count);
 
+			UInt64 as_byte_offset = m_result_as_allocator->AllocateOffset(mesh.as.size);
+
 			vertex_count += mesh.vertex_count;
+
+			BLASRequest request = {
+				.vertex_buffer = m_dynamic_vertex_allocator->GetBuffer(),
+				.vertex_offset = vertex_byte_offset,
+				.index_buffer = buffers.index,
+				.index_offset = mesh.index_alloc.offset,
+				.result_buffer = m_result_as_allocator->GetBuffer(),
+				.result_offset = as_byte_offset,
+				.source_as_buffer = buffers.source_as,
+				.source_as_offset = mesh.as.source_alloc.offset,
+				.scratch_size = mesh.as.scratch_size,
+				.vertex_count = mesh.vertex_count,
+			};
+
+			for (auto& sub : mesh.submeshes)
+			{
+				request.geometries.push_back(
+					{
+						.index_byte_offset = sub.index_element_offset * sizeof(UInt32),
+						.index_count = sub.index_count,
+					}
+				);
+			}
+
+			RenderCore::Get().BuildBLAS(request);
 
 			m_instances.push_back(instance);
 		}
@@ -173,9 +198,9 @@ namespace Alpha
 
 		ctx.command_list->Transition(m_dynamic_vertex_allocator->GetBuffer(), ERHIResourceState::NonPixelShaderResource);
 
-		//return;
 
-		//ctx.command_list->UAVBarrier(m_result_as_allocator->GetBuffer());
+		RenderCore::Get().GetASBuilder()->RecordBuildCommands(ctx.command_list);
+		ctx.command_list->UAVBarrier(m_result_as_allocator->GetBuffer());
 
 
 		ctx.command_list->SetGraphicsPipeline(m_pipeline.get());

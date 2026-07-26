@@ -16,4 +16,10 @@ namespace Alpha
 		UINT32 vertex_element_offset{};
 	};
 
+	struct LightData
+	{
+		float3 position{};
+
+	};
+
 }

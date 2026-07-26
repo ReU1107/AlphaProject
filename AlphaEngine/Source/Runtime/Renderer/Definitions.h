@@ -96,8 +96,8 @@ namespace Alpha::Renderer
 
 	struct SubMesh
 	{
-		UInt32 offset{ 0 };
-		UInt32 count{ 0 };
+		UInt32 index_element_offset{ 0 };
+		UInt32 index_count{ 0 };
 	};
 
 	struct AccelerationStructure

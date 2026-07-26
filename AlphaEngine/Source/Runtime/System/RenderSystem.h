@@ -20,7 +20,7 @@ namespace Alpha
 		TUnique<TransientBufferAllocator> m_instance_allocator{ nullptr };
 		TUnique<TransientBufferAllocator> m_vert_to_inst_allocator{ nullptr };
 
-		TUnique<PersistentBufferAllocator> m_result_as_allocator{ nullptr };
+		TUnique<TransientBufferAllocator> m_result_as_allocator{ nullptr };
 		TUnique<TransientBufferAllocator> m_update_as_allocator{ nullptr };
 
 		TUnique<TransientBufferAllocator> m_dynamic_vertex_allocator{ nullptr };
