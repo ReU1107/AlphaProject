@@ -294,7 +294,7 @@ namespace Alpha
 
 	ASBuildSize RenderCore::PreBuildBLAS(const BLASRequest& request)
 	{
-		RHIBuildASDesc build_desc = {};
+		RHIBuildBLASDesc build_desc = {};
 
 		build_desc.vertex_count = request.vertex_count;
 
@@ -312,6 +312,24 @@ namespace Alpha
 		RHIASMemoryInfo info = {};
 
 		m_rhi->RequestBottomLevelASSize(build_desc, &info);
+
+		ASBuildSize size = {};
+		size.result = info.size;
+		size.scratch = info.scratch_size;
+		size.update = info.update_size;
+
+		return size;
+	}
+
+	ASBuildSize RenderCore::PreBuildTLAS(const TLASRequest& request)
+	{
+		RHIBuildTLASDesc build_desc = {};
+
+		build_desc.instance_count = request.instance_count;
+
+		RHIASMemoryInfo info = {};
+
+		m_rhi->RequestTopLevelASSize(build_desc, &info);
 
 		ASBuildSize size = {};
 		size.result = info.size;

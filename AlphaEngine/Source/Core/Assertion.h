@@ -34,7 +34,7 @@ namespace Alpha
 #define ALPHA_CHECK_ERROR(cond, fmt, ...) \
     ([&](bool condition, const char* file, int line) \
         { \
-        if (condition) \
+        if (!condition) \
         { \
             Alpha::Logger::Dispatch(Alpha::ELogLevel::Error, file, line, Alpha::Format(fmt, ##__VA_ARGS__)); \
             Alpha::BreakDebug(); \
@@ -47,7 +47,7 @@ namespace Alpha
 #define ALPHA_CHECK_FATAL(cond, fmt, ...) \
     ([&](bool condition, const char* file, int line) \
         { \
-        if (condition) \
+        if (!condition) \
         { \
             Alpha::Logger::Dispatch(Alpha::ELogLevel::Fatal, file, line, Alpha::Format(fmt, ##__VA_ARGS__)); \
             Alpha::BreakDebug(); \

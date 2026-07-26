@@ -6,6 +6,8 @@
 #include "Definitions.h"
 #include "TransformComponent.h"
 
+#include "Core/Math/MathF.h"
+
 namespace Alpha
 {
 	using namespace Renderer;
@@ -22,10 +24,19 @@ namespace Alpha
 		m_instance_allocator = CreateTransientAllocator(args.render_core, sizeof(InstanceData), 4_MB, EBufferPresetType::UploadStructured, L"Instance");
 		m_vert_to_inst_allocator = CreateTransientAllocator(args.render_core, sizeof(UInt32), 4_MB, EBufferPresetType::UploadStructured, L"VertexToInstance");
 
-		m_result_as_allocator = CreateTransientAllocator(args.render_core, 256, 64_MB, EBufferPresetType::RTAccelStructure, L"ASResult");
+		// 暫定
+		TLASRequest request = {
+			.instance_count = 1000
+		};
 
-		// 一旦updateは使わんか?
-		//m_update_as_allocator = CreateTransientAllocator(args.render_core, 256, 4_MB, EBufferPresetType::RWByteAddress, L"ASUpdate");
+		ASBuildSize build_size = args.render_core->PreBuildTLAS(request);
+
+		m_instance_tlas_allocator = CreateTransientAllocator(args.render_core, sizeof(ASInstanceData), 4_MB, EBufferPresetType::UploadStructured, L"TLASInstance");
+
+		m_scratch_tlas_allocator = CreateTransientAllocator(args.render_core, 256, build_size.scratch, EBufferPresetType::RWByteAddress, L"TLASScratch");
+
+		m_result_tlas_allocator = CreateTransientAllocator(args.render_core, 256, build_size.result, EBufferPresetType::RTAccelStructure, L"TLASResult");
+		m_result_blas_allocator = CreateTransientAllocator(args.render_core, 256, 64_MB, EBufferPresetType::RTAccelStructure, L"BLASResult");
 
 		m_dynamic_vertex_allocator = CreateTransientAllocator(args.render_core, sizeof(Vector3), 4_MB, EBufferPresetType::RWStructured, L"DynamicVertex");
 
@@ -107,7 +118,9 @@ namespace Alpha
 		m_instance_allocator->Reset(ctx.current_frame_index);
 		m_vert_to_inst_allocator->Reset(ctx.current_frame_index);
 		m_dynamic_vertex_allocator->Reset(ctx.current_frame_index);
-		m_result_as_allocator->Reset(ctx.current_frame_index);
+		m_result_tlas_allocator->Reset(ctx.current_frame_index);
+		m_scratch_tlas_allocator->Reset(ctx.current_frame_index);
+		m_result_blas_allocator->Reset(ctx.current_frame_index);
 
 		m_instances.clear();
 
@@ -124,6 +137,10 @@ namespace Alpha
 		auto view = registry.view<MeshComponent, TransformComponent>();
 
 		UInt64 vertex_count = 0;
+
+		TLASRequest tlas_request = {};
+		tlas_request.instance_desc_buffer = m_instance_tlas_allocator->GetBuffer();
+		tlas_request.result_buffer = m_result_tlas_allocator->GetBuffer();
 
 		// このフレームで描画する可能性のあるオブジェクトを全部詰め込む
 		for (auto [ent, mesh_com, transform] : view.each())
@@ -143,7 +160,7 @@ namespace Alpha
 
 			m_vert_to_inst_allocator->FillData(current_instance_id, mesh.vertex_count);
 
-			UInt64 as_byte_offset = m_result_as_allocator->AllocateOffset(mesh.as.size);
+			UInt64 as_byte_offset = m_result_blas_allocator->AllocateOffset(mesh.as.size);
 
 			vertex_count += mesh.vertex_count;
 
@@ -152,7 +169,7 @@ namespace Alpha
 				.vertex_offset = vertex_byte_offset,
 				.index_buffer = buffers.index,
 				.index_offset = mesh.index_alloc.offset,
-				.result_buffer = m_result_as_allocator->GetBuffer(),
+				.result_buffer = m_result_blas_allocator->GetBuffer(),
 				.result_offset = as_byte_offset,
 				.source_as_buffer = buffers.source_as,
 				.source_as_offset = mesh.as.source_alloc.offset,
@@ -172,13 +189,23 @@ namespace Alpha
 
 			RenderCore::Get().BuildBLAS(request);
 
+			ASInstanceData as_instance = {};
+			as_instance.instance_id = current_instance_id;
+			as_instance.blas_gpu_address = m_result_blas_allocator->GetBuffer()->GetGPUAddress() + as_byte_offset;
+			as_instance.transform = MatrixTranspose(instance.world_matrix);
+
+			m_instance_tlas_allocator->WriteData(&as_instance);
+
+
 			m_instances.push_back(instance);
 		}
 
 		m_instance_allocator->WriteData(m_instances.data(), m_instances.size());
 
-		// ComputeShaderでのスキニングを行うにしろしないにしろこの頂点バッファに書き込む
+		tlas_request.instance_count = m_instances.size();
 
+		// ComputeShaderでのスキニングを行うにしろしないにしろこの頂点バッファに書き込む
+		// 粒度は頂点単位
 		ctx.command_list->SetComputePipeline(m_align_vertex_pipeline.get());
 
 		{
@@ -198,10 +225,22 @@ namespace Alpha
 
 		ctx.command_list->Transition(m_dynamic_vertex_allocator->GetBuffer(), ERHIResourceState::NonPixelShaderResource);
 
-
+		// ↑で作った頂点バッファを利用してBLASの更新
 		RenderCore::Get().GetASBuilder()->RecordBuildCommands(ctx.command_list);
-		ctx.command_list->UAVBarrier(m_result_as_allocator->GetBuffer());
+		ctx.command_list->UAVBarrier(m_result_blas_allocator->GetBuffer());
 
+		// TLASの構築
+		{
+			RHIBuildTLASDesc desc = {};
+			desc.instance_count = tlas_request.instance_count;
+			desc.instance_desc_buffer = tlas_request.instance_desc_buffer->GetRHI();
+			desc.result_as_buffer = m_result_tlas_allocator->GetBuffer()->GetRHI();
+			desc.scratch_as_buffer = m_scratch_tlas_allocator->GetBuffer()->GetRHI();
+			ctx.command_list->BuildRaytracingAccelerationStructure(desc);
+
+		}
+		
+		ctx.command_list->UAVBarrier(m_result_tlas_allocator->GetBuffer());
 
 		ctx.command_list->SetGraphicsPipeline(m_pipeline.get());
 

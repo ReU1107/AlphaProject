@@ -23,7 +23,7 @@ namespace Alpha
 	{
 		auto device = GetXA2Device();
 		auto hr = device->CreateMasteringVoice(&m_mastering_voice);
-		if (ALPHA_CHECK_FATAL(FAILED(hr), L"マスタリングボイスの作成に失敗しました"))
+		if (ALPHA_CHECK_FATAL(SUCCEEDED(hr), L"マスタリングボイスの作成に失敗しました"))
 		{
 			return false;
 		}

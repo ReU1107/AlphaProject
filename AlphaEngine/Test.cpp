@@ -79,6 +79,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     RenderResourceManager::Args resource_args = {
         .render_core = RenderCore::GetPtr(),
+        .asset_manager = AssetManager::GetPtr(),
     };
     RenderResourceManager::Startup(resource_args);
 

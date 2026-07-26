@@ -45,7 +45,7 @@ namespace Alpha
 		}
 		else 
 		{
-			ALPHA_CHECK_ERROR((m_allocated_count >= m_max_count), L"デスクリプタヒープの最大数を超えています。");
+			ALPHA_CHECK_ERROR((m_allocated_count <= m_max_count), L"デスクリプタヒープの最大数を超えています。");
 			index = m_allocated_count++;
 		}
 
@@ -74,7 +74,7 @@ namespace Alpha
 		}
 		else
 		{
-			ALPHA_CHECK_ERROR((m_allocated_count >= m_max_count), L"デスクリプタヒープの最大数を超えています。");
+			ALPHA_CHECK_ERROR((m_allocated_count <= m_max_count), L"デスクリプタヒープの最大数を超えています。");
 			index = m_allocated_count++;
 		}
 

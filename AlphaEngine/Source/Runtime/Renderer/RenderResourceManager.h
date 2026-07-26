@@ -6,6 +6,7 @@
 
 namespace Alpha
 {
+    class AssetManager;
     class ModelHandle;
     class MaterialHandle;
     class MaterialTableHandle;
@@ -41,11 +42,17 @@ namespace Alpha
         TUnique<PersistentBufferAllocator> m_material_table_allocator{ nullptr };
 
 
+        UInt32 m_default_mesh_index{ 0 };
+        UInt32 m_default_white_texture_index{ 0 };
+        UInt32 m_default_normal_texture_index{ 0 };
+        UInt32 m_default_black_texture_index{ 0 };
+
     public:
         ~RenderResourceManager();
         struct Args
         {
             RenderCore* render_core{ nullptr };
+            AssetManager* asset_manager{ nullptr };
         };
         bool Initialize(const Args& args);
         void Finalize();

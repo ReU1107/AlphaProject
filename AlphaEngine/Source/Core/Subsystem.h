@@ -41,7 +41,7 @@ namespace Alpha
 			// 引数をそのまま T のコンストラクタに転送
 			s_instance = new T();
 
-			if (ALPHA_CHECK_FATAL(s_instance->Initialize(std::forward<Args>(args)...) == false, L"サブシステムの初期化に失敗しました:"))
+			if (ALPHA_CHECK_FATAL(s_instance->Initialize(std::forward<Args>(args)...), L"サブシステムの初期化に失敗しました:"))
 			{
 				delete s_instance;
 				s_instance = nullptr;

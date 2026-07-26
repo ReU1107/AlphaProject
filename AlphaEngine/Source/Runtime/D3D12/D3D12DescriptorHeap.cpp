@@ -413,7 +413,7 @@ namespace Alpha
 		auto device = GetD3D12Device();
 
 		auto hr = device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&m_heap));
-		if (ALPHA_CHECK_ERROR(FAILED(hr), L"デスクリプターヒープの作成に失敗しました"))
+		if (ALPHA_CHECK_ERROR(SUCCEEDED(hr), L"デスクリプターヒープの作成に失敗しました"))
 		{
 			return false;
 		}

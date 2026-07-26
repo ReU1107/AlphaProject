@@ -40,9 +40,9 @@ namespace Alpha
 
 		virtual TUnique<RHIComputePipeline> CreateComputePipeline(const RHIComputePipelineDesc& desc) = 0;
 
-		virtual void RequestTopLevelASSize(const RHITopLevelASDesc& desc, RHIASMemoryInfo* info) = 0;
+		virtual void RequestTLASSize(const RHIBuildTLASDesc& desc, RHIASMemoryInfo* info) = 0;
 
-		virtual void RequestBottomLevelASSize(const RHIBuildASDesc& desc, RHIASMemoryInfo* info) = 0;
+		virtual void RequestBLASSize(const RHIBuildBLASDesc& desc, RHIASMemoryInfo* info) = 0;
 
 	};
 
@@ -60,7 +60,7 @@ namespace Alpha
 	requires IsRHIObject<RHIObject, RHIDesc>
 	TUnique<RHIObject> CreateRHIObject(RHIDevice* device_, const RHIDesc& desc_)
 	{
-		if (ALPHA_CHECK_FATAL(!device_, L"CreateRHIObject: デバイスが有効ではありません"))
+		if (ALPHA_CHECK_FATAL(device_, L"CreateRHIObject: デバイスが有効ではありません"))
 			return nullptr;
 
 		auto object = std::make_unique<RHIObject>(device_);

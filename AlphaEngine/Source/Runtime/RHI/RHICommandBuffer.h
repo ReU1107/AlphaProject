@@ -72,7 +72,8 @@ namespace Alpha
 
 		virtual void DispatchMesh(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z) = 0;
 
-		virtual void BuildRaytracingAccelerationStructure(const RHIBuildASDesc& desc) = 0;
+		virtual void BuildBLAS(const RHIBuildBLASDesc& desc) = 0;
+		virtual void BuildTLAS(const RHIBuildTLASDesc& desc) = 0;
 
 		virtual void Close() = 0;
 		virtual void Reset() = 0;

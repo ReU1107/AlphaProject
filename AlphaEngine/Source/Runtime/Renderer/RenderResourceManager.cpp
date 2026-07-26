@@ -1,9 +1,10 @@
 ﻿#include "RenderResourceManager.h"
+#include "Asset/AssetManager.h"
+
 #include "Asset/ModelHandle.h"
 #include "Asset/MaterialHandle.h"
 #include "Asset/MaterialTableHandle.h"
 #include "Asset/TextureHandle.h"
-#include "Asset/AssetManager.h"
 
 #include "RenderCore/Module.h"
 
@@ -32,13 +33,31 @@ namespace Alpha
         
         m_source_as_allocator       = CreatePersistentAllocator(args.render_core, 256, 32_MB, EBufferPresetType::RTAccelStructure, L"SourceASBuffer");
 
-
-
-
         m_mesh_palette.Initialize(100);
         m_material_palette.Initialize(100);
         m_material_table_palette.Initialize(100);
         m_texture_palette.Initialize(100);
+
+        /*if (ALPHA_CHECK_FATAL(args.asset_manager != nullptr, L"AssetManager が指定されていません。"))
+            return false;*/
+
+        // テクスチャ
+        auto white_tex = args.asset_manager->GetWhiteTexture();
+        m_default_white_texture_index = RegisterTexture(white_tex);
+        ALPHA_CHECK_FATAL(m_default_white_texture_index != 0xFFFFFFFF, L"白テクスチャの登録に失敗しました。");
+
+        auto normal_tex = args.asset_manager->GetNormalTexture();
+        m_default_normal_texture_index = RegisterTexture(normal_tex);
+        ALPHA_CHECK_FATAL(m_default_normal_texture_index != 0xFFFFFFFF, L"法線テクスチャの登録に失敗しました。");
+
+        auto black_tex = args.asset_manager->GetBlackTexture();
+        m_default_black_texture_index = RegisterTexture(black_tex);
+        ALPHA_CHECK_FATAL(m_default_black_texture_index != 0xFFFFFFFF, L"黒テクスチャの登録に失敗しました。");
+
+        // メッシュ
+        auto cube = args.asset_manager->GetCube();
+        m_default_mesh_index = RegisterMesh(cube);
+        ALPHA_CHECK_FATAL(m_default_mesh_index != 0xFFFFFFFF, L"デフォルトキューブの登録に失敗しました。");
 
 		return true;
 	}
@@ -279,9 +298,9 @@ namespace Alpha
             local_tex_cache[attr] = RegisterTexture(texture.handle);
         }
 
-        auto white_tex = RegisterTexture(AssetManager::Get().GetWhiteTexture());
-        auto black_tex = RegisterTexture(AssetManager::Get().GetBlackTexture());
-        auto normal_tex = RegisterTexture(AssetManager::Get().GetNormalTexture());
+        auto white_tex = m_default_white_texture_index;
+        auto black_tex = m_default_black_texture_index;
+        auto normal_tex = m_default_normal_texture_index;
 
         auto GetTexture = [&](ETextureAttribute attr, UInt32 fallback_index)
         {

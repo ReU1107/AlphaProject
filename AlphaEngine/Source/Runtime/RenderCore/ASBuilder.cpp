@@ -16,7 +16,7 @@ namespace Alpha
 
 	void ASBuilder::Initialize(const Args& args)
 	{
-		m_scratch_as_allocator = CreateTransientAllocator(args.render_core, 256, 64_MB, EBufferPresetType::RWByteAddress, L"ScratchASBuffer");
+		m_scratch_blas_allocator = CreateTransientAllocator(args.render_core, 256, 64_MB, EBufferPresetType::RWByteAddress, L"ScratchASBuffer");
 	}
 
 	void ASBuilder::AddRequest(const BLASRequest& request)
@@ -28,7 +28,7 @@ namespace Alpha
 	{
 		for (auto& request : m_requests)
 		{
-			RHIBuildASDesc build_desc = {};
+			RHIBuildBLASDesc build_desc = {};
 			build_desc.vertex_buffer = request.vertex_buffer->GetRHI();
 			build_desc.vertex_offset = request.vertex_offset;
 
@@ -44,9 +44,9 @@ namespace Alpha
 				build_desc.source_as_offset = request.source_as_offset;
 			}
 
-			build_desc.scratch_as_buffer = m_scratch_as_allocator->GetBuffer()->GetRHI();
+			build_desc.scratch_as_buffer = m_scratch_blas_allocator->GetBuffer()->GetRHI();
 
-			UInt64 scratch_offset = m_scratch_as_allocator->AllocateOffset(request.scratch_size);
+			UInt64 scratch_offset = m_scratch_blas_allocator->AllocateOffset(request.scratch_size);
 
 			build_desc.scratch_as_offset = scratch_offset;
 
@@ -73,6 +73,6 @@ namespace Alpha
 
 	void ASBuilder::Reset(UInt32 current_buffer_index)
 	{
-		m_scratch_as_allocator->Reset(current_buffer_index);
+		m_scratch_blas_allocator->Reset(current_buffer_index);
 	}
 }

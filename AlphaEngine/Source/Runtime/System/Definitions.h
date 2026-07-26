@@ -4,7 +4,7 @@
 
 namespace Alpha
 {
-
+	// ラスタライズ用
 	struct InstanceData
 	{
 		Matrix4x4 world_matrix{ Matrix4x4::Identity };
@@ -15,6 +15,18 @@ namespace Alpha
 		UInt32 mesh_offset{};
 		UINT32 vertex_element_offset{};
 	};
+
+	// レイトレ用
+	struct ASInstanceData
+	{
+		Matrix3x4 transform{ Matrix3x3::Identity };
+		UInt32 instance_id : 24{ 0 };
+		UInt32 instance_mask : 8{ 0 };
+		UInt32 hit_group_offset : 24{ 0 };
+		UInt32 flags : 8{ 0 };
+		UInt64 blas_gpu_address{ 0 };
+	};
+
 
 	struct LightData
 	{

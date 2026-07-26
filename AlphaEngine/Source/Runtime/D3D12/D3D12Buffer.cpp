@@ -182,7 +182,7 @@ namespace Alpha
 			states = D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
 		}
 		auto hr = device->CreateCommittedResource(&properties, D3D12_HEAP_FLAG_NONE, &resource_desc, states, nullptr, IID_PPV_ARGS(&m_resource));
-		if (ALPHA_CHECK_ERROR(FAILED(hr), L"リソースの作成に失敗しました"))
+		if (ALPHA_CHECK_ERROR(SUCCEEDED(hr), L"リソースの作成に失敗しました"))
 		{
 			return false;
 		}
@@ -215,7 +215,7 @@ namespace Alpha
 		m_resource->Unmap(0, &range);
 	}
 
-	uint8_t* D3D12Buffer::Map(uint64_t read_begin, uint64_t read_end)
+	UInt8* D3D12Buffer::Map(UInt64 read_begin, UInt64 read_end)
 	{
 		if (GetAccessType() != ERHIResourceAccessType::Dynamic)
 			return nullptr;
@@ -237,7 +237,7 @@ namespace Alpha
 		return map_data;
 	}
 
-	void D3D12Buffer::Unmap(uint64_t written_begin, uint64_t written_end)
+	void D3D12Buffer::Unmap(UInt64 written_begin, UInt64 written_end)
 	{
 		D3D12_RANGE range = {};
 		range.Begin = written_begin;
@@ -245,7 +245,7 @@ namespace Alpha
 		m_resource->Unmap(0, &range);
 	}
 
-	uint64_t D3D12Buffer::GetGPUAddress() const
+	UInt64 D3D12Buffer::GetGPUAddress() const
 	{
 		return m_resource->GetGPUVirtualAddress();
 	}

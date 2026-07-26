@@ -19,9 +19,12 @@ namespace Alpha
 	private:
 		TUnique<TransientBufferAllocator> m_instance_allocator{ nullptr };
 		TUnique<TransientBufferAllocator> m_vert_to_inst_allocator{ nullptr };
+		TUnique<TransientBufferAllocator> m_instance_tlas_allocator{ nullptr };
 
-		TUnique<TransientBufferAllocator> m_result_as_allocator{ nullptr };
-		TUnique<TransientBufferAllocator> m_update_as_allocator{ nullptr };
+		TUnique<TransientBufferAllocator> m_scratch_tlas_allocator{ nullptr };
+
+		TUnique<TransientBufferAllocator> m_result_tlas_allocator{ nullptr };
+		TUnique<TransientBufferAllocator> m_result_blas_allocator{ nullptr };
 
 		TUnique<TransientBufferAllocator> m_dynamic_vertex_allocator{ nullptr };
 

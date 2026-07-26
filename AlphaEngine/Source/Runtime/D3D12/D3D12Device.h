@@ -22,9 +22,9 @@ namespace Alpha
 		IDXGIAdapter4* GetAdapter() const { return m_adapter.Get(); }
 		IDXGIFactory7* GetFactory() const { return m_factory.Get(); }
 
-		void RequestTopLevelASSize(const RHITopLevelASDesc& desc, RHIASMemoryInfo* info);
+		void RequestTopLevelASSize(const RHIBuildTLASDesc& desc, RHIASMemoryInfo* info);
 
-		void RequestBottomLevelASSize(const RHIBuildASDesc& desc, RHIASMemoryInfo* info);
+		void RequestBottomLevelASSize(const RHIBuildBLASDesc& desc, RHIASMemoryInfo* info);
 
 
 	private:

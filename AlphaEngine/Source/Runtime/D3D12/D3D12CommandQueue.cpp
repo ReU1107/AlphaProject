@@ -49,7 +49,7 @@ namespace Alpha
 
 		hr = device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&m_queue));
 
-		if (ALPHA_CHECK_ERROR(FAILED(hr), L"コマンドキューの作成に失敗しました"))
+		if (ALPHA_CHECK_ERROR(SUCCEEDED(hr), L"コマンドキューの作成に失敗しました"))
 		{
 			return false;
 		}

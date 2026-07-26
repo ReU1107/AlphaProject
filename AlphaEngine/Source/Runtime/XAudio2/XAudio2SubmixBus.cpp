@@ -20,7 +20,7 @@ namespace Alpha
 	{
 		auto device = GetXA2Device();
 		auto hr = device->CreateSubmixVoice(&m_submix_voice, 0, 0);
-		if (ALPHA_CHECK_FATAL(FAILED(hr), L"サブミックスボイスの作成に失敗しました"))
+		if (ALPHA_CHECK_FATAL(SUCCEEDED(hr), L"サブミックスボイスの作成に失敗しました"))
 		{
 			return false;
 		}

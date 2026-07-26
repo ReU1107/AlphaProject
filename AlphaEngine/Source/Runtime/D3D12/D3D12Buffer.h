@@ -19,11 +19,11 @@ namespace Alpha
 
 		void Write(void* transfer_data) final;
 
-		uint8_t* Map(uint64_t read_begin, uint64_t read_end) final;
+		uint8_t* Map(UInt64 read_begin, UInt64 read_end) final;
 
-		void Unmap(uint64_t written_begin, uint64_t written_end) final;
+		void Unmap(UInt64 written_begin, UInt64 written_end) final;
 		
-		uint64_t GetGPUAddress() const final;
+		UInt64 GetGPUAddress() const final;
 
 		void* GetNative() const final { return m_resource.Get(); }
 

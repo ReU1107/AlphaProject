@@ -258,11 +258,6 @@ namespace Alpha
 		//RHIDescriptorView* View{ nullptr };
 	};
 
-	struct RHITopLevelASDesc
-	{
-		UInt32 instance_count{ 0 };
-	};
-
 	struct RHIBottomLevelGeometryDesc
 	{
 		UInt64 index_byte_offset{};
@@ -277,7 +272,7 @@ namespace Alpha
 		UInt64 update_size{ 0 };
 	};
 
-	struct RHIBuildASDesc
+	struct RHIBuildBLASDesc
 	{
 		RHIBuffer* vertex_buffer{ nullptr };
 		RHIBuffer* index_buffer{ nullptr };
@@ -295,6 +290,15 @@ namespace Alpha
 
 		UInt32 vertex_count{ 0 };
 		
+	};
+
+	struct RHIBuildTLASDesc
+	{
+		RHIBuffer* instance_desc_buffer{ nullptr }; // 
+		RHIBuffer* result_as_buffer{ nullptr };
+		RHIBuffer* scratch_as_buffer{ nullptr };
+
+		UInt32 instance_count{ 0 };
 	};
 
 }

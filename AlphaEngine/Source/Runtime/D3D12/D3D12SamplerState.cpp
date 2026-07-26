@@ -69,7 +69,7 @@ namespace Alpha
 
 		auto d3d12_heap = static_cast<D3D12DescriptorHeap*>(desc.descriptor_heap);
 
-		if (ALPHA_CHECK_ERROR((d3d12_heap->GetType() != ERHIDescriptorType::Sampler), L"SamplerState用のデスクリプタヒープではありません"))
+		if (ALPHA_CHECK_ERROR((d3d12_heap->GetType() == ERHIDescriptorType::Sampler), L"SamplerState用のデスクリプタヒープではありません"))
             return false;
 
 

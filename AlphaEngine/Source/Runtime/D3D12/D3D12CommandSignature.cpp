@@ -79,7 +79,7 @@ namespace Alpha
 
         HRESULT hr = device->CreateCommandSignature(&signature_desc, nullptr, IID_PPV_ARGS(&m_signature));
 
-        if (ALPHA_CHECK_ERROR(FAILED(hr), L"コマンドシグネチャの作成に失敗しました"))
+        if (ALPHA_CHECK_ERROR(SUCCEEDED(hr), L"コマンドシグネチャの作成に失敗しました"))
         {
             return false;
         }
