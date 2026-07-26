@@ -111,7 +111,7 @@ namespace Alpha
 		{
 			hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&m_allocators[i]));
 
-			if (ALPHA_CHECK_ERROR(FAILED(hr), L"コマンドアロケーターの作成に失敗しました"))
+			if (ALPHA_CHECK_ERROR(SUCCEEDED(hr), L"コマンドアロケーターの作成に失敗しました"))
 			{
 				return false;
 			}
@@ -119,7 +119,7 @@ namespace Alpha
 
 		hr = device->CreateCommandList1(0, type, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&m_list));
 
-		if (ALPHA_CHECK_ERROR(FAILED(hr), L"コマンドリストの作成に失敗しました"))
+		if (ALPHA_CHECK_ERROR(SUCCEEDED(hr), L"コマンドリストの作成に失敗しました"))
 		{
 			return false;
 		}
@@ -201,7 +201,7 @@ namespace Alpha
 	{
 		HRESULT hr = m_list->Close();
 
-		if (ALPHA_CHECK_ERROR(FAILED(hr), L"積み込んだコマンドに問題があります"))
+		if (ALPHA_CHECK_ERROR(SUCCEEDED(hr), L"積み込んだコマンドに問題があります"))
 		{
 
 		}
@@ -527,7 +527,7 @@ namespace Alpha
 		m_list->DispatchMesh(thread_group_x, thread_group_y, thread_group_z);
 	}
 
-	void D3D12CommandBuffer::BuildRaytracingAccelerationStructure(const RHIBuildASDesc& desc)
+	void D3D12CommandBuffer::BuildBLAS(const RHIBuildBLASDesc& desc)
 	{
 		UInt32 geometry_count = desc.geometries.size();
 		TArray<D3D12_RAYTRACING_GEOMETRY_DESC> geometry_desc(geometry_count);
@@ -559,11 +559,11 @@ namespace Alpha
 		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
 
 		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
-		inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+		inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
 		inputs.Flags = flags;
+		inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
 		inputs.NumDescs = geometry_count;
 		inputs.pGeometryDescs = geometry_desc.data();
-		inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
 
 		D3D12_GPU_VIRTUAL_ADDRESS result_as_address = desc.result_as_buffer->GetGPUAddress() + desc.result_as_offset;
 		D3D12_GPU_VIRTUAL_ADDRESS scratcht_as_address = desc.scratch_as_buffer->GetGPUAddress() + desc.scratch_as_offset;
@@ -579,10 +579,33 @@ namespace Alpha
 			D3D12_GPU_VIRTUAL_ADDRESS source_as_address = desc.source_as_buffer->GetGPUAddress() + desc.source_as_offset;
 
 			as_desc.SourceAccelerationStructureData = source_as_address;
+			as_desc.Inputs.Flags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE;
 		}
 
 
 		m_list->BuildRaytracingAccelerationStructure(&as_desc, 0, nullptr);
+	}
+
+	void D3D12CommandBuffer::BuildTLAS(const RHIBuildTLASDesc& desc)
+	{
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+		inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+		inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
+		inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+		inputs.NumDescs = desc.instance_count;
+		inputs.InstanceDescs = desc.instance_desc_buffer->GetGPUAddress();
+
+		D3D12_GPU_VIRTUAL_ADDRESS result_as_address = desc.result_as_buffer->GetGPUAddress();
+		D3D12_GPU_VIRTUAL_ADDRESS scratcht_as_address = desc.scratch_as_buffer->GetGPUAddress();
+
+		// 
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC as_desc = {};
+		as_desc.Inputs = inputs;
+		as_desc.DestAccelerationStructureData = result_as_address;
+		as_desc.ScratchAccelerationStructureData = scratcht_as_address;
+
+		m_list->BuildRaytracingAccelerationStructure(&as_desc, 0, nullptr);
+
 	}
 
 	void D3D12CommandBuffer::Close()

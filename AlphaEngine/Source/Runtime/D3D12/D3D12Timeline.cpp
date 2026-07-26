@@ -22,7 +22,7 @@ namespace Alpha
 		auto device = GetD3D12Device();
 
 		auto hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
-		if (ALPHA_CHECK_ERROR(FAILED(hr), L"コマンドフェンスの作成に失敗しました"))
+		if (ALPHA_CHECK_ERROR(SUCCEEDED(hr), L"コマンドフェンスの作成に失敗しました"))
 		{
 			return false;
 		}

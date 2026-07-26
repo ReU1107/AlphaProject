@@ -186,7 +186,7 @@ namespace Alpha
 				}
 			}
 			
-			if (ALPHA_CHECK_ERROR(FAILED(hr), L"テクスチャの作成に失敗しました"))
+			if (ALPHA_CHECK_ERROR(SUCCEEDED(hr), L"テクスチャの作成に失敗しました"))
 			{
 				return false;
 			}

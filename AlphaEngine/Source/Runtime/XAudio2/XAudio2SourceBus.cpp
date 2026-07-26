@@ -57,7 +57,7 @@ namespace Alpha
 
 		auto hr = device->CreateSourceVoice(&m_source_voice, &format, flags, desc.max_ratio, this, (desc.output_target ? &send_list : nullptr));
 
-		if (ALPHA_CHECK_FATAL(FAILED(hr), L"ソースボイスの作成に失敗しました"))
+		if (ALPHA_CHECK_FATAL(SUCCEEDED(hr), L"ソースボイスの作成に失敗しました"))
 		{
 			return false;
 		}

@@ -44,9 +44,9 @@ namespace Alpha
 
         TUnique<RHIComputePipeline> CreateComputePipeline(const RHIComputePipelineDesc& desc) final;
 
-        void RequestTopLevelASSize(const RHITopLevelASDesc& desc, RHIASMemoryInfo* info) final;
+        void RequestTLASSize(const RHIBuildTLASDesc& desc, RHIASMemoryInfo* info) final;
 
-        void RequestBottomLevelASSize(const RHIBuildASDesc& desc, RHIASMemoryInfo* info) final;
+        void RequestBLASSize(const RHIBuildBLASDesc& desc, RHIASMemoryInfo* info) final;
 
 	public:
 		TUnique<D3D12Device> m_device{ nullptr };

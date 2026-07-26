@@ -103,6 +103,7 @@ namespace Alpha
 		void UploadBuffer(Buffer* buffer, UInt64 offset, const void* data, UInt64 data_size);
 
 		ASBuildSize PreBuildBLAS(const BLASRequest& request);
+		ASBuildSize PreBuildTLAS(const TLASRequest& request);
 
 		void BuildBLAS(const BLASRequest& request);
 

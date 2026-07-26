@@ -34,8 +34,10 @@ namespace Alpha
 
 		RHIBuffer* GetRHI() const;
 
-		uint64_t GetStride() const;
-		uint64_t GetSize() const;
+		UInt64 GetStride() const;
+		UInt64 GetSize() const;
+
+		UInt64 GetGPUAddress() const;
 
 		UInt8* GetMappedPtr() const;
 

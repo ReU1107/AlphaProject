@@ -38,9 +38,8 @@ namespace Alpha
 	struct RHITextureDesc;
 	struct RHITimelineDesc;
 
-	struct RHITopLevelASDesc;
-	struct RHIBottomLevelASDesc;
-	struct RHIBuildASDesc;
+	struct RHIBuildBLASDesc;
+	struct RHIBuildTLASDesc;
 	struct RHIASMemoryInfo;
 
 }

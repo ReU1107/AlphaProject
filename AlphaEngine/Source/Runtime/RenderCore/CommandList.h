@@ -99,7 +99,8 @@ namespace Alpha
 		void Dispatch(UInt32 group_count_x, UInt32 group_count_y, UInt32 group_count_z);
 		void DispatchMesh(UInt32 group_count_x, UInt32 group_count_y, UInt32 group_count_z);
 
-		void BuildRaytracingAccelerationStructure(const RHIBuildASDesc& desc);
+		void BuildRaytracingAccelerationStructure(const RHIBuildTLASDesc& desc);
+		void BuildRaytracingAccelerationStructure(const RHIBuildBLASDesc& desc);
 
 		void SetName(StringView name);
 	};

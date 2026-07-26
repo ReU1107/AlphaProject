@@ -227,9 +227,14 @@ namespace Alpha
 		m_rhi->DispatchMesh(group_count_x, group_count_y, group_count_z);
 	}
 
-	void CommandList::BuildRaytracingAccelerationStructure(const RHIBuildASDesc& desc)
+	void CommandList::BuildRaytracingAccelerationStructure(const RHIBuildTLASDesc& desc)
 	{
-		m_rhi->BuildRaytracingAccelerationStructure(desc);
+		m_rhi->BuildTLAS(desc);
+	}
+
+	void CommandList::BuildRaytracingAccelerationStructure(const RHIBuildBLASDesc& desc)
+	{
+		m_rhi->BuildBLAS(desc);
 	}
 
 	void CommandList::SetName(StringView name)

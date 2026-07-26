@@ -54,9 +54,9 @@ namespace Alpha
 
 		TUnique<RHIComputePipeline> CreateComputePipeline(const RHIComputePipelineDesc& desc);
 
-		void RequestTopLevelASSize(const RHITopLevelASDesc& desc, RHIASMemoryInfo* info);
+		void RequestTopLevelASSize(const RHIBuildTLASDesc& desc, RHIASMemoryInfo* info);
 
-		void RequestBottomLevelASSize(const RHIBuildASDesc& desc, RHIASMemoryInfo* info);
+		void RequestBottomLevelASSize(const RHIBuildBLASDesc& desc, RHIASMemoryInfo* info);
 
 		// テストコード用で外部に公開
 		RHIDynamic* GetDynamic() const { return m_dynamic.get(); }

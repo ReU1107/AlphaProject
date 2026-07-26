@@ -333,13 +333,12 @@ namespace Alpha
 		stream_desc.pPipelineStateSubobjectStream = stream_data.data();
 
 		HRESULT hr = device->CreatePipelineState(&stream_desc, IID_PPV_ARGS(&m_pipeline_state));
-		if (ALPHA_CHECK_ERROR(FAILED(hr), L"グラフィックスパイプラインの作成に失敗しました"))
+		if (ALPHA_CHECK_ERROR(SUCCEEDED(hr), L"グラフィックスパイプラインの作成に失敗しました"))
 		{
 			return false;
 		}
 		return true;
 	}
-	D3D12_GENERIC_PROGRAM_DESC;
 }
 
 #endif

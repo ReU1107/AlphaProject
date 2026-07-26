@@ -122,7 +122,7 @@ namespace Alpha
 		ComPtr<ID3DBlob> error_blob;
 		
 		HRESULT hr = D3D12SerializeVersionedRootSignature(&versioned_desc, &signature_blob, &error_blob);
-		if (ALPHA_CHECK_ERROR(FAILED(hr), L"ルートシグネチャの作成に失敗しました"))
+		if (ALPHA_CHECK_ERROR(SUCCEEDED(hr), L"ルートシグネチャの作成に失敗しました"))
 		{
 			for (auto& range : temp_ranges)
 			{
@@ -133,7 +133,7 @@ namespace Alpha
 		auto device = GetD3D12Device();
 
 		hr = device->CreateRootSignature(0, signature_blob->GetBufferPointer(), signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_root_signature));
-		if (ALPHA_CHECK_ERROR(FAILED(hr), L"ルートシグネチャの作成に失敗しました"))
+		if (ALPHA_CHECK_ERROR(SUCCEEDED(hr), L"ルートシグネチャの作成に失敗しました"))
 		{
 			for (auto& range : temp_ranges)
 			{

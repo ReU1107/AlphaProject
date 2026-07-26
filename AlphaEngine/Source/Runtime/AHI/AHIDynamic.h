@@ -33,7 +33,7 @@ namespace Alpha
 	requires IsAHIObject<AHIObject, AHIDesc>
 	TUnique<AHIObject> CreateAHIObject(AHIDevice* device_, const AHIDesc& desc_)
 	{
-		if (ALPHA_CHECK_FATAL(!device_, L"CreateAHIObject: デバイスが有効ではありません"))
+		if (ALPHA_CHECK_FATAL(device_, L"CreateAHIObject: デバイスが有効ではありません"))
 			return nullptr;
 
 		auto object = std::make_unique<AHIObject>(device_);

@@ -50,14 +50,19 @@ namespace Alpha
 		return m_rhi->As<RHIBuffer>();
 	}
 
-	uint64_t Buffer::GetStride() const
+	UInt64 Buffer::GetStride() const
 	{
 		return m_rhi->As<RHIBuffer>()->GetStride();
 	}
 
-	uint64_t Buffer::GetSize() const
+	UInt64 Buffer::GetSize() const
 	{
 		return m_rhi->As<RHIBuffer>()->GetSize();
+	}
+
+	UInt64 Buffer::GetGPUAddress() const
+	{
+		return GetRHI()->GetGPUAddress();
 	}
 
 	UInt8* Buffer::GetMappedPtr() const

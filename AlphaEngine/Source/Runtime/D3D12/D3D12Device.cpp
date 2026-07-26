@@ -31,7 +31,7 @@ namespace Alpha
 #endif
 		hr = CreateDXGIFactory2(flag, IID_PPV_ARGS(&m_factory));
 
-		if (ALPHA_CHECK_FATAL(FAILED(hr), L"DXGIファクトリーの作成に失敗しました"))
+		if (ALPHA_CHECK_FATAL(SUCCEEDED(hr), L"DXGIファクトリーの作成に失敗しました"))
 		{
 			return false;
 		}
@@ -44,7 +44,7 @@ namespace Alpha
 
 		hr = m_factory->EnumAdapterByGpuPreference(0, per, IID_PPV_ARGS(&m_adapter));
 
-		if (ALPHA_CHECK_FATAL(FAILED(hr), L"DXGIアダプター作成に失敗しました"))
+		if (ALPHA_CHECK_FATAL(SUCCEEDED(hr), L"DXGIアダプター作成に失敗しました"))
 		{
 			return false;
 		}
@@ -65,7 +65,7 @@ namespace Alpha
 		}
 #endif
 		hr = D3D12CreateDevice(m_adapter.Get(), D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&m_device));
-		if (ALPHA_CHECK_FATAL(FAILED(hr), L"D3D12デバイスの作成に失敗しました"))
+		if (ALPHA_CHECK_FATAL(SUCCEEDED(hr), L"D3D12デバイスの作成に失敗しました"))
 		{
 			return false;
 		}
@@ -95,11 +95,11 @@ namespace Alpha
 		return true;
 	}
 
-	void D3D12Device::RequestTopLevelASSize(const RHITopLevelASDesc& desc, RHIASMemoryInfo* info)
+	void D3D12Device::RequestTopLevelASSize(const RHIBuildTLASDesc& desc, RHIASMemoryInfo* info)
 	{
 		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
 		inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-		inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+		inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
 		inputs.NumDescs = desc.instance_count;
 		inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
 
@@ -111,7 +111,7 @@ namespace Alpha
 		info->update_size = build_info.UpdateScratchDataSizeInBytes;
 	}
 
-	void D3D12Device::RequestBottomLevelASSize(const RHIBuildASDesc& desc, RHIASMemoryInfo* info)
+	void D3D12Device::RequestBottomLevelASSize(const RHIBuildBLASDesc& desc, RHIASMemoryInfo* info)
 	{
 		UInt32 geometry_count = desc.geometries.size();
 		TArray<D3D12_RAYTRACING_GEOMETRY_DESC> geometry_desc(geometry_count);

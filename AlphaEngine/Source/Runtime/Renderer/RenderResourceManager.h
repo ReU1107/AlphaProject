@@ -6,12 +6,14 @@
 
 namespace Alpha
 {
+    class AssetManager;
     class ModelHandle;
     class MaterialHandle;
     class MaterialTableHandle;
     class TextureHandle;
 
     class RenderCore;
+    class Buffer;
     class PersistentBufferAllocator;
 
     /*
@@ -40,11 +42,17 @@ namespace Alpha
         TUnique<PersistentBufferAllocator> m_material_table_allocator{ nullptr };
 
 
+        UInt32 m_default_mesh_index{ 0 };
+        UInt32 m_default_white_texture_index{ 0 };
+        UInt32 m_default_normal_texture_index{ 0 };
+        UInt32 m_default_black_texture_index{ 0 };
+
     public:
         ~RenderResourceManager();
         struct Args
         {
             RenderCore* render_core{ nullptr };
+            AssetManager* asset_manager{ nullptr };
         };
         bool Initialize(const Args& args);
         void Finalize();
@@ -65,6 +73,16 @@ namespace Alpha
 
         UInt32 GetGPUMeshOffset(UInt64 index);
         UInt32 GetGPUMaterialTableOffset(UInt64 index);
+
+        struct Buffers
+        {
+            Buffer* position{ nullptr };
+            Buffer* attribute{ nullptr };
+            Buffer* index{ nullptr };
+            Buffer* source_as{ nullptr };
+        };
+
+        Buffers GetBuffers() const;
 
 
         struct BufferIndices

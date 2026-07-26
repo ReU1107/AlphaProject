@@ -102,10 +102,8 @@ namespace Alpha
 	struct TLASRequest
 	{
 		Buffer* instance_desc_buffer{ nullptr };
-		UInt64 instance_desc_offset{ 0 };
 
 		Buffer* result_buffer{ nullptr };
-		UInt64 result_offset{ 0 };
 
 		UInt64 scratch_size{ 0 };
 		UInt32 instance_count{ 0 };

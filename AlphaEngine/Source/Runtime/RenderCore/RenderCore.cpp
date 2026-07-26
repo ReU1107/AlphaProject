@@ -294,7 +294,7 @@ namespace Alpha
 
 	ASBuildSize RenderCore::PreBuildBLAS(const BLASRequest& request)
 	{
-		RHIBuildASDesc build_desc = {};
+		RHIBuildBLASDesc build_desc = {};
 
 		build_desc.vertex_count = request.vertex_count;
 
@@ -312,6 +312,24 @@ namespace Alpha
 		RHIASMemoryInfo info = {};
 
 		m_rhi->RequestBottomLevelASSize(build_desc, &info);
+
+		ASBuildSize size = {};
+		size.result = info.size;
+		size.scratch = info.scratch_size;
+		size.update = info.update_size;
+
+		return size;
+	}
+
+	ASBuildSize RenderCore::PreBuildTLAS(const TLASRequest& request)
+	{
+		RHIBuildTLASDesc build_desc = {};
+
+		build_desc.instance_count = request.instance_count;
+
+		RHIASMemoryInfo info = {};
+
+		m_rhi->RequestTopLevelASSize(build_desc, &info);
 
 		ASBuildSize size = {};
 		size.result = info.size;
@@ -436,6 +454,21 @@ namespace Alpha
 	{
 		if (m_gpu_data_transfer->HasUpload())
 			m_gpu_data_transfer->Upload();
+
+
+		auto list = GetCommandList();
+		list->Begin(0);
+
+		m_as_builder->RecordBuildCommands(list);
+
+		list->End();
+
+		m_command_queue->Execute(list);
+		m_command_queue->Signal(m_timeline.get());
+
+		m_timeline->WaitCPU();
+
+
 		return true;
 	}
 

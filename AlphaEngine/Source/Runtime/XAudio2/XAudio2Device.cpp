@@ -20,7 +20,7 @@ namespace Alpha
 	{
         HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
-        if (ALPHA_CHECK_FATAL(FAILED(hr), L"COMの初期化に失敗しました"))
+        if (ALPHA_CHECK_FATAL(SUCCEEDED(hr), L"COMの初期化に失敗しました"))
         {
             return false;
         }
@@ -31,7 +31,7 @@ namespace Alpha
         hr = XAudio2Create(&m_device, flag);
 
 
-        if (ALPHA_CHECK_FATAL(FAILED(hr), L"XAudio2デバイスの作成に失敗しました"))
+        if (ALPHA_CHECK_FATAL(SUCCEEDED(hr), L"XAudio2デバイスの作成に失敗しました"))
         {
             CoUninitialize();
             return false;

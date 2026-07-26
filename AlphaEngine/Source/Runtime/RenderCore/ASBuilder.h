@@ -11,8 +11,7 @@ namespace Alpha
 	class ASBuilder
 	{
 	private:
-
-		TUnique<TransientBufferAllocator> m_scratch_as_allocator{ nullptr };
+		TUnique<TransientBufferAllocator> m_scratch_blas_allocator{ nullptr };
 		TArray<BLASRequest> m_requests{};
 
 	public:

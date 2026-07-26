@@ -79,6 +79,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     RenderResourceManager::Args resource_args = {
         .render_core = RenderCore::GetPtr(),
+        .asset_manager = AssetManager::GetPtr(),
     };
     RenderResourceManager::Startup(resource_args);
 
@@ -99,6 +100,17 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         auto& transform = registry.emplace<TransformComponent>(entity);
         transform.SetLocalPosition(Vector3(10.0f, 0.0f, 0.0f));
+
+    }
+    {
+        const auto entity = registry.create();
+
+        auto& mesh = registry.emplace<MeshComponent>(entity);
+        mesh.mesh_index = akari_index;
+        mesh.material_table_index = RenderResourceManager::Get().GetMaterialTableIndexByMesh(akari_index);
+
+        auto& transform = registry.emplace<TransformComponent>(entity);
+        transform.SetLocalPosition(Vector3(10.0f, 0.0f, 10.0f));
 
     }
 

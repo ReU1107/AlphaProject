@@ -7,31 +7,31 @@ namespace Alpha
 	class RHIBuffer : public RHIResource
 	{
 	private:
-		uint64_t m_stride{ 0 };
-		uint64_t m_size{ 0 };
+		UInt64 m_stride{ 0 };
+		UInt64 m_size{ 0 };
 
 	public:
 		virtual ~RHIBuffer() {}
 
 		virtual bool Initialize(const RHIBufferDesc& desc) = 0;
 
-		void SetStride(uint64_t stride) { m_stride = stride; }
+		void SetStride(UInt64 stride) { m_stride = stride; }
 
-		void SetSize(uint64_t size) { m_size = size; }
+		void SetSize(UInt64 size) { m_size = size; }
 
 
 		// バッファストライド取得
-		uint64_t GetStride() const { return m_stride; }
+		UInt64 GetStride() const { return m_stride; }
 		// サイズ取得
-		uint64_t GetSize() const { return m_size; }
+		UInt64 GetSize() const { return m_size; }
 
 		virtual void Write(void* transfer_data) = 0;
 
-		virtual uint8_t* Map(uint64_t read_begin, uint64_t read_end) = 0;
+		virtual UInt8* Map(UInt64 read_begin, UInt64 read_end) = 0;
 
-		virtual void Unmap(uint64_t written_begin, uint64_t written_end) = 0;
+		virtual void Unmap(UInt64 written_begin, UInt64 written_end) = 0;
 
-		virtual uint64_t GetGPUAddress() const = 0;
+		virtual UInt64 GetGPUAddress() const = 0;
 
 	};
 }
