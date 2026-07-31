@@ -10,6 +10,7 @@ namespace Alpha
 
 	class GraphicsPipeline;
 	class ComputePipeline;
+	class RayTracePipeline;
 
 	class DescriptorHeap;
 	struct DescriptorHandle;
@@ -52,6 +53,7 @@ namespace Alpha
 
 		void SetGraphicsPipeline(GraphicsPipeline* pipeline);
 		void SetComputePipeline(ComputePipeline* pipeline);
+		void SetRayTracePipeline(RayTracePipeline* pipeline);
 
 		void SetRenderTarget(Texture* render_target, Texture* depth_stencil);
 		void SetRenderTargets(Texture** render_targets, UInt32 num, Texture* depth_stencil);
@@ -91,6 +93,7 @@ namespace Alpha
 		//void CopyTextureRegion(Texture* src, const RHIRect& src_rect, Texture* dst, const RHIRect& dst_rect);
 
 		void UAVBarrier(Buffer* buffer);
+		void UAVBarrier(Texture* texture);
 
 		void Draw(UInt32 vertex_count, UInt32 instance_count, UInt32 start_vertex, UInt32 start_instance);
 
@@ -98,6 +101,8 @@ namespace Alpha
 
 		void Dispatch(UInt32 group_count_x, UInt32 group_count_y, UInt32 group_count_z);
 		void DispatchMesh(UInt32 group_count_x, UInt32 group_count_y, UInt32 group_count_z);
+		void DispatchRayTrace(const RHIRayTraceDesc& desc);
+
 
 		void BuildRaytracingAccelerationStructure(const RHIBuildTLASDesc& desc);
 		void BuildRaytracingAccelerationStructure(const RHIBuildBLASDesc& desc);

@@ -7,20 +7,20 @@ namespace Alpha
 {
 	struct TransformComponent
 	{
-		mutable Matrix4x4 local_to_world{ Matrix4x4::Identity };// ローカル→ワールド変換行列
+	private:
+		mutable Matrix4x4 m_local_to_world{ Matrix4x4::Identity };// ローカル→ワールド変換行列
 		Matrix4x4 world_to_local{ Matrix4x4::Identity };// ワールド→ローカル変換行列
 
-		Quaternion rotation{ Quaternion::Identity };	// 回転(四元数)
+		Quaternion m_rotation{ Quaternion::Identity };	// 回転(四元数)
 
-		Vector3 position{ Vector3::Zero };				// 位置		親からみた相対的な位置
-		Vector3 scale{ Vector3::One };					// スケーリング
+		Vector3 m_position{ Vector3::Zero };				// 位置		親からみた相対的な位置
+		Vector3 m_scale{ Vector3::One };					// スケーリング
 
 		// ダーティパターン
-		bool is_dirty{ true };							// 再計算(ワールド変換行列作成に必要な数値が変わったらtrue)
+		mutable bool m_is_dirty{ true };							// 再計算(ワールド変換行列作成に必要な数値が変わったらtrue)
 
 	public:
 		void SetLocalPosition(const Vector3& position);
-		void SetWorldPosition(const Vector3& position);
 
 		void SetLocalScale(const Vector3& scale);
 
@@ -29,5 +29,24 @@ namespace Alpha
 
 		const Matrix4x4& GetLocalToWorld() const;
 
+		// ローカル空間での平行移動
+		void LocalTranslate(const Vector3& displacement);
+
+		// ローカル空間での回転
+		void LocalRotate(const Vector3& euler);
+		void LocalRotate(const Vector3& axis, float angle);
+		void LocalRotate(const Quaternion& rotation);
+
+		// ターゲットの方向を見るように回転
+		void LookAt(const Vector3& dir, const Vector3& up = Vector3(0.0f, 1.0f, 0.0f));
+
+		void RotateAround(const Vector3& point, const Vector3& axis, float radian);
+
+		Vector3 Forward() const;
+		Vector3 Backward() const;
+		Vector3 Right() const;
+		Vector3 Left() const;
+		Vector3 Up() const;
+		Vector3 Down() const;
 	};
 }

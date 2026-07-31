@@ -8,6 +8,8 @@
 
 #include "Core/Math/MathF.h"
 
+#include <imgui/imgui.h>
+
 namespace Alpha
 {
 	using namespace Renderer;
@@ -18,6 +20,10 @@ namespace Alpha
 	static TUnique<Shader> ms;
 	static TUnique<Shader> ps;
 	static TUnique<Shader> cs;
+	static TUnique<Shader> rg;
+	static TUnique<Shader> ch;
+	static TUnique<Shader> mi;
+	static TUnique<Texture> result;
 
 	bool RenderSystem::Initialize(const Args& args)
 	{
@@ -84,6 +90,34 @@ namespace Alpha
 			}
 		);
 
+		rg = RenderCore::Get().CreateShader(L"Asset/RayGenerate.hlsl", ERHIShaderType::Library, L"MyRayGen");
+		mi = RenderCore::Get().CreateShader(L"Asset/Miss.hlsl", ERHIShaderType::Library, L"MyMiss");
+		ch = RenderCore::Get().CreateShader(L"Asset/Hit.hlsl", ERHIShaderType::Library, L"MyClosestHit");
+
+		TArray<HitGroupArgs> hit_groups{};
+
+		HitGroupArgs hit_group = {
+			.name = L"Test",
+			.closest_hit_shader = ch.get(),
+		};
+
+		hit_groups.push_back(hit_group);
+
+		TArray<Shader*> miss_shaders{};
+		miss_shaders.push_back(mi.get());
+		
+		m_raytrace_pipeline = RenderCore::Get().CreateRayTracePipeline(
+			{
+				.pipeline_layout = m_layout.get(),
+				.ray_gen_shader = rg.get(),
+				.miss_shaders = miss_shaders,
+				.hit_groups = hit_groups,
+				.max_payload_size = 32,
+			}
+		);
+
+		result = RenderCore::Get().CreateTexture(1920, 1080, ERHIResourceBindFlags::ShaderResource | ERHIResourceBindFlags::UnorderedAccess);
+
 		return true;
 
 	}
@@ -100,18 +134,19 @@ namespace Alpha
 		UInt32 vertex_to_instance{};
 		UInt32 dyanmic_position_srv{};      // 書き込まれた頂点
 		UInt32 dyanmic_position_uav{};      // 書き込まれた頂点
+		UInt32 rt_structure{};
+		UInt32 rt_result{};
 	};
 
 	struct Constants
 	{
 		float4x4 view_proj{ float4x4::Identity };
+		float4x4 proj_view{ float4x4::Identity };
 		float4 camera_pos;
 		float4 frustum_planes;
 
 		UInt32 instance_count;
 	};
-
-	static float3 camera_pos = Vector3(0.0f, 10.0f, -25.0f);
 
 	void RenderSystem::Render(entt::registry& registry, RenderContext& ctx)
 	{
@@ -130,6 +165,8 @@ namespace Alpha
 			.vertex_to_instance = m_vert_to_inst_allocator->GetSRVIndex(),
 			.dyanmic_position_srv = m_dynamic_vertex_allocator->GetSRVIndex(),
 			.dyanmic_position_uav = m_dynamic_vertex_allocator->GetUAVIndex(),
+			.rt_structure = m_result_tlas_allocator->GetSRVIndex(),
+			.rt_result = result->GetUAVHandle().index,
 		};
 
 		auto buffers = RenderResourceManager::Get().GetBuffers();
@@ -151,10 +188,10 @@ namespace Alpha
 			instance.world_matrix = transform.GetLocalToWorld();
 			instance.mesh_offset = RenderResourceManager::Get().GetGPUMeshOffset(mesh_com.mesh_index);
 			instance.material_table_offset = RenderResourceManager::Get().GetGPUMaterialTableOffset(mesh_com.material_table_index);
-			
+
 			// このメッシュの頂点データを書き込む場所を予約する
 			const auto& mesh = RenderResourceManager::Get().GetMeshByIndex(mesh_com.mesh_index);
-			
+
 			UInt64 vertex_byte_offset = m_dynamic_vertex_allocator->AllocateOffset(mesh.vertex_position_alloc.size);
 			instance.vertex_element_offset = vertex_byte_offset / sizeof(Vector3);
 
@@ -184,7 +221,7 @@ namespace Alpha
 						.index_byte_offset = sub.index_element_offset * sizeof(UInt32),
 						.index_count = sub.index_count,
 					}
-				);
+					);
 			}
 
 			RenderCore::Get().BuildBLAS(request);
@@ -239,24 +276,23 @@ namespace Alpha
 			ctx.command_list->BuildRaytracingAccelerationStructure(desc);
 
 		}
-		
+
 		ctx.command_list->UAVBarrier(m_result_tlas_allocator->GetBuffer());
 
 		ctx.command_list->SetGraphicsPipeline(m_pipeline.get());
 
-		if (GetKeyState('W') & 0x8000) { camera_pos.Z() += 0.2f; }
-		if (GetKeyState('S') & 0x8000) { camera_pos.Z() -= 0.2f; }
-		if (GetKeyState('A') & 0x8000) { camera_pos.X() -= 0.2f; }
-		if (GetKeyState('D') & 0x8000) { camera_pos.X() += 0.2f; }
 
-		// カメラコンポーネントから拾ってくる
-		// 仮で
-		Camera camera = {};
-		camera.SetPosition(camera_pos);
+		auto camera_view = registry.view<CameraComponent, TransformComponent>();
+
+		entt::entity camera_entity = camera_view.front();
+		auto& camera = camera_view.get<CameraComponent>(camera_entity);
+		auto& camera_t = camera_view.get<TransformComponent>(camera_entity);
 
 
 		Constants constants = {};
-		constants.view_proj = camera.GetViewProjectionMatrix();
+		constants.view_proj = MatrixMultiply(camera.view_matrix, camera.GetProjectionMatrix());
+		constants.proj_view = Matrix4x4Inverse(constants.view_proj);
+		constants.camera_pos = camera_t.GetLocalToWorld()._4();
 		constants.instance_count = m_instances.size();
 
 		{
@@ -274,6 +310,45 @@ namespace Alpha
 		ctx.command_list->SetGraphicsSamplerState(RenderCore::Get().GetPresetSampler(ESamplerPresetType::LinearClamp), 2);
 
 		ctx.command_list->DispatchMesh(constants.instance_count, 1, 1);
+
+
+		ctx.command_list->SetRayTracePipeline(m_raytrace_pipeline.get());
+
+		{
+			auto offset = RenderCore::Get().GetTransientAllocator()->WriteData<Constants>(&constants);
+
+			ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 1);
+		}
+
+
+		{
+			RHIRayTraceDesc desc = {};
+			desc.shader_table_buffer = m_raytrace_pipeline->GetShaderTableBuffer()->GetRHI();
+			desc.ray_gen_offset = m_raytrace_pipeline->GetRayGenerateTable().alloc.offset;
+			desc.miss_offset = m_raytrace_pipeline->GetMissTable().alloc.offset;
+			desc.hit_group_offset = m_raytrace_pipeline->GetHitGroupTable().alloc.offset;
+			desc.width = 1920;
+			desc.height = 1080;
+			desc.depth = 1;
+
+
+			ctx.command_list->DispatchRayTrace(desc);
+		}
+
+		ctx.command_list->UAVBarrier(result.get());
+
+
+		GUISystem::Get().BeginFrame();
+
+		ImGui::Begin("RayTraceResult");
+
+		ImGui::Image(result.get(), ImVec2(960, 540));
+
+		ImGui::End();
+
+		GUISystem::Get().EndFrame();
+
+		GUISystem::Get().Flush(ctx);
 
 	}
 }

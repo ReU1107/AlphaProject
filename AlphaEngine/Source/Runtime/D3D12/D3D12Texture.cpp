@@ -61,15 +61,16 @@ namespace
 		if (EnumHasFlag(flags, Alpha::ERHIResourceBindFlags::DepthStencil))
 		{
 			resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+			if (!EnumHasFlag(flags, Alpha::ERHIResourceBindFlags::ShaderResource))
+			{
+				resourceFlags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
+			}
 		}
 		if (EnumHasFlag(flags, Alpha::ERHIResourceBindFlags::UnorderedAccess))
 		{
 			resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 		}
-		if (!EnumHasFlag(flags, Alpha::ERHIResourceBindFlags::ShaderResource))
-		{
-			resourceFlags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
-		}
+
 
 		return resourceFlags;
 	}

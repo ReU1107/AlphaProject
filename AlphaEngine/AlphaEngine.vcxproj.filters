@@ -357,7 +357,7 @@
     <ClCompile Include="ThirdParty\meshoptimizer\vfetchoptimizer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Renderer\Camera.cpp">
+    <ClCompile Include="Source\Runtime\Renderer\CameraComponent.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Renderer\RenderResourceManager.cpp">
@@ -394,6 +394,15 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\RenderCore\ASBuilder.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\D3D12\D3D12RayTracePipeline.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\RenderCore\RayTracePipeline.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\System\CameraSystem.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -905,7 +914,7 @@
     <ClInclude Include="ThirdParty\meshoptimizer\meshoptimizer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Renderer\Camera.h">
+    <ClInclude Include="Source\Runtime\Renderer\CameraComponent.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Renderer\Definitions.h">
@@ -987,6 +996,18 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RenderCore\BufferAllocator.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\RHI\RHIRayTracePipeline.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\D3D12\D3D12RayTracePipeline.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\RenderCore\RayTracePipeline.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\System\CameraSystem.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

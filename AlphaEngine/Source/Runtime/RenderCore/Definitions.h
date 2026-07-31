@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Core/Common.h"
+#include "Core/Allocator/Allocator.h"
 #include "RHI/Types.h"
 #include "RHI/Definitions.h"
 #include "VertexLayout.h"
@@ -64,6 +65,32 @@ namespace Alpha
 
 	};
 
+	struct HitGroupArgs
+	{
+		String name{};
+		ERHIHitGroupType type{ ERHIHitGroupType::Triangles };
+
+		Shader* any_hit_shader{ nullptr };
+		Shader* closest_hit_shader{ nullptr };
+		Shader* intersection_shader{ nullptr };
+	};
+
+	struct RayTracePipelineArgs
+	{
+		RenderHardwareInterface* rhi{ nullptr };
+		PipelineLayout* pipeline_layout{ nullptr };
+
+		TArray<Shader*> libraries{}; // 複数エントリポイントを含む共有ライブラリがあれば追加
+
+		Shader* ray_gen_shader{ nullptr };
+		TArray<Shader*> miss_shaders{};
+		TArray<HitGroupArgs> hit_groups{};
+
+		UInt32 max_payload_size{ 0 };
+		UInt32 max_attribute_size{ 8 };
+		UInt32 max_recursion_depth{ 1 };
+	};
+
 	struct ASBuildSize
 	{
 		UInt64 result{ 0 };
@@ -107,6 +134,13 @@ namespace Alpha
 
 		UInt64 scratch_size{ 0 };
 		UInt32 instance_count{ 0 };
+	};
+
+	struct ShaderTable
+	{
+		Allocation alloc = {};
+		TArray<String> export_names{};
+		TArray<UInt8> stream{};
 	};
 
 

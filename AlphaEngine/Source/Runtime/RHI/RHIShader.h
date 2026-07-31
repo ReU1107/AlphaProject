@@ -10,5 +10,8 @@ namespace Alpha
 
 		virtual bool Initialize(const RHIShaderDesc& desc) = 0;
 
+		virtual const wchar_t* GetEntryPoint() const = 0;
+
+
 	};
 }

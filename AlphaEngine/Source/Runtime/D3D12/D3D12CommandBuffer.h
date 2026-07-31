@@ -41,6 +41,7 @@ namespace Alpha
 
 		void SetGraphicsPipeline(RHIGraphicsPipeline* pipeline, RHIPipelineLayout* layout) final;
 		void SetComputePipeline(RHIComputePipeline* pipeline, RHIPipelineLayout* layout) final;
+		void SetRayTracePipeline(RHIRayTracePipeline* pipeline, RHIPipelineLayout* layout) final;
 
 		void SetDescriptorHeap(RHIDescriptorHeap* heap) final;
 		void SetDescriptorHeap(RHIDescriptorHeap* srv_heap, RHIDescriptorHeap* sampler_heap) final;
@@ -82,6 +83,9 @@ namespace Alpha
 
 		void Dispatch(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z) final;
 		void DispatchMesh(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z) final;
+
+
+		void DispatchRayTrace(const RHIRayTraceDesc& desc) final;
 
 		void BuildBLAS(const RHIBuildBLASDesc& desc) final;
 		void BuildTLAS(const RHIBuildTLASDesc& desc) final;

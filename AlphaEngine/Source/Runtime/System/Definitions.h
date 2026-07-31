@@ -21,7 +21,7 @@ namespace Alpha
 	{
 		Matrix3x4 transform{ Matrix3x3::Identity };
 		UInt32 instance_id : 24{ 0 };
-		UInt32 instance_mask : 8{ 0 };
+		UInt32 instance_mask : 8{ 0xff };
 		UInt32 hit_group_offset : 24{ 0 };
 		UInt32 flags : 8{ 0 };
 		UInt64 blas_gpu_address{ 0 };

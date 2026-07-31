@@ -40,6 +40,8 @@ namespace Alpha
 
 		virtual TUnique<RHIComputePipeline> CreateComputePipeline(const RHIComputePipelineDesc& desc) = 0;
 
+		virtual TUnique<RHIRayTracePipeline> CreateRayTracePipeline(const RHIRayTracePipelineDesc& desc) = 0;
+
 		virtual void RequestTLASSize(const RHIBuildTLASDesc& desc, RHIASMemoryInfo* info) = 0;
 
 		virtual void RequestBLASSize(const RHIBuildBLASDesc& desc, RHIASMemoryInfo* info) = 0;

@@ -3,6 +3,7 @@
 #include "AssetHandle.h"
 #include "AudioHandle.h"
 #include "MaterialHandle.h"
+#include "MaterialTableHandle.h"
 #include "ModelHandle.h"
 #include "MotionHandle.h"
 #include "SkeletonHandle.h"

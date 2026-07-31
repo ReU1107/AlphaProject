@@ -30,7 +30,7 @@ namespace Alpha
 
 		bool CheckType(ERHIShaderFlags type) const;
 
-
+		const wchar_t* GetEntryPoint() const;
 	};
 
 }

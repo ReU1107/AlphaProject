@@ -26,7 +26,8 @@ namespace Alpha
 
 		SIZE_T GetBytecodeLength() const { return m_shader_blob->GetBufferSize(); }
 
-		const wchar_t* GetEntryPointName() const { return m_entry_point.c_str(); }
+		const wchar_t* GetEntryPoint() const final { return m_entry_point.c_str(); }
+
 
 	};
 }

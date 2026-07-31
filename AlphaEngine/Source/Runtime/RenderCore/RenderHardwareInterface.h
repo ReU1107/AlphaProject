@@ -54,6 +54,9 @@ namespace Alpha
 
 		TUnique<RHIComputePipeline> CreateComputePipeline(const RHIComputePipelineDesc& desc);
 
+		TUnique<RHIRayTracePipeline> CreateRayTracePipeline(const RHIRayTracePipelineDesc& desc);
+
+
 		void RequestTopLevelASSize(const RHIBuildTLASDesc& desc, RHIASMemoryInfo* info);
 
 		void RequestBottomLevelASSize(const RHIBuildBLASDesc& desc, RHIASMemoryInfo* info);

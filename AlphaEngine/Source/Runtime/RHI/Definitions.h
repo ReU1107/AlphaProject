@@ -247,15 +247,69 @@ namespace Alpha
 		//RHIDescriptorView* View{ nullptr };		
 	};
 
-	//struct RHIWorkGraphPipelineDesc
-	//{
-	//	RHIPipelineLayout* layout{ nullptr };
-	//};
-
-	struct RHIRayTracingPipelineDesc
+	struct RHIGraphicsStateDesc
 	{
-		RHIShader* RayTracingShader{ nullptr };
-		//RHIDescriptorView* View{ nullptr };
+		RHIRasterizerStateDesc rasterizer{};
+		RHIBlendStateDesc blend_states[8]{};
+		ERHIResourceFormat render_targets[8]{};
+		UInt32 render_target_count{ 0 };
+		ERHIResourceFormat depth_format{ ERHIResourceFormat::Depth24Stencil8 };
+
+		ERHIPrimitiveTopology primitive_topology{ ERHIPrimitiveTopology::TriangleList };
+
+
+		ERHIFillMode fill_mode{ ERHIFillMode::Solid };
+		ERHICullMode cull_mode{ ERHICullMode::Back };
+
+		Bool alpha_to_coverage_enable{ false };
+		Bool independent_blend_enable{ false };
+		Bool depth_enable{ false };
+	};
+
+
+	struct RHIWorkGraphNodeDesc
+	{
+		String name{};                              // HLSL側の [NodeID] と対応させる名前
+		ERHIWorkGraphNodeType node_type{ ERHIWorkGraphNodeType::Compute };
+		Bool is_entrypoint{ false };                 // DispatchGraph()から直接呼べるか
+
+		RHIShader* shader{ nullptr };                // Compute Nodeのシェーダー
+		RHIShader* mesh_shader{ nullptr };           // Mesh Nodeのメッシュシェーダー
+		RHIShader* pixel_shader{ nullptr };          // Mesh Nodeのピクセルシェーダー
+
+		RHIGraphicsStateDesc graphics_state{};       // node_type == Meshの時だけ使う
+		RHIPipelineLayout* local_layout{ nullptr };   // ノードごとのLocal Root Signature
+	};
+
+	struct RHIDynamicPipelineDesc
+	{
+		String graph_name{ L"WorkGraph" };
+		RHIPipelineLayout* global_layout{ nullptr };
+		TArray<RHIShader*> libraries{};
+		TArray<RHIWorkGraphNodeDesc> nodes{};
+	};
+
+	struct RHIRayTraceHitGroupDesc
+	{
+		String name{};
+		ERHIHitGroupType type{ ERHIHitGroupType::Triangles };
+		RHIShader* any_hit_shader{ nullptr };
+		RHIShader* closest_hit_shader{ nullptr };
+		RHIShader* intersection_shader{ nullptr }; // Proceduralの時のみ
+	};
+
+	struct RHIRayTracePipelineDesc
+	{
+		RHIPipelineLayout* global_layout{ nullptr };
+		TArray<RHIShader*> libraries{};
+
+		RHIShader* ray_gen_shader{ nullptr };
+		TArray<RHIShader*> miss_shaders{};
+		TArray<RHIRayTraceHitGroupDesc> hit_groups{};
+
+		UInt32 max_payload_size{ 0 };
+		UInt32 max_attribute_size{ 0 };
+		UInt32 max_recursion_depth{ 1 };
 	};
 
 	struct RHIBottomLevelGeometryDesc
@@ -299,6 +353,23 @@ namespace Alpha
 		RHIBuffer* scratch_as_buffer{ nullptr };
 
 		UInt32 instance_count{ 0 };
+	};
+
+	struct RHIRayTraceDesc
+	{
+		RHIBuffer* shader_table_buffer{ nullptr }; // 
+
+		UInt64 ray_gen_offset{};
+		UInt64 miss_offset{};
+		UInt64 hit_group_offset{};
+
+		UInt64 miss_count{1};
+		UInt64 hit_group_count{ 1 };
+
+
+		UInt32 width{ 0 };
+		UInt32 height{ 0 };
+		UInt32 depth{ 0 };
 	};
 
 }

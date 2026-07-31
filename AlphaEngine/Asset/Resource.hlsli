@@ -19,7 +19,7 @@ struct MaterialData
 {
     MaterialProperties props; // 
 
-    uint base_color_tex_idx;            // テクスチャバインドレスインデックス (0xFFFFFFFF = 無効)
+    uint base_color_tex_idx;            // テクスチャバインドレスインデックス
     uint normal_tex_idx;                // 法線マップインデックス
     uint metallic_roughness_tex_idx;    // 
     uint emissive_tex_idx;              //  
@@ -77,13 +77,16 @@ struct SystemBufferIndices
     uint material_table;
     uint instance;
     uint vertex_to_instance;
-    uint dyanmic_position_srv;      // csから書き込む時用
-    uint dyanmic_position_uav;      // 描画時に使用するのはこっち
+    uint dyanmic_position_srv;  // 描画時に使用するのはこっち
+    uint dyanmic_position_uav;  // csから書き込む時用
+    uint rt_structure;
+    uint rt_result;
 };
 
 struct FrameRenderContext
 {
     float4x4 view_proj;
+    float4x4 proj_view;
     float4 camera_pos;
     float4 frustum_planes;
 

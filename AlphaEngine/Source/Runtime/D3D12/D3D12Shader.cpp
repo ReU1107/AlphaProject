@@ -79,7 +79,7 @@ namespace
 		arguments.push_back(desc.file_directory.c_str());					// シェーダーファイル
 
 
-		if (desc.type != Alpha::ERHIShaderType::Library)
+		if (desc.type != Alpha::ERHIShaderType::Library && desc.type != Alpha::ERHIShaderType::RayTracing)
 		{
 			arguments.push_back(L"-E");
 			arguments.push_back(desc.entry_point.c_str());				// エントリーポイント

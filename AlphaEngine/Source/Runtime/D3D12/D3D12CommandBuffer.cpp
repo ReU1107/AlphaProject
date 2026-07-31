@@ -5,6 +5,7 @@
 #include "D3D12Texture.h"
 #include "D3D12GraphicsPipeline.h"
 #include "D3D12ComputePipeline.h"
+#include "D3D12RayTracePipeline.h"
 #include "D3D12PipelineLayout.h"
 #include "D3D12DescriptorHeap.h"
 
@@ -229,6 +230,15 @@ namespace Alpha
 		auto d3d12_pipeline = static_cast<D3D12ComputePipeline*>(pipeline);
 
 		m_list->SetPipelineState(d3d12_pipeline->GetNativeHandle());
+		m_list->SetComputeRootSignature(d3d12_layout->GetNativeHandle());
+	}
+
+	void D3D12CommandBuffer::SetRayTracePipeline(RHIRayTracePipeline* pipeline, RHIPipelineLayout* layout)
+	{
+		auto d3d12_layout = static_cast<D3D12PipelineLayout*>(layout);
+		auto d3d12_pipeline = static_cast<D3D12RayTracePipeline*>(pipeline);
+
+		m_list->SetPipelineState1(d3d12_pipeline->GetNativeHandle());
 		m_list->SetComputeRootSignature(d3d12_layout->GetNativeHandle());
 	}
 
@@ -525,6 +535,34 @@ namespace Alpha
 	void D3D12CommandBuffer::DispatchMesh(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z)
 	{
 		m_list->DispatchMesh(thread_group_x, thread_group_y, thread_group_z);
+	}
+
+	void D3D12CommandBuffer::DispatchRayTrace(const RHIRayTraceDesc& desc)
+	{
+		D3D12_DISPATCH_RAYS_DESC rayDesc = {};
+
+		rayDesc.Width = desc.width;
+		rayDesc.Height = desc.height;
+		rayDesc.Depth = desc.depth;
+
+		D3D12_GPU_VIRTUAL_ADDRESS shader_table_address = desc.shader_table_buffer->GetGPUAddress();
+
+		rayDesc.RayGenerationShaderRecord.StartAddress = shader_table_address + desc.ray_gen_offset;
+		rayDesc.RayGenerationShaderRecord.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+
+		rayDesc.MissShaderTable.StartAddress = shader_table_address + desc.miss_offset;
+		rayDesc.MissShaderTable.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES * desc.miss_count;
+		rayDesc.MissShaderTable.StrideInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+
+		rayDesc.HitGroupTable.StartAddress = shader_table_address + desc.hit_group_offset;
+		rayDesc.HitGroupTable.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES * desc.hit_group_count;
+		rayDesc.HitGroupTable.StrideInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+
+		// 今は無視
+		rayDesc.CallableShaderTable;
+
+		m_list->DispatchRays(&rayDesc);
+
 	}
 
 	void D3D12CommandBuffer::BuildBLAS(const RHIBuildBLASDesc& desc)

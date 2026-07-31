@@ -13,6 +13,7 @@
 
 #include "GraphicsPipeline.h"
 #include "ComputePipeline.h"
+#include "RayTracePipeline.h"
 #include "PipelineLayout.h"
 
 namespace Alpha
@@ -70,6 +71,11 @@ namespace Alpha
 	void CommandList::SetComputePipeline(ComputePipeline* pipeline)
 	{
 		m_rhi->SetComputePipeline(pipeline->GetRHI(), pipeline->GetPipelineLayout()->GetRHI());
+	}
+
+	void CommandList::SetRayTracePipeline(RayTracePipeline* pipeline)
+	{
+		m_rhi->SetRayTracePipeline(pipeline->GetRHI(), pipeline->GetPipelineLayout()->GetRHI());
 	}
 
 	void CommandList::SetRenderTarget(Texture* render_target, Texture* depth_stencil)
@@ -207,6 +213,13 @@ namespace Alpha
 		m_rhi->UAVBarrier(buffers, 1);
 	}
 
+	void CommandList::UAVBarrier(Texture* texture)
+	{
+		RHITexture* textures[] = { texture->GetRHI() };
+
+		m_rhi->UAVBarrier(textures, 1);
+	}
+
 	void CommandList::Draw(UInt32 vertex_count, UInt32 instance_count, UInt32 start_vertex, UInt32 start_instance)
 	{
 		m_rhi->Draw(vertex_count, instance_count, start_vertex, start_instance);
@@ -225,6 +238,11 @@ namespace Alpha
 	void CommandList::DispatchMesh(UInt32 group_count_x, UInt32 group_count_y, UInt32 group_count_z)
 	{
 		m_rhi->DispatchMesh(group_count_x, group_count_y, group_count_z);
+	}
+
+	void CommandList::DispatchRayTrace(const RHIRayTraceDesc& desc)
+	{
+		m_rhi->DispatchRayTrace(desc);
 	}
 
 	void CommandList::BuildRaytracingAccelerationStructure(const RHIBuildTLASDesc& desc)

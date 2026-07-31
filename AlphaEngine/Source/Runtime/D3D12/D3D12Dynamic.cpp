@@ -9,6 +9,7 @@
 #include "D3D12DescriptorHeap.h"
 #include "D3D12GraphicsPipeline.h"
 #include "D3D12PipelineLayout.h"
+#include "D3D12RayTracePipeline.h"
 #include "D3D12SamplerState.h"
 #include "D3D12Shader.h"
 #include "D3D12SwapChain.h"
@@ -97,6 +98,11 @@ namespace Alpha
     TUnique<RHIComputePipeline> D3D12Dynamic::CreateComputePipeline(const RHIComputePipelineDesc& desc)
     {
         return CreateRHIObject<D3D12ComputePipeline>(m_device.get(), desc);
+    }
+
+    TUnique<RHIRayTracePipeline> D3D12Dynamic::CreateRayTracePipeline(const RHIRayTracePipelineDesc& desc)
+    {
+        return CreateRHIObject<D3D12RayTracePipeline>(m_device.get(), desc);
     }
     
     void D3D12Dynamic::RequestTLASSize(const RHIBuildTLASDesc& desc, RHIASMemoryInfo* info)
