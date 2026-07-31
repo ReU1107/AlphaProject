@@ -20,6 +20,7 @@
 #include "PipelineLayout.h"
 #include "GraphicsPipeline.h"
 #include "ComputePipeline.h"
+#include "RayTracePipeline.h"
 
 #include "GPUDataTransfer.h"
 #include "ASBuilder.h"
@@ -427,6 +428,16 @@ namespace Alpha
 	TUnique<ComputePipeline> RenderCore::CreateComputePipeline(ComputePipelineArgs args)
 	{
 		auto pipeline = std::make_unique<ComputePipeline>();
+		args.rhi = m_rhi.get();
+
+		pipeline->Initialize(args);
+
+		return pipeline;
+	}
+
+	TUnique<RayTracePipeline> RenderCore::CreateRayTracePipeline(RayTracePipelineArgs args)
+	{
+		auto pipeline = std::make_unique<RayTracePipeline>();
 		args.rhi = m_rhi.get();
 
 		pipeline->Initialize(args);

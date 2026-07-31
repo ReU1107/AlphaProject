@@ -1,6 +1,6 @@
 ﻿#include "D3D12GraphicsPipeline.h"
 #include "D3D12PipelineLayout.h"
-#include "D3D12shader.h"
+#include "D3D12Shader.h"
 #include "D3D12Texture.h"
 #include "RHI/Definitions.h"
 #include "D3D12Util.h"

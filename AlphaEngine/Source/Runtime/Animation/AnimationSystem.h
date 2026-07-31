@@ -3,6 +3,7 @@
 #include "Core/Subsystem.h"
 #include "Core/Container/SlotPalette.h"
 #include "Definitions.h"
+#include <entt/entt.hpp>
 
 namespace Alpha
 {
@@ -27,7 +28,7 @@ namespace Alpha
 
 		UInt32 RegisterMesh(TShared<SkeletonHandle> handle);
 
-		void Update(float delta_time);
+		void Update(entt::registry& registry, float delta_time);
 
 	};
 

@@ -257,4 +257,15 @@ namespace Alpha
 		Min,
 		Max,
 	};
+
+	enum class ERHIWorkGraphNodeType
+	{
+		Compute,
+		Mesh,
+	};
+
+	enum class ERHIHitGroupType
+	{
+		Triangles,
+	};
 }

@@ -13,6 +13,7 @@ namespace Alpha
 	class PipelineLayout;
 	class GraphicsPipeline;
 	class ComputePipeline;
+	class RayTracePipeline;
 
 	class RenderSystem : public Subsystem<RenderSystem>
 	{
@@ -31,6 +32,9 @@ namespace Alpha
 		TUnique<PipelineLayout> m_layout{ nullptr };
 		TUnique<GraphicsPipeline> m_pipeline{ nullptr };
 		TUnique<ComputePipeline> m_align_vertex_pipeline{ nullptr };
+		TUnique<RayTracePipeline> m_raytrace_pipeline{ nullptr };
+
+
 		TArray<InstanceData> m_instances{};
 	public:
 		~RenderSystem();

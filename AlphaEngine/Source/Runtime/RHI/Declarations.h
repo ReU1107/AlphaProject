@@ -10,6 +10,7 @@ namespace Alpha
 	class RHIDescriptorHeap;
 	class RHIDescriptorView;
 	class RHIGraphicsPipeline;
+	class RHIRayTracePipeline;
 	class RHIPipelineLayout;
 	class RHIResource;
 	class RHISamplerState;
@@ -29,6 +30,7 @@ namespace Alpha
 	struct RHIDescriptorLayoutDesc;
 	struct RHIDescriptorViewDesc;
 	struct RHIGraphicsPipelineDesc;
+	struct RHIRayTracePipelineDesc;
 	struct RHIWorkGraphPipelineDesc;
 	struct RHIPipelineLayoutDesc;
 	struct RHIResourceViewDesc;
@@ -41,5 +43,5 @@ namespace Alpha
 	struct RHIBuildBLASDesc;
 	struct RHIBuildTLASDesc;
 	struct RHIASMemoryInfo;
-
+	struct RHIRayTraceDesc;
 }

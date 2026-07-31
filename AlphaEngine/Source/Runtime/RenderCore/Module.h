@@ -6,6 +6,7 @@
 #include "GraphicsPipeline.h"
 #include "PipelineLayout.h"
 #include "VertexLayout.h"
+#include "RayTracePipeline.h"
 
 #include "CommandList.h"
 #include "CommandQueue.h"

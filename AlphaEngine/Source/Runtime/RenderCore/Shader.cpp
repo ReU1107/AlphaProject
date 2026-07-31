@@ -26,4 +26,9 @@ namespace Alpha
 	{
 		return true;
 	}
+
+	const wchar_t* Shader::GetEntryPoint() const
+	{
+		return m_rhi->GetEntryPoint();
+	}
 }

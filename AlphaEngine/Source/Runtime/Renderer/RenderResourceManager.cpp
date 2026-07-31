@@ -16,22 +16,23 @@ namespace Alpha
 	bool RenderResourceManager::Initialize(const Args& args)
 	{
 
-        m_vertex_position_allocator = CreatePersistentAllocator(args.render_core, sizeof(Vector3), 12_MB, EBufferPresetType::ROStructured, L"VertexPositionBuffer");
-		m_vertex_attribute_allocator= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 12_MB, EBufferPresetType::ROByteAddress, L"VertexAttributeBuffer");
+        m_vertex_position_allocator = CreatePersistentAllocator(args.render_core, sizeof(Vector3), 12_MB, EBufferPresetType::ROStructured, L"VertexPosition");
+		m_vertex_attribute_allocator= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 12_MB, EBufferPresetType::ROByteAddress, L"VertexAttribute");
 		
-        m_vertex_indices_allocator	= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 12_MB, EBufferPresetType::ROStructured, L"VertexIndicesBuffer");
-		m_triangle_indices_allocator= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 12_MB, EBufferPresetType::ROStructured, L"TriangleIndicesBuffer");
-		m_meshlet_allocator			= CreatePersistentAllocator(args.render_core, sizeof(Meshlet), 12_MB, EBufferPresetType::ROStructured, L"MeshletBuffer");
-		m_index_allocator			= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 8_MB, EBufferPresetType::ROStructured, L"IndexBuffer");
+        m_vertex_indices_allocator	= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 12_MB, EBufferPresetType::ROStructured, L"VertexIndices");
+		m_triangle_indices_allocator= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 12_MB, EBufferPresetType::ROStructured, L"TriangleIndices");
+		m_meshlet_allocator			= CreatePersistentAllocator(args.render_core, sizeof(Meshlet), 12_MB, EBufferPresetType::ROStructured, L"Meshlet");
+		m_index_allocator			= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 8_MB, EBufferPresetType::ROStructured, L"Index");
 		
-        m_mesh_allocator			= CreatePersistentAllocator(args.render_core, sizeof(MeshData), 4_MB, EBufferPresetType::ROStructured, L"ModelBuffer");
+        m_mesh_allocator			= CreatePersistentAllocator(args.render_core, sizeof(MeshData), 4_MB, EBufferPresetType::ROStructured, L"Mesh");
+        m_submesh_allocator			= CreatePersistentAllocator(args.render_core, sizeof(Submesh), 4_MB, EBufferPresetType::ROStructured, L"Submesh");
 		
-        m_material_allocator		= CreatePersistentAllocator(args.render_core, sizeof(MaterialData), 4_MB, EBufferPresetType::ROStructured, L"MaterialBuffer");
+        m_material_allocator		= CreatePersistentAllocator(args.render_core, sizeof(MaterialData), 4_MB, EBufferPresetType::ROStructured, L"Material");
 
-        m_material_table_allocator  = CreatePersistentAllocator(args.render_core, sizeof(UInt32), 4_MB, EBufferPresetType::ROByteAddress, L"MaterialTableBuffer");
+        m_material_table_allocator  = CreatePersistentAllocator(args.render_core, sizeof(UInt32), 4_MB, EBufferPresetType::ROByteAddress, L"MaterialTable");
         
         
-        m_source_as_allocator       = CreatePersistentAllocator(args.render_core, 256, 32_MB, EBufferPresetType::RTAccelStructure, L"SourceASBuffer");
+        m_source_as_allocator       = CreatePersistentAllocator(args.render_core, 256, 32_MB, EBufferPresetType::RTAccelStructure, L"SourceAS");
 
         m_mesh_palette.Initialize(100);
         m_material_palette.Initialize(100);
@@ -109,7 +110,7 @@ namespace Alpha
             mesh.vertex_attribute_alloc = alloc;
 		}
 
-        // indexデータ(DXR用)
+        // indexデータ
         {
             UInt32 size = handle->GetIndices().size();
             Allocation alloc{};
@@ -122,16 +123,30 @@ namespace Alpha
 
             mesh.index_alloc = alloc;
         }
-
-        for (auto& sub_mesh_handle : handle->GetSubMeshHandles())
+        // サブメッシュ
         {
-            SubMesh sub_mesh = {
-                .index_element_offset = sub_mesh_handle.index_element_offset,
-                .index_count = sub_mesh_handle.index_count,
-            };
+            for (auto& submesh_handle : handle->GetSubMeshHandles())
+            {
+                Submesh sub_mesh = {
+                    .index_element_offset = submesh_handle.index_element_offset,
+                    .index_count = submesh_handle.index_count,
+                };
 
-            mesh.submeshes.push_back(sub_mesh);
+                mesh.submeshes.push_back(sub_mesh);
+            }
+
+            UInt32 num = mesh.submeshes.size();
+            Allocation alloc{};
+            if (!m_submesh_allocator->AllocateByNum(num, &alloc))
+            {
+                ALPHA_LOG_WARN(L"ModelHandleのリソース化に失敗しました");
+                // 
+            }
+            RenderCore::Get().UploadBuffer(m_submesh_allocator->GetBuffer(), alloc.offset, mesh.submeshes.data(), alloc.size);
+
+            mesh.submesh_alloc = alloc;
         }
+
 
         // メッシュレットの頂点index
         {
@@ -177,6 +192,9 @@ namespace Alpha
         {
             mesh.data.vertex_position_element_offset = mesh.vertex_position_alloc.offset / sizeof(Vector3);
             mesh.data.vertex_attribute_byte_offset = mesh.vertex_attribute_alloc.offset;  // ByteAddressBufferだからそのまま
+
+            mesh.data.index_element_offset = mesh.index_alloc.offset / sizeof(UInt32);
+            mesh.data.submesh_element_offset = mesh.submesh_alloc.offset / sizeof(Submesh);
 
             mesh.data.meshlet_element_offset = mesh.meshlet_alloc.offset / sizeof(Meshlet);
             mesh.data.meshlet_count = handle->GetMeshlets().size();
@@ -438,10 +456,12 @@ namespace Alpha
         return BufferIndices{
             .position = m_vertex_position_allocator->GetSRVIndex(),
             .attribute = m_vertex_attribute_allocator->GetSRVIndex(),
+            .index = m_index_allocator->GetSRVIndex(),
             .vertex_indices = m_vertex_indices_allocator->GetSRVIndex(),
             .triangle_indices = m_triangle_indices_allocator->GetSRVIndex(),
             .meshlet = m_meshlet_allocator->GetSRVIndex(),
             .mesh = m_mesh_allocator->GetSRVIndex(),
+            .submesh = m_submesh_allocator->GetSRVIndex(),
             .material = m_material_allocator->GetSRVIndex(),
             .material_table = m_material_table_allocator->GetSRVIndex()
         };

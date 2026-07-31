@@ -36,7 +36,7 @@ namespace Alpha
 		return palette_index;
 	}
 
-	void AnimationSystem::Update(float delta_time)
+	void AnimationSystem::Update(entt::registry& registry, float delta_time)
 	{
 		std::vector<AnimationComponent*> components{};
 

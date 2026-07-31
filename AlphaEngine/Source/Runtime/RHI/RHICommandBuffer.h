@@ -23,6 +23,7 @@ namespace Alpha
 
 		virtual void SetGraphicsPipeline(RHIGraphicsPipeline* pipeline, RHIPipelineLayout* layout) = 0;
 		virtual void SetComputePipeline(RHIComputePipeline* pipeline, RHIPipelineLayout* layout) = 0;
+		virtual void SetRayTracePipeline(RHIRayTracePipeline* pipeline, RHIPipelineLayout* layout) = 0;
 
 		virtual void SetDescriptorHeap(RHIDescriptorHeap* heap) = 0;
 		virtual void SetDescriptorHeap(RHIDescriptorHeap* srv_heap, RHIDescriptorHeap* sampler_heap) = 0;
@@ -71,6 +72,8 @@ namespace Alpha
 		virtual void Dispatch(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z) = 0;
 
 		virtual void DispatchMesh(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z) = 0;
+
+		virtual void DispatchRayTrace(const RHIRayTraceDesc& desc) = 0;
 
 		virtual void BuildBLAS(const RHIBuildBLASDesc& desc) = 0;
 		virtual void BuildTLAS(const RHIBuildTLASDesc& desc) = 0;

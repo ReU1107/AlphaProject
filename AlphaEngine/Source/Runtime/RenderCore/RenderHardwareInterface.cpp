@@ -12,6 +12,7 @@
 #include "RHI/RHIShader.h"
 #include "RHI/RHIGraphicsPipeline.h"
 #include "RHI/RHIComputePipeline.h"
+#include "RHI/RHIRayTracePipeline.h"
 
 #if RHI_D3D12
 #include "D3D12/D3D12Dynamic.h"
@@ -103,6 +104,11 @@ namespace Alpha
 	TUnique<RHIComputePipeline> RenderHardwareInterface::CreateComputePipeline(const RHIComputePipelineDesc& desc)
 	{
 		return m_dynamic->CreateComputePipeline(desc);
+	}
+
+	TUnique<RHIRayTracePipeline> RenderHardwareInterface::CreateRayTracePipeline(const RHIRayTracePipelineDesc& desc)
+	{
+		return m_dynamic->CreateRayTracePipeline(desc);
 	}
 
 	void RenderHardwareInterface::RequestTopLevelASSize(const RHIBuildTLASDesc& desc, RHIASMemoryInfo* info)

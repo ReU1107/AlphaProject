@@ -1,17 +1,49 @@
-﻿#include "Camera.h"
+﻿#include "CameraComponent.h"
 #include "Core/Math/MathUtil.h"
 #include "Core/Math/MathF.h"
 
-//#include <DirectXMath.h>
-//using namespace DirectX;
+
 namespace Alpha
 {
-	Matrix4x4 Camera::GetViewProjectionMatrix() const
+	void CameraComponent::SetFOV(float fov)
 	{
-		m_view_matrix = Matrix4x4LookAtLH(m_position, Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
-		m_projection_matrix = Matrix4x4PerspectiveFovLH(m_fov, m_aspect_ratio, m_near_plane, m_far_plane);
+		m_fov = fov;
+		m_is_projection_dirty = true;
+	}
 
-		return MatrixMultiply(m_view_matrix, m_projection_matrix);
+	void CameraComponent::SetAspectRatio(float aspect_ratio)
+	{
+		m_aspect_ratio = aspect_ratio;
+		m_is_projection_dirty = true;
+	}
+
+	void CameraComponent::SetNearPlane(float near_plane)
+	{
+		m_near_plane = near_plane;
+		m_is_projection_dirty = true;
+	}
+
+	void CameraComponent::SetFarPlane(float far_plane)
+	{
+		m_far_plane = far_plane;
+		m_is_projection_dirty = true;
+	}
+
+	Matrix4x4 CameraComponent::GetProjectionMatrix() const
+	{
+		if (m_is_projection_dirty)
+		{
+			if (m_type == ProjectionType::Perspective)
+			{
+				m_projection_matrix = Matrix4x4PerspectiveFovLH(m_fov, m_aspect_ratio, m_near_plane, m_far_plane);
+			}
+			else
+			{
+				//m_projection_matrix = Matrix4x4OrthographicLH(width, height, m_near_plane, m_far_plane);
+			}
+		}
+
+		return m_projection_matrix;
 	}
 }
 /*

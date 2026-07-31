@@ -1,7 +1,7 @@
 ﻿#include "ComputePipeline.h"
 #include "PipelineLayout.h"
-#include "RenderCore/RenderHardwareInterface.h"
-#include "RenderCore/Shader.h"
+#include "RenderHardwareInterface.h"
+#include "Shader.h"
 #include "RHI/RHIComputePipeline.h"
 
 namespace Alpha

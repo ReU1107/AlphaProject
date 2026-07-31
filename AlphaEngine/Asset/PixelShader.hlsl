@@ -23,11 +23,21 @@ float4 main(VertexOut input) : SV_TARGET
     
     ByteAddressBuffer material_table_buffer = ResourceDescriptorHeap[buffer_indices.material_table];
     
-    uint material_offset = material_table_buffer.Load(input.MaterialTableID);
+    uint material_offset = material_table_buffer.Load(input.MaterialTableID + (input.MaterialID * 4));
     
-    MaterialData material = material_buffer[material_offset + input.MaterialID];
+    MaterialData material = material_buffer[material_offset];
         
-    Texture2D tex = ResourceDescriptorHeap[material.base_color_tex_idx];
+    Texture2D base_tex = ResourceDescriptorHeap[material.base_color_tex_idx];
+    Texture2D emissive_tex = ResourceDescriptorHeap[material.emissive_tex_idx];
 
-    return tex.Sample(sam, input.TexCoord);    
+    float4 base_color_sample = base_tex.Sample(sam, input.TexCoord);
+    float3 emissive_sample = emissive_tex.Sample(sam, input.TexCoord).rgb;
+    
+    float4 final_base = float4(material.props.base_color, material.props.opacity) * base_color_sample;
+    
+    float3 final_emissive = material.props.emissive_color * material.props.emissive_intensity * emissive_sample;
+    
+    float3 final_rgb = final_base.rgb + final_emissive;
+    
+    return float4(final_rgb, final_base.a);
 }
