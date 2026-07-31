@@ -56,10 +56,19 @@ namespace Alpha::Renderer
 		UInt32 material_index{};
 	};
 
+	struct Submesh
+	{
+		UInt32 index_element_offset{ 0 };
+		UInt32 index_count{ 0 };
+	};
+
 	struct MeshData
 	{
 		UInt32 vertex_position_element_offset{};
 		UInt32 vertex_attribute_byte_offset{};
+
+		UInt32 index_element_offset{};
+		UInt32 submesh_element_offset{};
 
 		UInt32 meshlet_element_offset{};
 		UInt32 meshlet_count{};
@@ -73,7 +82,6 @@ namespace Alpha::Renderer
 
 	/*
 	* ResourceManagerで管理するやつ
-	* Allocationは基本Free用の為に持っている
 	*/
 
 	struct Material
@@ -94,12 +102,6 @@ namespace Alpha::Renderer
 		TUnique<Texture> tex{ nullptr };
 	};
 
-	struct SubMesh
-	{
-		UInt32 index_element_offset{ 0 };
-		UInt32 index_count{ 0 };
-	};
-
 	struct AccelerationStructure
 	{
 		Allocation source_alloc{};
@@ -113,6 +115,7 @@ namespace Alpha::Renderer
 		Allocation vertex_attribute_alloc{};
 
 		Allocation index_alloc{};
+		Allocation submesh_alloc{};
 
 		Allocation vertex_inidices_alloc{};
 		Allocation triangle_indices_alloc{};
@@ -122,7 +125,7 @@ namespace Alpha::Renderer
 
 		AccelerationStructure as{};
 
-		TArray<SubMesh> submeshes{};
+		TArray<Submesh> submeshes{};
 
 		MeshData data{};
 		

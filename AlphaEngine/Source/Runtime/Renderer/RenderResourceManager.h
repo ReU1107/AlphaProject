@@ -34,6 +34,7 @@ namespace Alpha
         TUnique<PersistentBufferAllocator> m_triangle_indices_allocator{ nullptr };
         TUnique<PersistentBufferAllocator> m_meshlet_allocator{ nullptr };
         TUnique<PersistentBufferAllocator> m_index_allocator{ nullptr };
+        TUnique<PersistentBufferAllocator> m_submesh_allocator{ nullptr };
 
         TUnique<PersistentBufferAllocator> m_source_as_allocator{ nullptr };
 
@@ -89,10 +90,12 @@ namespace Alpha
         {
             UInt32 position{};
             UInt32 attribute{};
+            UInt32 index{};
             UInt32 vertex_indices{};
             UInt32 triangle_indices{};
             UInt32 meshlet{};
             UInt32 mesh{};
+            UInt32 submesh{};
             UInt32 material{};
             UInt32 material_table{};
         };

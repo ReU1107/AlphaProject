@@ -40,11 +40,20 @@ struct Meshlet
     uint material_index;            // 使用するマテリアルデータのローカルインデックス
 };
 
+struct Submesh
+{
+    uint index_element_offset;      // 
+    uint index_count;               // 使わんけどcppで使うから合わせるため
+};
+
 struct MeshData
 {
     uint vertex_position_element_offset;   // 位置（XYZ）のオフセット
     uint vertex_attribute_byte_offset;     // 属性（UV/Normal等）オフセット
 
+    uint index_element_offset;      // index
+    uint submesh_element_offset;    // サブメッシュ
+    
     uint meshlet_element_offset;    // メッシュレット
     uint meshlet_count;             // メッシュレット数
     
@@ -69,16 +78,18 @@ struct SystemBufferIndices
 {
     uint position;              // このpositionはあくまでも読み込み時の状態の
     uint attribute;             // 頂点属性
+    uint index;
     uint vertex_indices;
     uint triangle_indices;
     uint meshlet;
     uint mesh;
+    uint submesh;
     uint material;
     uint material_table;
     uint instance;
     uint vertex_to_instance;
-    uint dyanmic_position_srv;  // 描画時に使用するのはこっち
-    uint dyanmic_position_uav;  // csから書き込む時用
+    uint dynamic_position_srv;  // 描画時に使用するのはこっち
+    uint dynamic_position_uav;  // csから書き込む時用
     uint rt_structure;
     uint rt_result;
 };

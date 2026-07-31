@@ -141,6 +141,13 @@ namespace Alpha
 		m_rhi->SetGraphicsTable(sampler_handle.heap->GetRHI(), sampler_handle.index, slot);
 	}
 
+	void CommandList::SetComputeSamplerState(SamplerState* state, UInt32 slot)
+	{
+		auto sampler_handle = state->GetSamplerHandle();
+
+		m_rhi->SetComputeTable(sampler_handle.heap->GetRHI(), sampler_handle.index, slot);
+	}
+
 	void CommandList::SetGraphcisSRV(Buffer* buffer, UInt32 slot)
 	{
 		m_rhi->SetGraphicsSRV(buffer->GetRHI(), slot, 0);

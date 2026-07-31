@@ -278,7 +278,7 @@ namespace
 					{
 						view_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 						view_desc.Texture2D.MipLevels = resource_desc.MipLevels;
-						view_desc.Texture2D.MostDetailedMip = resource_desc.MipLevels - 1;
+						view_desc.Texture2D.MostDetailedMip = 0;
 						view_desc.Texture2D.ResourceMinLODClamp = 0;
 
 					}

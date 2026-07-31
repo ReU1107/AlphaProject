@@ -15,7 +15,7 @@ void main(uint3 id : SV_DispatchThreadID)
     StructuredBuffer<InstanceData> instance_buffer    = ResourceDescriptorHeap[buffer_indices.instance];
     StructuredBuffer<float3> position_buffer          = ResourceDescriptorHeap[buffer_indices.position];
     ByteAddressBuffer attribute_buffer                = ResourceDescriptorHeap[buffer_indices.attribute];
-    RWStructuredBuffer<float3> output_position_buffer = ResourceDescriptorHeap[buffer_indices.dyanmic_position_uav];
+    RWStructuredBuffer<float3> output_position_buffer = ResourceDescriptorHeap[buffer_indices.dynamic_position_uav];
     StructuredBuffer<MeshData> mesh_buffer            = ResourceDescriptorHeap[buffer_indices.mesh];
     
     uint instance_index = vertex_to_instance_buffer[vertex_index];

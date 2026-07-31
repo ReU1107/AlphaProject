@@ -132,8 +132,8 @@ namespace Alpha
 		RenderResourceManager::BufferIndices render_resourcce{};
 		UInt32 instance{};
 		UInt32 vertex_to_instance{};
-		UInt32 dyanmic_position_srv{};      // 書き込まれた頂点
-		UInt32 dyanmic_position_uav{};      // 書き込まれた頂点
+		UInt32 dynamic_position_srv{};      // 書き込まれた頂点
+		UInt32 dynamic_position_uav{};      // 書き込まれた頂点
 		UInt32 rt_structure{};
 		UInt32 rt_result{};
 	};
@@ -163,8 +163,8 @@ namespace Alpha
 			.render_resourcce = RenderResourceManager::Get().GetBufferIndices(),
 			.instance = m_instance_allocator->GetSRVIndex(),
 			.vertex_to_instance = m_vert_to_inst_allocator->GetSRVIndex(),
-			.dyanmic_position_srv = m_dynamic_vertex_allocator->GetSRVIndex(),
-			.dyanmic_position_uav = m_dynamic_vertex_allocator->GetUAVIndex(),
+			.dynamic_position_srv = m_dynamic_vertex_allocator->GetSRVIndex(),
+			.dynamic_position_uav = m_dynamic_vertex_allocator->GetUAVIndex(),
 			.rt_structure = m_result_tlas_allocator->GetSRVIndex(),
 			.rt_result = result->GetUAVHandle().index,
 		};
@@ -319,6 +319,7 @@ namespace Alpha
 
 			ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 1);
 		}
+		ctx.command_list->SetComputeSamplerState(RenderCore::Get().GetPresetSampler(ESamplerPresetType::LinearClamp), 2);
 
 
 		{
