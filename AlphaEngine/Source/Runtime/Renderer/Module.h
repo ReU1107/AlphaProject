@@ -9,6 +9,7 @@
 #include "RenderResourceManager.h"
 
 #include "MeshComponent.h"
+#include "MaterialOverrideComponent.h"
 
 
 #include "Definitions.h"

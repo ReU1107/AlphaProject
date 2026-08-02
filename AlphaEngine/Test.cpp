@@ -45,6 +45,70 @@ using Microsoft::WRL::ComPtr;
 using namespace Alpha;
 using namespace Alpha::Renderer;
 
+static void RenderDebugUI(entt::registry& registry, entt::entity floor,UInt32 cube_index)
+{
+    // 生成された床のエンティティが有効か一応チェック
+    if (floor == entt::null || !registry.valid(floor))
+    {
+        return;
+    }
+
+    ImGui::Begin("床のマテリアル変更デバッグ窓");
+    {
+        // すでに上書きコンポーネントを持っているかチェック
+        auto* override_com = registry.try_get<MaterialOverrideComponent>(floor);
+
+        if (!override_com)
+        {
+            if (ImGui::Button("マテリアル上書きを有効化"))
+            {
+                // ボタンを押した瞬間にコンポーネントを付与してデフォルト値で初期化！
+                auto& new_com = registry.emplace<MaterialOverrideComponent>(floor);
+                new_com.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
+            }
+            ImGui::Text("現在はメッシュ本来のデフォルトマテリアルで描画中");
+        }
+        else
+        {
+            if (ImGui::Button("上書きを解除してデフォルトに戻す"))
+            {
+                // コンポーネントを消去（これでGPU側には自動で 0xFFFFFFFF が送られる）
+                registry.remove<MaterialOverrideComponent>(floor);
+                ImGui::End();
+                return;
+            }
+
+            ImGui::Separator();
+
+            // 床のマテリアル配列を回して色を編集（床が単一マテリアルなら0番目だけでOKですが一応ループで）
+            for (int i = 0; i < static_cast<int>(override_com->materials.size()); ++i)
+            {
+                ImGui::PushID(i);
+
+                auto& current_prop = override_com->materials[i].props;
+
+                // ImGui用のバッファに現在の色をセット
+                float color_buffer[3] = { current_prop.base_color.X(), current_prop.base_color.Y(), current_prop.base_color.Z() };
+
+                if (ImGui::ColorEdit3("Base Color", color_buffer))
+                {
+                    // カラーピッカーが動いたら、先ほど作った Setter で安全に上書き
+                    Color3 new_color{ color_buffer[0], color_buffer[1], color_buffer[2] };
+                    override_com->SetBaseColor(i, new_color);
+                }
+
+                // 一緒に金属感や粗さも変えられるようにしておくとデバッグが捗ります
+                ImGui::SliderFloat("Roughness", &current_prop.roughness, 0.0f, 1.0f);
+                ImGui::SliderFloat("Metallic", &current_prop.metallic, 0.0f, 1.0f);
+
+                ImGui::PopID();
+            }
+        }
+    }
+    ImGui::End();
+}
+
+
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 //int main()
 {
@@ -69,44 +133,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     auto model2 = AssetManager::Get().Load<ModelHandle>(L"C:/Users/owner/Desktop/Asset/パチュリーVer2.00/Model/パチュリーVer2.00_Type-C(フル_ポニテC_ミニスカ_ブーツC_パンプス)_サーモン.pmx");
     auto model3 = AssetManager::Get().GetSphere();
     auto model4 = AssetManager::Get().GetCube();
-
-    {
-        /*
-        * 独自ファイルフォーマット作ったら消す(独自ファイルフォーマットづくりはいつかね....)
-        */
-        auto RegisterColorSet = [](const String& mat_uri, const String& table_uri, const MaterialProperties& props) {
-            auto mat = std::make_shared<MaterialHandle>();
-            mat->SetName(mat_uri);
-            mat->GetProperties() = props;
-            AssetManager::Get().RegisterAsset(mat_uri, mat);
-
-            auto table = std::make_shared<MaterialTableHandle>();
-            table->SetName(table_uri);
-            table->AddMaterial(mat);
-            AssetManager::Get().RegisterAsset(table_uri, table);
-        };
-
-        // --- 赤壁 ---
-        MaterialProperties red_props{};
-        red_props.base_color = float3(0.63f, 0.06f, 0.04f);
-        red_props.roughness = 0.5f;
-        RegisterColorSet(L"Alpha://Material/Red", L"Alpha://MaterialTable/Red", red_props);
-
-        // --- 緑壁 ---
-        MaterialProperties green_props{};
-        green_props.base_color = float3(0.15f, 0.48f, 0.09f);
-        green_props.roughness = 0.5f;
-        RegisterColorSet(L"Alpha://Material/Green", L"Alpha://MaterialTable/Green", green_props);
-
-        // --- 発光面 ---
-        MaterialProperties light_props{};
-        light_props.base_color = float3(1.0f, 1.0f, 1.0f);
-        light_props.emissive_color = float3(1.0f, 1.0f, 1.0f);
-        light_props.emissive_intensity = 15.0f;
-        light_props.roughness = 0.4f;
-        RegisterColorSet(L"Alpha://Material/Light", L"Alpha://MaterialTable/Light", light_props);
-    }
-
     
     RenderCore::Args render_core_args = {};
     render_core_args.hWnd = (HWND)WindowSystem::Get().GetNativeHandle();
@@ -129,12 +155,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     UInt32 sphere_index = RenderResourceManager::Get().RegisterMesh(model3);
     UInt32 cube_index = RenderResourceManager::Get().RegisterMesh(model4);
 
-    UINT32 white_index = RenderResourceManager::Get().GetMaterialTableIndexByMesh(cube_index);
-    UInt32 red_index = RenderResourceManager::Get().RegisterMaterialTable(AssetManager::Get().Load<MaterialTableHandle>(L"Alpha://MaterialTable/Red"));
-    UInt32 green_index = RenderResourceManager::Get().RegisterMaterialTable(AssetManager::Get().Load<MaterialTableHandle>(L"Alpha://MaterialTable/Green"));
-    UInt32 light_index = RenderResourceManager::Get().RegisterMaterialTable(AssetManager::Get().Load<MaterialTableHandle>(L"Alpha://MaterialTable/Light"));
-
-
     RenderSystem::Args rs_args = {
         .render_core = RenderCore::GetPtr(),
     };
@@ -149,7 +169,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         auto& mesh = registry.emplace<MeshComponent>(entity);
         mesh.mesh_index = akari_index;
-        mesh.material_table_index = RenderResourceManager::Get().GetMaterialTableIndexByMesh(akari_index);
 
         auto& transform = registry.emplace<TransformComponent>(entity);
         transform.SetLocalPosition(Vector3(10.0f, 0.0f, 0.0f));
@@ -160,7 +179,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         auto& mesh = registry.emplace<MeshComponent>(entity);
         mesh.mesh_index = akari_index;
-        mesh.material_table_index = RenderResourceManager::Get().GetMaterialTableIndexByMesh(akari_index);
 
         auto& transform = registry.emplace<TransformComponent>(entity);
         transform.SetLocalPosition(Vector3(10.0f, 0.0f, 10.0f));
@@ -172,7 +190,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         auto& mesh = registry.emplace<MeshComponent>(entity);
         mesh.mesh_index = patchouli_index;
-        mesh.material_table_index = RenderResourceManager::Get().GetMaterialTableIndexByMesh(patchouli_index);
 
         auto& transform = registry.emplace<TransformComponent>(entity);
         transform.SetLocalPosition(Vector3(-10.0f, 0.0f, 0.0f));
@@ -184,36 +201,40 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         auto& mesh = registry.emplace<MeshComponent>(entity);
         mesh.mesh_index = sphere_index;
-        mesh.material_table_index = RenderResourceManager::Get().GetMaterialTableIndexByMesh(sphere_index);
 
         auto& transform = registry.emplace<TransformComponent>(entity);
         transform.SetLocalPosition(Vector3(-10.0f, 0.0f, 10.0f));
 
     }
 
+    entt::entity floor = entt::null;
+
     {
         const auto entity = registry.create();
 
         auto& mesh = registry.emplace<MeshComponent>(entity);
         mesh.mesh_index = cube_index;
-        mesh.material_table_index = white_index;
 
         auto& transform = registry.emplace<TransformComponent>(entity);
         transform.SetLocalPosition(Vector3(0.0f, -0.5f, 0.0f)); 
         transform.SetLocalScale(Vector3(60.0f, 1.0f, 60.0f));
 
+        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
+        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
+
+        floor = entity;
     }
 
-    // 天井 (Ceiling) - 白
     {
         const auto entity = registry.create();
         auto& mesh = registry.emplace<MeshComponent>(entity);
         mesh.mesh_index = cube_index;
-        mesh.material_table_index = white_index;
 
         auto& transform = registry.emplace<TransformComponent>(entity);
         transform.SetLocalPosition(Vector3(0.0f, 60.5f, 0.0f)); // 高さ60
         transform.SetLocalScale(Vector3(60.0f, 1.0f, 60.0f));
+        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
+        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
     }
 
     // 奥の壁 (Back Wall) - 白
@@ -221,11 +242,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         const auto entity = registry.create();
         auto& mesh = registry.emplace<MeshComponent>(entity);
         mesh.mesh_index = cube_index;
-        mesh.material_table_index = white_index;
 
         auto& transform = registry.emplace<TransformComponent>(entity);
         transform.SetLocalPosition(Vector3(0.0f, 30.0f, 30.5f)); // 奥（Zプラス）
         transform.SetLocalScale(Vector3(60.0f, 60.0f, 1.0f));
+        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
+        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
     }
 
     // 左の壁 (Left Wall) - 赤
@@ -233,11 +255,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         const auto entity = registry.create();
         auto& mesh = registry.emplace<MeshComponent>(entity);
         mesh.mesh_index = cube_index;
-        mesh.material_table_index = red_index;
 
         auto& transform = registry.emplace<TransformComponent>(entity);
         transform.SetLocalPosition(Vector3(-30.5f, 30.0f, 0.0f)); // 左（Xマイナス）
         transform.SetLocalScale(Vector3(1.0f, 60.0f, 60.0f));
+        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
+        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
+		ma.SetBaseColor(0, Color3(0.63f, 0.06f, 0.04f));
     }
 
     // 右の壁 (Right Wall) - 緑
@@ -245,11 +269,14 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         const auto entity = registry.create();
         auto& mesh = registry.emplace<MeshComponent>(entity);
         mesh.mesh_index = cube_index;
-        mesh.material_table_index = green_index;
 
         auto& transform = registry.emplace<TransformComponent>(entity);
         transform.SetLocalPosition(Vector3(30.5f, 30.0f, 0.0f)); // 右（Xプラス）
         transform.SetLocalScale(Vector3(1.0f, 60.0f, 60.0f));
+        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
+        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
+        ma.SetBaseColor(0, Color3(0.15f, 0.48f, 0.09f));
+
     }
 
     // 天井の中央光源 (Ceiling Light) - 発光
@@ -257,12 +284,18 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         const auto entity = registry.create();
         auto& mesh = registry.emplace<MeshComponent>(entity);
         mesh.mesh_index = cube_index;
-        mesh.material_table_index = light_index;
 
         auto& transform = registry.emplace<TransformComponent>(entity);
         transform.SetLocalPosition(Vector3(0.0f, 59.9f, 0.0f)); // 天井のほんの少し下
         transform.SetLocalScale(Vector3(15.0f, 0.1f, 15.0f));   // 天井の1/4サイズのエリアライト
+        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
+        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
+        ma.SetBaseColor(0, Color3(1.0f, 1.0f, 1.0f));
+        ma.SetEmissiveColor(0, Color3(1.0f, 1.0f, 1.0f));
+        ma.SetEmissiveIntensity(0, 15.0f);
+
     }
+
     // カメラ
     {
         const auto entity = registry.create();
@@ -295,6 +328,16 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         ctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
 
         RenderSystem::Get().Render(registry, ctx);
+
+        GUISystem::Get().BeginFrame();
+
+        RenderDebugUI(registry, floor, cube_index);
+
+
+		GUISystem::Get().EndFrame();
+
+		GUISystem::Get().Flush(ctx);
+
 
         RenderCore::Get().EndFrame();
 

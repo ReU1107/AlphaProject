@@ -20,7 +20,7 @@ void MyClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttrib
     StructuredBuffer<Submesh> submesh_buffer        = ResourceDescriptorHeap[buffer_indices.submesh];
     ByteAddressBuffer attribute_buffer              = ResourceDescriptorHeap[buffer_indices.attribute];
     StructuredBuffer<MaterialData> material_buffer  = ResourceDescriptorHeap[buffer_indices.material];
-    ByteAddressBuffer material_table_buffer         = ResourceDescriptorHeap[buffer_indices.material_table];
+    StructuredBuffer<uint> material_table_buffer    = ResourceDescriptorHeap[buffer_indices.material_table];
     
     // この三角形が属するインスタンス
     uint instance_id = InstanceID();
@@ -31,11 +31,11 @@ void MyClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttrib
         
     // サブメッシュindex()
     uint submesh_index = GeometryIndex();
+        
+    uint material_index = material_table_buffer[mesh.material_table_index + submesh_index];
     
-    uint material_element_offset = material_table_buffer.Load(instance.material_table_index + (submesh_index * 4));
-    
-    MaterialData material = material_buffer[material_element_offset];
-    
+    MaterialData material = material_buffer[material_index];
+        
     Submesh submesh = submesh_buffer[mesh.submesh_element_offset + submesh_index];
             
     uint vertex_index = mesh.index_element_offset + submesh.index_element_offset + PrimitiveIndex() * 3;

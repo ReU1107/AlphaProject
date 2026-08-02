@@ -11,9 +11,9 @@ namespace Alpha
 		// 属性フラグ
 		// 行列パレットの場所を指すindex
 
-		UInt32 material_table_offset{};
 		UInt32 mesh_offset{};
 		UINT32 vertex_element_offset{};
+		UInt32 override_material_element_offset{ 0xFFFFFFFF };	// 使わない場合は0xFFFFFFFF
 	};
 
 	// レイトレ用

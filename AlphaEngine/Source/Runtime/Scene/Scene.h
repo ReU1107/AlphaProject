@@ -1,14 +1,22 @@
 ﻿#pragma once
+#include "Core/Common.h"
+#include <entt/entt.hpp>
 
 namespace Alpha
 {
+	class SceneObject;
+
 	class Scene
 	{
+	private:
+		entt::registry m_registry{};
+
 	public:
-		Scene() = default;
-		virtual ~Scene() = default;
-		virtual void Initialize() = 0;
-		virtual void Update(float deltaTime) = 0;
-		virtual void Render() = 0;
+		Scene();
+		~Scene();
+		void Initialize();
+		void Update(float delta_time);
+
+		entt::registry& GetRegistry() { return m_registry; }
 	};
 }

@@ -6,6 +6,7 @@ struct VertexOut
     float3 Normal : NORMAL;
     float2 TexCoord : TEXCOORD;
     nointerpolation uint MaterialTableID : MATERIAL_TABLE_ID;
+    nointerpolation uint OverrideMaterial : OVERRIDE_MATERIAL;
     nointerpolation uint MaterialID : MATERIAL_ID;
 
 };
@@ -21,11 +22,21 @@ float4 main(VertexOut input) : SV_TARGET
  
     StructuredBuffer<MaterialData> material_buffer = ResourceDescriptorHeap[buffer_indices.material];
     
-    ByteAddressBuffer material_table_buffer = ResourceDescriptorHeap[buffer_indices.material_table];
+    StructuredBuffer<uint> material_table_buffer = ResourceDescriptorHeap[buffer_indices.material_table];
     
-    uint material_offset = material_table_buffer.Load(input.MaterialTableID + (input.MaterialID * 4));
+    StructuredBuffer<MaterialData> override_material_buffer = ResourceDescriptorHeap[buffer_indices.override_material];
+    uint material_index = material_table_buffer[input.MaterialTableID + input.MaterialID];
     
-    MaterialData material = material_buffer[material_offset];
+    MaterialData material = material_buffer[material_index];
+    
+    
+    if (input.OverrideMaterial != INVALID_INDEX)
+    {
+        material = override_material_buffer[input.OverrideMaterial + input.MaterialID];
+
+    }
+    
+    
         
     Texture2D base_tex = ResourceDescriptorHeap[material.base_color_tex_idx];
     Texture2D emissive_tex = ResourceDescriptorHeap[material.emissive_tex_idx];

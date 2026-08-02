@@ -66,7 +66,7 @@ namespace Alpha
         const Renderer::Mesh& GetMeshByHandle(TShared<ModelHandle> handle);
         const Renderer::Mesh& GetMeshByHandle(UInt64 id);
         const Renderer::Mesh& GetMeshByIndex(UInt64 index);
-        UInt32 GetMaterialTableIndexByMesh(UInt64 index);
+        TArray<Renderer::MaterialData> GetDefaultMaterials(UInt64 mesh_index);
 
         const Renderer::Material& GetMaterialByIndex(UInt64 index);
         const Renderer::MaterialTable& GetMaterialTableByIndex(UInt64 index);

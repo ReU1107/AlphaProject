@@ -76,6 +76,8 @@ namespace Alpha::Renderer
 		UInt32 vertex_element_offset{};
 		UInt32 triangle_element_offset{};
 
+		UInt32 material_table_element_offset{};
+
 		UInt32 attribute_flags{};	// このモデルが持つ頂点属性のフラグ
 		UInt32 vertex_stride{};	// 頂点属性のバイト数
 	};

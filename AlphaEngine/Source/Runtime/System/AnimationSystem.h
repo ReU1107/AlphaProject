@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "Core/Common.h"
-#include "Core/Subsystem.h"
 #include "Core/Container/SlotPalette.h"
 #include "Definitions.h"
 #include <entt/entt.hpp>
@@ -9,10 +8,10 @@ namespace Alpha
 {
 	class SkeletonHandle;
 
-	class AnimationSystem : public Subsystem<AnimationSystem>
+	class AnimationSystem
 	{
 	private:
-		TSlotPalette<Animation::SkeletonResource> m_skeleton_palette{};
+		//TSlotPalette<Animation::SkeletonResource> m_skeleton_palette{};
 
 
 	public:
@@ -26,7 +25,7 @@ namespace Alpha
 		void Finalize();
 
 
-		UInt32 RegisterMesh(TShared<SkeletonHandle> handle);
+		//UInt32 RegisterMesh(TShared<SkeletonHandle> handle);
 
 		void Update(entt::registry& registry, float delta_time);
 

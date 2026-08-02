@@ -60,6 +60,8 @@ struct MeshData
     uint vertex_element_offset;     // メッシュレット頂点インデックスのオフセット
     uint triangle_element_offset;   // メッシュレット三角形インデックスのオフセット
     
+    uint material_table_index;      // 使用するマテリアルテーブルのインデックス
+    
     uint attribute_flags;           // 頂点属性フラグ
     uint vertex_stride;             // 頂点属性ストライド
 };
@@ -68,10 +70,9 @@ struct InstanceData
 {
     float4x4 world_matrix;      // ワールド変換行列
     
-    uint material_table_index;  // 使用するマテリアルテーブルのインデックス
-    uint mesh_index;
-    
-    uint vertex_element_offset;         // 実際に描画に使用される頂点バッファオフセット
+    uint mesh_index;            //
+    uint vertex_element_offset; // 実際に描画に使用される頂点バッファオフセット
+    uint override_material_table_offset; // overrideのマテリアルテーブルのインデックス
 };
 
 struct SystemBufferIndices
@@ -86,10 +87,14 @@ struct SystemBufferIndices
     uint submesh;
     uint material;
     uint material_table;
+    
     uint instance;
     uint vertex_to_instance;
     uint dynamic_position_srv;  // 描画時に使用するのはこっち
     uint dynamic_position_uav;  // csから書き込む時用
+    
+    uint override_material;
+    
     uint rt_structure;
     uint rt_result;
 };
@@ -107,6 +112,8 @@ struct FrameRenderContext
 
 #define MAX_VERTICES 64
 #define MAX_PRIMITIVES 126
+
+#define INVALID_INDEX 0xFFFFFFFF
 
 // 頂点属性フラグ定義 (C++のEVertexAttributeに対応)
 #define VERTEX_ATTR_NONE            (0)
@@ -128,3 +135,4 @@ struct FrameRenderContext
 #define VERTEX_ATTR_TEXCOORDS1      (1 << 9)  // セカンドUV（ライトマップや2枚目のマスク用）
 #define VERTEX_ATTR_TEXCOORDS2      (1 << 10)
 #define VERTEX_ATTR_TEXCOORDS3      (1 << 11)
+
