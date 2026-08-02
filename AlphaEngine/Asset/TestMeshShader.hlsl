@@ -10,6 +10,7 @@ struct VertexOut
     float3 Normal : NORMAL;
     float2 TexCoord : TEXCOORD;
     nointerpolation uint MaterialTableID : MATERIAL_TABLE_ID;
+    nointerpolation uint OverrideMaterial : OVERRIDE_MATERIAL;
     nointerpolation uint MaterialID : MATERIAL_ID;
 
 };
@@ -103,7 +104,8 @@ void main(
         outputs[gtid].Color = float4(uv, 0.0f, 1.0f);
         outputs[gtid].TexCoord = uv;
         outputs[gtid].Normal = normal;
-        outputs[gtid].MaterialTableID = instance.material_table_index;
+        outputs[gtid].MaterialTableID = mesh.material_table_index;
+        outputs[gtid].OverrideMaterial = instance.override_material_table_offset;
         outputs[gtid].MaterialID = meshlet.material_index;
     }
 

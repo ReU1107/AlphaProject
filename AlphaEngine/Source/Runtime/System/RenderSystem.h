@@ -28,6 +28,7 @@ namespace Alpha
 		TUnique<TransientBufferAllocator> m_result_blas_allocator{ nullptr };
 
 		TUnique<TransientBufferAllocator> m_dynamic_vertex_allocator{ nullptr };
+		TUnique<TransientBufferAllocator> m_override_material_allocator{ nullptr };
 
 		TUnique<PipelineLayout> m_layout{ nullptr };
 		TUnique<GraphicsPipeline> m_pipeline{ nullptr };

@@ -138,6 +138,8 @@ namespace Alpha
 		ImGui::CreateContext();
 		auto& io = ImGui::GetIO();
 
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
 		io.BackendRendererName = "";
 		io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 		io.Fonts->AddFontFromFileTTF("Asset/Font/Noto_Serif_JP/NotoSerifJP-VariableFont_wght.ttf", 18.0f, nullptr, ImGui::GetIO().Fonts->GetGlyphRangesJapanese());

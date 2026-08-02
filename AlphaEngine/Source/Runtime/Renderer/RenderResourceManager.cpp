@@ -29,7 +29,7 @@ namespace Alpha
 		
         m_material_allocator		= CreatePersistentAllocator(args.render_core, sizeof(MaterialData), 4_MB, EBufferPresetType::ROStructured, L"Material");
 
-        m_material_table_allocator  = CreatePersistentAllocator(args.render_core, sizeof(UInt32), 4_MB, EBufferPresetType::ROByteAddress, L"MaterialTable");
+        m_material_table_allocator  = CreatePersistentAllocator(args.render_core, sizeof(UInt32), 4_MB, EBufferPresetType::ROStructured, L"MaterialTable");
         
         
         m_source_as_allocator       = CreatePersistentAllocator(args.render_core, 256, 32_MB, EBufferPresetType::RTAccelStructure, L"SourceAS");
@@ -212,7 +212,10 @@ namespace Alpha
             mesh.data_alloc = alloc;
         }
         // マテリアルテーブルの登録
-        mesh.default_table_index = RegisterMaterialTable(handle->GetMaterialTableHandle());
+        {
+            mesh.default_table_index = RegisterMaterialTable(handle->GetMaterialTableHandle());
+            mesh.data.material_table_element_offset = m_material_table_palette[mesh.default_table_index].alloc.offset / sizeof(UInt32);
+        }
 
         // レイトレ用のAS作成
         {
@@ -278,9 +281,9 @@ namespace Alpha
         }
 
         {
-            UInt32 size = sizeof(UInt32) * table.material_num;
+            UInt32 num = table.material_num;
             Allocation alloc{};
-            if (!m_material_table_allocator->AllocateBySize(size, &alloc))
+            if (!m_material_table_allocator->AllocateByNum(num, &alloc))
             {
                 ALPHA_LOG_WARN(L"ModelHandleのリソース化に失敗しました");
                 // 
@@ -404,11 +407,19 @@ namespace Alpha
         return m_mesh_palette.GetAt(index);
     }
 
-    UInt32 RenderResourceManager::GetMaterialTableIndexByMesh(UInt64 index)
+    TArray<Renderer::MaterialData> RenderResourceManager::GetDefaultMaterials(UInt64 mesh_index)
     {
-        auto& mesh = GetMeshByIndex(index);
+        auto& mesh = GetMeshByIndex(mesh_index);
+        
+        auto& material_table = m_material_table_palette.GetAt(mesh.default_table_index);
 
-        return mesh.default_table_index;
+        TArray<MaterialData> result(material_table.material_num);
+        for (UInt32 i = 0; i < material_table.material_num; ++i)
+        {
+            result[i] = m_material_palette.GetAt(material_table.material_indices[i]).data;
+        }
+
+        return result;
     }
 
     const Renderer::Material& RenderResourceManager::GetMaterialByIndex(UInt64 index)

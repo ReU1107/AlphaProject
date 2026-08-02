@@ -24,4 +24,3 @@
 #include "Context/StateTransition.h"
 
 #include "AnimationComponent.h"
-#include "AnimationSystem.h"

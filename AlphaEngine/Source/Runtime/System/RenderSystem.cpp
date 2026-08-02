@@ -9,7 +9,6 @@
 #include "Core/Math/MathF.h"
 
 #include <imgui/imgui.h>
-
 namespace Alpha
 {
 	using namespace Renderer;
@@ -45,6 +44,7 @@ namespace Alpha
 		m_result_blas_allocator = CreateTransientAllocator(args.render_core, 256, 64_MB, EBufferPresetType::RTAccelStructure, L"BLASResult");
 
 		m_dynamic_vertex_allocator = CreateTransientAllocator(args.render_core, sizeof(Vector3), 4_MB, EBufferPresetType::RWStructured, L"DynamicVertex");
+		m_override_material_allocator = CreateTransientAllocator(args.render_core, sizeof(MaterialData), 4_MB, EBufferPresetType::UploadStructured, L"OverrideMaterial");
 
 		m_instances.reserve(10000);
 
@@ -132,8 +132,12 @@ namespace Alpha
 		RenderResourceManager::BufferIndices render_resourcce{};
 		UInt32 instance{};
 		UInt32 vertex_to_instance{};
+		
 		UInt32 dynamic_position_srv{};      // 書き込まれた頂点
 		UInt32 dynamic_position_uav{};      // 書き込まれた頂点
+
+		UInt32 override_material{};
+
 		UInt32 rt_structure{};
 		UInt32 rt_result{};
 	};
@@ -156,6 +160,7 @@ namespace Alpha
 		m_result_tlas_allocator->Reset(ctx.current_frame_index);
 		m_scratch_tlas_allocator->Reset(ctx.current_frame_index);
 		m_result_blas_allocator->Reset(ctx.current_frame_index);
+		m_override_material_allocator->Reset(ctx.current_frame_index);
 
 		m_instances.clear();
 
@@ -165,6 +170,7 @@ namespace Alpha
 			.vertex_to_instance = m_vert_to_inst_allocator->GetSRVIndex(),
 			.dynamic_position_srv = m_dynamic_vertex_allocator->GetSRVIndex(),
 			.dynamic_position_uav = m_dynamic_vertex_allocator->GetUAVIndex(),
+			.override_material = m_override_material_allocator->GetSRVIndex(),
 			.rt_structure = m_result_tlas_allocator->GetSRVIndex(),
 			.rt_result = result->GetUAVHandle().index,
 		};
@@ -180,14 +186,19 @@ namespace Alpha
 		tlas_request.result_buffer = m_result_tlas_allocator->GetBuffer();
 
 		// このフレームで描画する可能性のあるオブジェクトを全部詰め込む
-		for (auto [ent, mesh_com, transform] : view.each())
+		for (auto [entity, mesh_com, transform] : view.each())
 		{
 			uint32_t current_instance_id = static_cast<uint32_t>(m_instances.size());
 
 			InstanceData instance = {};
 			instance.world_matrix = transform.GetLocalToWorld();
 			instance.mesh_offset = RenderResourceManager::Get().GetGPUMeshOffset(mesh_com.mesh_index);
-			instance.material_table_offset = RenderResourceManager::Get().GetGPUMaterialTableOffset(mesh_com.material_table_index);
+
+			if (auto* material_com = registry.try_get<MaterialOverrideComponent>(entity))
+			{
+				UInt64 material_byte_offset = m_override_material_allocator->WriteData(material_com->materials.data(), material_com->materials.size());
+				instance.override_material_element_offset = material_byte_offset / sizeof(MaterialData);
+			}
 
 			// このメッシュの頂点データを書き込む場所を予約する
 			const auto& mesh = RenderResourceManager::Get().GetMeshByIndex(mesh_com.mesh_index);
@@ -337,19 +348,5 @@ namespace Alpha
 		}
 
 		ctx.command_list->UAVBarrier(result.get());
-
-
-		GUISystem::Get().BeginFrame();
-
-		ImGui::Begin("RayTraceResult");
-
-		ImGui::Image(result.get(), ImVec2(960, 540));
-
-		ImGui::End();
-
-		GUISystem::Get().EndFrame();
-
-		GUISystem::Get().Flush(ctx);
-
 	}
 }
