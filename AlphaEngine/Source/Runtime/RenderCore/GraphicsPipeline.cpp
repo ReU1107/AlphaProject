@@ -47,6 +47,7 @@ namespace Alpha
 
 		desc.depth_format = args.depth_format;
 		desc.depth_enable = args.depth_enable;
+		desc.cull_mode = args.cull_mode;
 
 		m_rhi = args.rhi->CreateGraphicsPipeline(desc);
 

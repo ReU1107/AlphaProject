@@ -57,6 +57,23 @@ namespace Alpha
 		return desc;
 	}
 
+	static RHIBlendStateDesc DisabledBlend()
+	{
+		RHIBlendStateDesc desc = {};
+		desc.blend_enable = false;
+		desc.logic_op_enable = false;
+
+		desc.src_blend = ERHIBlend::One;
+		desc.dest_blend = ERHIBlend::Zero;
+		desc.blend_op = ERHIBlendOp::Add;
+
+		desc.src_blend_alpha = ERHIBlend::One;
+		desc.dest_blend_alpha = ERHIBlend::Zero;
+		desc.blend_op_alpha = ERHIBlendOp::Add;
+
+		return desc;
+	}
+
 	struct ComputePipelineArgs
 	{
 		RenderHardwareInterface* rhi{ nullptr };

@@ -5,8 +5,6 @@ struct [raypayload] RayPayload
     float3 color : write(miss, closesthit) : read(caller);
 };
 
-SamplerState sam : register(s0);
-
 ConstantBuffer<SystemBufferIndices> buffer_indices : register(b0);
 
 
@@ -73,6 +71,8 @@ void MyClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttrib
     
     Texture2D base_tex = ResourceDescriptorHeap[material.base_color_tex_idx];
     Texture2D emissive_tex = ResourceDescriptorHeap[material.emissive_tex_idx];
+    
+    SamplerState sam = SamplerDescriptorHeap[SAMPLER_PRESET_LINEAR_CLAMP];
     
     float4 base_color_sample = base_tex.SampleLevel(sam, uv, 0.0f);
     float3 emissive_sample = emissive_tex.SampleLevel(sam, uv, 0.0f).rgb;

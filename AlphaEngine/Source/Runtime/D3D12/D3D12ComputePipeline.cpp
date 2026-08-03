@@ -1,8 +1,8 @@
 ﻿#include "D3D12ComputePipeline.h"
 #include "D3D12Shader.h"
 #include "D3D12PipelineLayout.h"
-#include "D3D12Util.h"
 #include "RHI/Definitions.h"
+#include "D3D12Util.h"
 
 namespace Alpha
 {

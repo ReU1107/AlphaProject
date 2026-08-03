@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "Core/Common.h"
-
+#include "Renderer/Definitions.h"
 
 namespace Alpha
 {
@@ -32,6 +32,41 @@ namespace Alpha
 	{
 		float3 position{};
 
+	};
+
+	struct DynamicBufferIndices
+	{
+		UInt32 instance{};
+		UInt32 vertex_to_instance{};
+
+		UInt32 current_position_srv{};      // 
+		UInt32 current_position_uav{};      // 
+
+		UInt32 override_material{};
+
+		UInt32 rt_structure{};		// TLASのSRV
+	};
+
+	struct SystemBufferIndices
+	{
+		StaticBufferIndices static_res{};
+		DynamicBufferIndices dynamic_res{};
+
+	};
+
+	struct SystemTextureIndices
+	{
+		UInt32 result{};
+		UInt32 visibility{};
+		UInt32 normal{};
+		UInt32 depth{};
+	};
+
+	enum class ESystemRootSlot
+	{
+		Buffers,
+		Textures,
+		Constants,
 	};
 
 }

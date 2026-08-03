@@ -35,12 +35,13 @@ namespace Alpha
 		{
 			if (m_type == ProjectionType::Perspective)
 			{
-				m_projection_matrix = Matrix4x4PerspectiveFovLH(m_fov, m_aspect_ratio, m_near_plane, m_far_plane);
+				m_projection_matrix = Matrix4x4PerspectiveFovLHReverseZ(m_fov, m_aspect_ratio, m_near_plane, m_far_plane);
 			}
 			else
 			{
 				//m_projection_matrix = Matrix4x4OrthographicLH(width, height, m_near_plane, m_far_plane);
 			}
+			m_is_projection_dirty = false;
 		}
 
 		return m_projection_matrix;

@@ -7,16 +7,8 @@
 #include <windows.h>
 
 
-#include "Source/Runtime/D3D12/D3D12Shader.h"
-#include "Source/Runtime/D3D12/D3D12PipelineLayout.h"
-#include "Source/Runtime/D3D12/D3D12Dynamic.h"
-#include "Source/Runtime/D3D12/D3D12Buffer.h"
-#include "Source/Runtime/D3D12/D3D12DescriptorHeap.h"
-#include "Source/Runtime/D3D12/D3D12CommandBuffer.h"
-#include "Source/Runtime/D3D12/D3D12Util.h"
 #include "Source/Core/Window/WindowSystem.h"
-#include "Source/Runtime/RenderCore/RenderCore.h"
-#include "Source/Runtime/RenderCore/RenderHardwareInterface.h"
+
 #include "Source/Runtime/RenderCore/Module.h"
 
 
@@ -32,6 +24,9 @@
 #include "Source/Runtime/System/RenderSystem.h"
 #include "Source/Runtime/System/TransformComponent.h"
 #include "Source/Runtime/System/CameraSystem.h"
+#include "Source/Runtime/System/VertexComputePass.h"
+#include "Source/Runtime/System/RenderScene.h"
+#include "Source/Runtime/System/VBufferPass.h"
 #include "Source/Runtime/Renderer/CameraComponent.h"
 
 #include "RHI/Definitions.h"
@@ -158,7 +153,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     RenderSystem::Args rs_args = {
         .render_core = RenderCore::GetPtr(),
     };
-    RenderSystem::Startup(rs_args);
+	RenderSystem render_system;
+	render_system.Initialize(rs_args);
 
     RenderCore::Get().PostInitialize();
 
@@ -321,15 +317,16 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         cm_sys.Update(registry);
 
         RenderCore::Get().BeginFrame();
+        GUISystem::Get().BeginFrame();
+
 
         RenderContext ctx = {};
         ctx.command_list = RenderCore::Get().GetCommandList();
         ctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
         ctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
 
-        RenderSystem::Get().Render(registry, ctx);
+        render_system.Render(registry, ctx);
 
-        GUISystem::Get().BeginFrame();
 
         RenderDebugUI(registry, floor, cube_index);
 
@@ -352,7 +349,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         }
     }
 
-    RenderSystem::Shutdown();
+    render_system.Finalize();
 
     AssetManager::Shutdown();
 

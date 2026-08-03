@@ -513,7 +513,7 @@ namespace Alpha
 
 		m_command_list->SetRenderTarget(GetCurrentRenderTarget(), GetDepthTexture());
 		m_command_list->ClearRenderTarget(GetCurrentRenderTarget(), Rect2D(0, 0, m_width, m_height), Color4::Gray);
-		m_command_list->ClearDepthStencil(GetDepthTexture(), Rect2D(0, 0, m_width, m_height), 1.0f);
+		m_command_list->ClearDepthStencil(GetDepthTexture(), Rect2D(0, 0, m_width, m_height), 0.0f);
 		m_command_list->SetViewport(Viewport(0, 0, (float)m_width, (float)m_height, 0.0f, 1.0f));
 
 		m_command_list->SetScissorRect(0, 0, m_width, m_height);

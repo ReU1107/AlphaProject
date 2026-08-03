@@ -6,6 +6,20 @@
 namespace Alpha
 {
 	class Texture;
+
+	struct StaticBufferIndices
+	{
+		UInt32 position{};
+		UInt32 attribute{};
+		UInt32 index{};
+		UInt32 vertex_indices{};
+		UInt32 triangle_indices{};
+		UInt32 meshlet{};
+		UInt32 mesh{};
+		UInt32 submesh{};
+		UInt32 material{};
+		UInt32 material_table{};
+	};
 }
 
 namespace Alpha::Renderer
@@ -134,4 +148,5 @@ namespace Alpha::Renderer
 		UInt32 vertex_count{};
 		UInt32 default_table_index{};
 	};
+
 }

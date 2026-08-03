@@ -36,7 +36,7 @@ namespace Alpha
 		ERHIResourceFormat format{ ERHIResourceFormat::RGBAUnorm };			// フォーマット
 		
 		Vector4 clear_value_color{ 0.0f,0.0f,0.0f,1.0f };
-		Float clear_value_depth{ 1.0f };
+		Float clear_value_depth{ 0.0f };
 		UInt8 clear_value_stencil{ 0 };
 
 		RHISwapChain* swap_chain{ nullptr };	// SwapChainから作成する場合に指定

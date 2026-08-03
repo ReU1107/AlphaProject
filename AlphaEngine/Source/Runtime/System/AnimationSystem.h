@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "Core/Common.h"
 #include "Core/Container/SlotPalette.h"
-#include "Definitions.h"
 #include <entt/entt.hpp>
 
 namespace Alpha

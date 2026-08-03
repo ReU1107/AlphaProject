@@ -401,7 +401,7 @@ namespace Alpha
 		D3D12_DESCRIPTOR_HEAP_TYPE type = GetD3D12DescriptorHeapType(desc.type);
 
 		D3D12_DESCRIPTOR_HEAP_DESC heap_desc = {};
-		heap_desc.NumDescriptors = desc.max_count;
+		heap_desc.NumDescriptors = (UINT)desc.max_count;
 		heap_desc.Type = type;
 
 		if (desc.type == ERHIDescriptorType::RTV || desc.type == ERHIDescriptorType::DSV)

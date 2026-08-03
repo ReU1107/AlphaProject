@@ -8,6 +8,7 @@ namespace Alpha
 	class RenderHardwareInterface;
 	class RHICommandBuffer;
 
+	class PipelineLayout;
 	class GraphicsPipeline;
 	class ComputePipeline;
 	class RayTracePipeline;
@@ -51,6 +52,8 @@ namespace Alpha
 
 		void SetScissorRect(int32_t x, int32_t y, UInt32 width, UInt32 height);
 
+		void SetPipelineLayout(PipelineLayout* layout);
+
 		void SetGraphicsPipeline(GraphicsPipeline* pipeline);
 		void SetComputePipeline(ComputePipeline* pipeline);
 		void SetRayTracePipeline(RayTracePipeline* pipeline);
@@ -59,6 +62,7 @@ namespace Alpha
 		void SetRenderTargets(Texture** render_targets, UInt32 num, Texture* depth_stencil);
 
 		void ClearRenderTarget(Texture* render_target, const Rect2D& rect, const Color4& clear_color);
+		void ClearRenderTargets(Texture** render_targets, UInt32 num, const Rect2D& rect, const Color4& clear_color);
 
 		void ClearDepthStencil(Texture* depth_stencil, const Rect2D& rect, float clear_depth);
 
@@ -85,6 +89,7 @@ namespace Alpha
 		void SetComputeCBV(Buffer* buffer, UInt64 offset, UInt32 slot);
 
 		void Transition(GPUResource* resource, ERHIResourceState after);
+		void Transition(Texture** textures, UInt32 num, ERHIResourceState after);
 
 		void CopyBuffer(Buffer* src, Buffer* dst);
 		void CopyBufferRegion(Buffer* src, UInt64 src_offset, Buffer* dst, UInt64 dst_offset, UInt64 size);

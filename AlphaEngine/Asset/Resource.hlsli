@@ -77,6 +77,7 @@ struct InstanceData
 
 struct SystemBufferIndices
 {
+    // Static
     uint position;              // このpositionはあくまでも読み込み時の状態の
     uint attribute;             // 頂点属性
     uint index;
@@ -88,14 +89,20 @@ struct SystemBufferIndices
     uint material;
     uint material_table;
     
+    
+    // Dynamic
     uint instance;
     uint vertex_to_instance;
-    uint dynamic_position_srv;  // 描画時に使用するのはこっち
-    uint dynamic_position_uav;  // csから書き込む時用
+    uint current_position_srv;  // 描画時に使用するのはこっち
+    uint current_position_uav;  // csから書き込む時用
     
     uint override_material;
     
     uint rt_structure;
+};
+
+struct SystemTextureIndices
+{
     uint rt_result;
 };
 
@@ -121,10 +128,10 @@ struct FrameRenderContext
 #define VERTEX_ATTR_TANGENTS        (1 << 1)  // 接線 (float3)
 #define VERTEX_ATTR_COLORS          (1 << 2)  // 頂点カラー (rgba)
 
-// スキニング（アニメーション用）
+// スキニング (アニメーション用)
 #define VERTEX_ATTR_BONE_WEIGHTS    (1 << 3)  // ボーンのブレンドウェイト (UInt4 + float4)
 
-// モーフィング（ブレンドシェイプ／表情用）
+// モーフィング (ブレンドシェイプ／表情用)
 #define VERTEX_ATTR_BASE_POSITIONS  (1 << 4)  // ベース位置
 #define VERTEX_ATTR_DELTA_POSITIONS (1 << 5)  // 移動差分位置
 #define VERTEX_ATTR_DELTA_NORMALS   (1 << 6)  // 移動差分法線
@@ -136,3 +143,9 @@ struct FrameRenderContext
 #define VERTEX_ATTR_TEXCOORDS2      (1 << 10)
 #define VERTEX_ATTR_TEXCOORDS3      (1 << 11)
 
+// サンプラー (ESamplerPresetTypeと同じ順序)
+#define SAMPLER_PRESET_POINT_CLAMP  0
+#define SAMPLER_PRESET_LINEAR_CLAMP 1
+#define SAMPLER_PRESET_LINEAR_WRAP  2
+#define SAMPLER_PRESET_ANISO_WRAP   3
+#define SAMPLER_PRESET_SHADOW       4

@@ -276,6 +276,25 @@ namespace Alpha
 		return m;
 	}
 
+	Matrix4x4 Matrix4x4PerspectiveFovLHReverseZ(const float fov_degree, const float aspect, const float nearZ, const float farZ)
+	{
+		Matrix4x4 m = Matrix4x4::Zero;
+
+		const float fov_radian = ConvertDegreeToRadian(fov_degree);
+
+		const float h = 1.0f / Tan(fov_radian * 0.5f);
+		const float w = h / aspect;
+
+		m._11() = w;
+		m._22() = h;
+		m._33() = nearZ / (nearZ - farZ);
+		m._34() = 1.0f;
+		m._43() = nearZ * farZ / (farZ - nearZ);
+		m._44() = 0.0f;
+
+		return m;
+	}
+
 	Matrix4x4 Matrix4x4OrthographicLH(const float width, const float height, const float nearZ, const float farZ)
 	{
 		Matrix4x4 m = Matrix4x4::Zero;

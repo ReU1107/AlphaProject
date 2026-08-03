@@ -228,8 +228,11 @@
     <ClCompile Include="Source\Runtime\Scene\Scene.cpp" />
     <ClCompile Include="Source\Runtime\Scene\SceneObject.cpp" />
     <ClCompile Include="Source\Runtime\System\CameraSystem.cpp" />
+    <ClCompile Include="Source\Runtime\System\RenderScene.cpp" />
     <ClCompile Include="Source\Runtime\System\RenderSystem.cpp" />
     <ClCompile Include="Source\Runtime\System\TransformComponent.cpp" />
+    <ClCompile Include="Source\Runtime\System\VBufferPass.cpp" />
+    <ClCompile Include="Source\Runtime\System\VertexComputePass.cpp" />
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2Device.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\Buffer.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\CommandList.cpp" />
@@ -308,6 +311,8 @@
     <ClInclude Include="Source\Runtime\RHI\RHIRayTracePipeline.h" />
     <ClInclude Include="Source\Runtime\System\CameraSystem.h" />
     <ClInclude Include="Source\Runtime\System\Definitions.h" />
+    <ClInclude Include="Source\Runtime\System\RayTracingPass.h" />
+    <ClInclude Include="Source\Runtime\System\RenderScene.h" />
     <ClInclude Include="Source\Runtime\System\TransformComponent.h" />
     <ClInclude Include="Source\Core\Container\Array.h" />
     <ClInclude Include="Source\Core\Container\Hierarchy.h" />
@@ -436,6 +441,8 @@
     <ClInclude Include="Source\Runtime\Renderer\Types.h" />
     <ClInclude Include="Source\Runtime\Scene\Scene.h" />
     <ClInclude Include="Source\Runtime\Scene\SceneObject.h" />
+    <ClInclude Include="Source\Runtime\System\VBufferPass.h" />
+    <ClInclude Include="Source\Runtime\System\VertexComputePass.h" />
     <ClInclude Include="Source\Runtime\XAudio2\XAudio2Device.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Buffer.h" />
     <ClInclude Include="Source\Runtime\RenderCore\CommandList.h" />

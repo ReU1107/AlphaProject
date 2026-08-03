@@ -88,4 +88,9 @@ namespace Alpha
 	{
 		return m_rhi->As<RHITexture>()->GetUploadSize();
 	}
+
+	ERHIResourceFormat Texture::GetFormat() const
+	{
+		return m_rhi->As<RHITexture>()->GetFormat();
+	}
 }

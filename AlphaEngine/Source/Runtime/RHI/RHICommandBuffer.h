@@ -19,7 +19,8 @@ namespace Alpha
 
 		virtual void End() = 0;
 
-		virtual void SetPipelineLayout(RHIPipelineLayout* layout) = 0;
+		virtual void SetGraphicsPipelineLayout(RHIPipelineLayout* layout) = 0;
+		virtual void SetComputePipelineLayout(RHIPipelineLayout* layout) = 0;
 
 		virtual void SetGraphicsPipeline(RHIGraphicsPipeline* pipeline, RHIPipelineLayout* layout) = 0;
 		virtual void SetComputePipeline(RHIComputePipeline* pipeline, RHIPipelineLayout* layout) = 0;
@@ -28,7 +29,7 @@ namespace Alpha
 		virtual void SetDescriptorHeap(RHIDescriptorHeap* heap) = 0;
 		virtual void SetDescriptorHeap(RHIDescriptorHeap* srv_heap, RHIDescriptorHeap* sampler_heap) = 0;
 
-		virtual void SetRenderTarget(RHIDescriptorHeap* rtv_heap, UInt32 rtv_index, UInt32 rtv_count, RHIDescriptorHeap* dsv_heap, UInt32 dsv_index) = 0;
+		virtual void SetRenderTarget(RHIDescriptorHeap* rtv_heap, TFixedArray<UInt32, 8> rtv_indices, UInt32 rtv_count, RHIDescriptorHeap* dsv_heap, UInt32 dsv_index) = 0;
 
 		virtual void ClearRenderTarget(RHIDescriptorHeap* rtv_heap, UInt32 rtv_index, const Rect2D& rect, const float* clear_color) = 0;
 		virtual void ClearDepthStencil(RHIDescriptorHeap* dsv_heap, UInt32 dsv_index, const Rect2D& rect, float depth, uint8_t stencil) = 0;

@@ -37,7 +37,8 @@ namespace Alpha
 
 		void End() final;
 
-		void SetPipelineLayout(RHIPipelineLayout* layout) final;
+		void SetGraphicsPipelineLayout(RHIPipelineLayout* layout) final;
+		void SetComputePipelineLayout(RHIPipelineLayout* layout) final;
 
 		void SetGraphicsPipeline(RHIGraphicsPipeline* pipeline, RHIPipelineLayout* layout) final;
 		void SetComputePipeline(RHIComputePipeline* pipeline, RHIPipelineLayout* layout) final;
@@ -71,7 +72,7 @@ namespace Alpha
 		void UAVBarrier(RHIBuffer** buffers, UInt32 buffer_count) final;
 		void UAVBarrier(RHITexture** textures, UInt32 texture_count) final;
 
-		void SetRenderTarget(RHIDescriptorHeap* rtv_heap, UInt32 rtv_index, UInt32 rtv_count, RHIDescriptorHeap* dsv_heap, UInt32 dsv_index) final;
+		void SetRenderTarget(RHIDescriptorHeap* rtv_heap, TFixedArray<UInt32, 8> rtv_indices, UInt32 rtv_count, RHIDescriptorHeap* dsv_heap, UInt32 dsv_index) final;
 
 		void ClearRenderTarget(RHIDescriptorHeap* rtv_heap, UInt32 rtv_index, const Rect2D& rect, const float* clear_color) final;
 		void ClearDepthStencil(RHIDescriptorHeap* dsv_heap, UInt32 dsv_index, const Rect2D& rect, float depth, uint8_t stencil) final;

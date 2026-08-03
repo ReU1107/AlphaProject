@@ -136,6 +136,7 @@ namespace Alpha
 			| PixelShaderResource)
 			| IndirectArgument) | CopySource),
 		Present					 = 1 << 15,	// プレゼント
+		AllShaderResource		= 1 << 16,
 	};
 
 	EnumClassFlags(ERHIResourceState);
@@ -163,21 +164,74 @@ namespace Alpha
 	enum class ERHIResourceFormat
 	{
 		Unknown,
-		RGBA32UInt,
-		RGBA32SInt,
-		RGBAFloat,
-		RGBAHalf,
+
+		// RGBA 32-bit (8-bit per channel)
 		RGBAUnorm,
-		RGBFloat,
-		RGFloat,
-		RFloat,
-		RUInt,
-		RGHalf,
-		RHalf,
+		RGBAUnormSRGB,       // sRGBカラー用
+		RGBASnorm,           // 
+		RGBA32UInt,          // 各チャンネル8bit(計32bit)のUINTとしてマッピング
+		RGBA32SInt,          // 各チャンネル8bit(計32bit)のSINTとしてマッピング
+
+		// RGBA 64-bit (16-bit per channel)
+		RGBA16Float,         // RGBAHalf と同一視可能
+		RGBAHalf,
+		RGBA16Unorm,         // 
+		RGBA16UInt,          // 
+		RGBA16SInt,          // 
+
+		// RGBA 128-bit (32-bit per channel)
+		RGBAFloat,
+		RGBA32Float,         // 明示的な命名用
+		RGBA32UInt128,       // 各チャンネル32bitの真の128bitマッピング用
+		RGBA32SInt128,       // 各チャンネル32bitの真の128bitマッピング用
+
+		// RGB 系統
+		RGBFloat,            // R32G32B32_FLOAT
+		RGB10A2Unorm,
+		R11G11B10Float,      // HDRレンダーターゲットや特殊バッファで頻出
+
+		// RG (Dual Channel)
+		RG8Unorm,            // 
+		RG8UInt,             // 
+		RGFloat,             // R32G32_FLOAT
+		RGHalf,              // R16G16_FLOAT
+		RG16Unorm,           // 
+		RG16UInt,            // 
+		RGUInt,              // R32G32_UINT
+
+		// R (Single Channel)
+		R8Unorm,             // 
+		R8UInt,              // 
+		RHalf,               // R16_FLOAT
+		R16Unorm,            // 
+		R16UInt,             // 
+		RFloat,              // R32_FLOAT
+		RUInt,               // R32_UINT
+
+		// BGRA 系統 (Windows画面出力・相互運用)
+		BGRA8Unorm,          // 
+		BGRA8UnormSRGB,      // 
+
+		// デプス / ステンシル
 		Depth32,
 		Depth16,
 		Depth24Stencil8,
-		RGB10A2Unorm,
+		Depth32Stencil8,     // D32_FLOAT_S8X24_UINT 用
+
+		// ブロック圧縮テクスチャ (Block Compression / BC) - アセット読込に必須
+		BC1Unorm,            // DXT1 不透明 / 1bitアルファ
+		BC1UnormSRGB,        // 
+		BC2Unorm,            // DXT3 明示的アルファ
+		BC2UnormSRGB,        // 
+		BC3Unorm,            // DXT5 補間アルファ
+		BC3UnormSRGB,        // 
+		BC4Unorm,            // ATI1 / BC4 単チャンネル圧縮 (法線マップなど)
+		BC4Snorm,            // 
+		BC5Unorm,            // 3DC / BC5 2チャンネル圧縮 (法線マップ標準)
+		BC5Snorm,            // 
+		BC6HFloat,           // HDRテクスチャ圧縮
+		BC7Unorm,            // 高画質RGBA圧縮 (近代的な標準)
+		BC7UnormSRGB,        // 
 	};
 
 	enum class ERHIIndexFormat
