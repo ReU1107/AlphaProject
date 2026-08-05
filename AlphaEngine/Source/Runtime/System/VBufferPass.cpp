@@ -15,15 +15,15 @@ namespace Alpha
 	{
 
 		m_as = RenderCore::Get().CreateShader(L"Asset/TaskShader.hlsl", ERHIShaderType::Amplification);
-		//m_ms = RenderCore::Get().CreateShader(L"Asset/TestMeshShader.hlsl", ERHIShaderType::Mesh);
-		m_ms = RenderCore::Get().CreateShader(L"Asset/VBufferMS.hlsl", ERHIShaderType::Mesh);
-		//m_ps = RenderCore::Get().CreateShader(L"Asset/PixelShader.hlsl", ERHIShaderType::Pixel);
-		m_ps = RenderCore::Get().CreateShader(L"Asset/VBufferPS.hlsl", ERHIShaderType::Pixel);
+		m_ms = RenderCore::Get().CreateShader(L"Asset/TestMeshShader.hlsl", ERHIShaderType::Mesh);
+		//m_ms = RenderCore::Get().CreateShader(L"Asset/VBufferMS.hlsl", ERHIShaderType::Mesh);
+		m_ps = RenderCore::Get().CreateShader(L"Asset/PixelShader.hlsl", ERHIShaderType::Pixel);
+		//m_ps = RenderCore::Get().CreateShader(L"Asset/VBufferPS.hlsl", ERHIShaderType::Pixel);
 
 		m_visibility = RenderCore::Get().CreateTexture(
 			1920, 1080,
 			ERHIResourceBindFlags::ShaderResource | ERHIResourceBindFlags::RenderTarget,
-			ERHIResourceFormat::RGUInt
+			ERHIResourceFormat::RGBAFloat
 		);
 
 		m_depth = RenderCore::Get().CreateTexture(

@@ -27,6 +27,9 @@ namespace Alpha
 		TUnique<TransientBufferAllocator> m_dynamic_vertex_allocator{ nullptr };
 		TUnique<TransientBufferAllocator> m_override_material_allocator{ nullptr };
 
+		TUnique<TransientBufferAllocator> m_light_allocator{ nullptr };
+
+		TArray<LightData> m_lights{};
 		TArray<InstanceData> m_instances{};
 
 		TUnique<VertexComputePass> m_vertex_compute_pass{ nullptr };
@@ -46,6 +49,7 @@ namespace Alpha
 
 		DynamicBufferIndices GetBufferIndices() const;
 
+		UInt32 GetLightCount() const { return static_cast<UInt32>(m_lights.size()); }
 		UInt32 GetInstanceCount() const { return static_cast<UInt32>(m_instances.size()); }
 
 	};

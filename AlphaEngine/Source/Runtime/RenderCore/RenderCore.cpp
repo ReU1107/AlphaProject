@@ -363,6 +363,47 @@ namespace Alpha
 		return sampler;
 	}
 
+	TUnique<Texture> RenderCore::CreateTexture(UInt32 width, UInt32 height, UInt32 depth, ERHIResourceFormat format, ETexturePresetType type)
+	{
+		auto texture = std::make_unique<Texture>();
+
+		Texture::Args desc = {
+			.rhi = m_rhi.get(),
+			.resource_heap = m_resource_heap.get(),
+			.rtv_heap = m_rtv_heap.get(),
+			.dsv_heap = m_dsv_heap.get(),
+			.width = width,
+			.height = height,
+			.depth = depth,
+			.format = format,
+		};
+
+		switch (type)
+		{
+		case Alpha::ETexturePresetType::ROTexture2D:
+			desc.dimension = ERHIResourceDimension::Tex2D;
+			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
+			break;
+		case Alpha::ETexturePresetType::RWTexture2D:
+			desc.dimension = ERHIResourceDimension::Tex2D;
+			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
+			desc.bind_flags |= ERHIResourceBindFlags::UnorderedAccess;
+			break;
+		case Alpha::ETexturePresetType::RWTexture3D:
+			desc.dimension = ERHIResourceDimension::Tex3D;
+			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
+			desc.bind_flags |= ERHIResourceBindFlags::UnorderedAccess;
+			break;
+		default:
+			break;
+		}
+
+		texture->Initialize(desc);
+		return texture;
+
+		return TUnique<Texture>();
+	}
+
 	TUnique<Texture> RenderCore::CreateTexture(UInt32 width, UInt32 height, ERHIResourceBindFlags flags, ERHIResourceFormat format, ERHIResourceDimension dimension, UInt32 array_size)
 	{
 		auto texture = std::make_unique<Texture>();
@@ -396,8 +437,22 @@ namespace Alpha
 		Shader::Args desc = {};
 		desc.rhi = m_rhi.get();
 		desc.file_path = file_path.c_str();
-		desc.entry_point = entry_point.c_str();
+		desc.entry_points.push_back(entry_point.c_str());
 		desc.type = shader_type;
+		shader->Initialize(desc);
+
+		return shader;
+	}
+
+	TUnique<Shader> RenderCore::CreateShaderLibrary(StringView file_path, std::span<const StringView> entry_points)
+	{
+		auto shader = std::make_unique<Shader>();
+
+		Shader::Args desc = {};
+		desc.rhi = m_rhi.get();
+		desc.file_path = file_path.c_str();
+		desc.entry_points.assign(entry_points.begin(), entry_points.end());
+		desc.type = ERHIShaderType::Library;
 		shader->Initialize(desc);
 
 		return shader;

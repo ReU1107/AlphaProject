@@ -29,6 +29,11 @@ namespace Alpha
 			: m_view(v)
 		{
 		}
+		template<std::size_t N>
+		constexpr StringView(const tchar_t(&str)[N]) noexcept
+			: m_view(str, N - 1)
+		{
+		}
 
 		constexpr StringView(const String& s);
 		constexpr const tchar_t* data() const noexcept { return m_view.data(); }
@@ -108,6 +113,7 @@ namespace Alpha
 			auto u16 = std::filesystem::path(reinterpret_cast<const char8_t*>(utf8.data())).u16string();
 			return String(u16);
 		}
+		bool IsEmpty() const { return m_data.empty(); }
 
 	};
 

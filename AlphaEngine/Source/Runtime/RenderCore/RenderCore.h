@@ -6,6 +6,7 @@
 #include "Definitions.h"
 
 #include <functional>
+#include <span>
 
 #include <Windows.h>
 
@@ -110,6 +111,9 @@ namespace Alpha
 
 		TUnique<SamplerState> CreateSamplerState(ERHIFilter filter, ERHIAddressMode address);
 
+		TUnique<Texture> CreateTexture(UInt32 width, UInt32 height, UInt32 depth, ERHIResourceFormat format, ETexturePresetType type);
+
+
 		TUnique<Texture> CreateTexture(UInt32 width,
 			UInt32 height,
 			ERHIResourceBindFlags flags = ERHIResourceBindFlags::ShaderResource,
@@ -120,6 +124,7 @@ namespace Alpha
 		void UploadTexture(Texture* texture, void* pixels);
 
 		TUnique<Shader> CreateShader(const std::wstring& file_path, ERHIShaderType shader_type, const std::wstring& entry_point = L"main");
+		TUnique<Shader> CreateShaderLibrary(StringView file_path, std::span<const StringView> entry_points);
 
 		TUnique<PipelineLayout> CreatePipelineLayout(std::function<void(PipelineLayout&)> config_func);
 

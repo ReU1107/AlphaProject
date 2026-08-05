@@ -18,6 +18,8 @@ namespace Alpha
 
 	class RenderScene;
 	class VBufferPass;
+	class FroxelLightingPass;
+	class FogPass;
 
 	class RenderSystem
 	{
@@ -27,6 +29,8 @@ namespace Alpha
 		TUnique<PipelineLayout> m_layout{ nullptr };
 		TUnique<RayTracePipeline> m_raytrace_pipeline{ nullptr };
 		TUnique<VBufferPass> m_vbuffer_pass{ nullptr };
+		TUnique<FroxelLightingPass> m_froxel_pass{ nullptr };
+		TUnique<FogPass> m_fog_pass{ nullptr };
 
 
 

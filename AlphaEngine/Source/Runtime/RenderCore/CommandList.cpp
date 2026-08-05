@@ -16,6 +16,8 @@
 #include "RayTracePipeline.h"
 #include "PipelineLayout.h"
 
+#include "Definitions.h"
+
 namespace Alpha
 {
 	CommandList::CommandList() = default;
@@ -295,9 +297,27 @@ namespace Alpha
 		m_rhi->DispatchMesh(group_count_x, group_count_y, group_count_z);
 	}
 
-	void CommandList::DispatchRayTrace(const RHIRayTraceDesc& desc)
+	void CommandList::DispatchRayTrace(const RayTraceDispatchArgs& args)
 	{
+		RHIRayTraceDesc desc = {};
+		desc.shader_table_buffer = args.pipeline->GetShaderTableBuffer()->GetRHI();
+		
+		desc.ray_gen_offset = args.pipeline->GetRayGenerateTable().alloc.offset;
+		
+		desc.miss_offset = args.pipeline->GetMissTable().alloc.offset;
+		desc.miss_count = args.pipeline->GetMissTable().count;
+
+		desc.hit_group_offset = args.pipeline->GetHitGroupTable().alloc.offset;
+		desc.hit_group_count = args.pipeline->GetHitGroupTable().count;
+
+
+		desc.width = args.width;
+		desc.height = args.height;
+		desc.depth = args.depth;
+
+
 		m_rhi->DispatchRayTrace(desc);
+
 	}
 
 	void CommandList::BuildRaytracingAccelerationStructure(const RHIBuildTLASDesc& desc)

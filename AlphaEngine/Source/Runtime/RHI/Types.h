@@ -250,8 +250,7 @@ namespace Alpha
 		Amplification,	// 
 		Mesh,	// 
 		Compute,	// 
-		RayTracing,	// 
-		Library,
+		Library,	// RayTraceもこれ
 	};
 
 	enum class ERHIShaderFlags

@@ -11,7 +11,7 @@ namespace Alpha
 	{
 		RHIShaderDesc desc = {};
 		desc.file_directory = args.file_path;
-		desc.entry_point = args.entry_point;
+		desc.entry_points = args.entry_points;
 		desc.type = args.type;
 		m_rhi = args.rhi->CreateShader(desc);
 		m_type = args.type;
@@ -25,10 +25,5 @@ namespace Alpha
 	bool Shader::CheckType(ERHIShaderFlags type) const
 	{
 		return true;
-	}
-
-	const wchar_t* Shader::GetEntryPoint() const
-	{
-		return m_rhi->GetEntryPoint();
 	}
 }

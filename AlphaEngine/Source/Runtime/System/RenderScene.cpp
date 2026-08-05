@@ -35,7 +35,10 @@ namespace Alpha
 
 		m_dynamic_vertex_allocator = CreateTransientAllocator(args.render_core, sizeof(Vector3), 4_MB, EBufferPresetType::RWStructured, L"DynamicVertex");
 		m_override_material_allocator = CreateTransientAllocator(args.render_core, sizeof(MaterialData), 4_MB, EBufferPresetType::UploadStructured, L"OverrideMaterial");
+		
+		m_light_allocator = CreateTransientAllocator(args.render_core, sizeof(LightData), 4_MB, EBufferPresetType::UploadStructured, L"Light");
 
+		m_lights.reserve(100);
 		m_instances.reserve(10000);
 
 
@@ -58,6 +61,7 @@ namespace Alpha
 		m_scratch_tlas_allocator->Reset(ctx.current_frame_index);
 		m_result_blas_allocator->Reset(ctx.current_frame_index);
 		m_override_material_allocator->Reset(ctx.current_frame_index);
+		m_light_allocator->Reset(ctx.current_frame_index);
 
 		m_instances.clear();
 
@@ -146,10 +150,53 @@ namespace Alpha
 			m_instances.push_back(instance);
 		}
 
+		{
+
+			m_lights.clear();
+
+			auto view = registry.view<LightComponent, TransformComponent>();
+
+			// ライトの情報を
+			for (auto [entity, light_com, transform] : view.each())
+			{
+
+				LightData light = {};
+				const Matrix4x4& world_matrix = transform.GetLocalToWorld();
+				light.position = world_matrix._4();
+
+				light.radius = light_com.GetRadius();
+				light.color = light_com.GetColor();
+				light.intensity = light_com.GetIntensity();
+
+				light.type = light_com.type;
+
+				if (light_com.type == 2) // Directional Light
+				{
+					light.direction = light_com.direction;
+				}
+				else if (light_com.type == 1) // Spot Light
+				{
+					light.direction = transform.Forward();
+				}
+				else
+				{
+					light.direction = float3(0.0f, 0.0f, 0.0f);
+				}
+
+				light.inner_cone = light_com.GetInnerCone();
+				light.outer_cone = light_com.GetOuterCone();
+
+				m_lights.push_back(light);
+			}
+
+			m_light_allocator->WriteData(m_lights.data(), m_lights.size());
+
+		}
+
 		// インスタンスデータをバッファに書き込む
 		m_instance_allocator->WriteData(m_instances.data(), m_instances.size());
 
-		// 
+		// 頂点の整列やスキニング
 		m_vertex_compute_pass->Execute(ctx, m_dynamic_vertex_allocator->GetBuffer(), vertex_count);
 
 		// ↑で作った頂点バッファを利用してBLASの更新
@@ -180,6 +227,7 @@ namespace Alpha
 			.current_position_srv = m_dynamic_vertex_allocator->GetSRVIndex(),
 			.current_position_uav = m_dynamic_vertex_allocator->GetUAVIndex(),
 			.override_material = m_override_material_allocator->GetSRVIndex(),
+			.light = m_light_allocator->GetSRVIndex(),
 			.rt_structure = m_result_tlas_allocator->GetSRVIndex(),
 		};
 	}

@@ -21,6 +21,8 @@ namespace Alpha
 	class Texture;
 	class SamplerState;
 
+	struct RayTraceDispatchArgs;
+
 
 	class CommandList
 	{
@@ -107,7 +109,7 @@ namespace Alpha
 
 		void Dispatch(UInt32 group_count_x, UInt32 group_count_y, UInt32 group_count_z);
 		void DispatchMesh(UInt32 group_count_x, UInt32 group_count_y, UInt32 group_count_z);
-		void DispatchRayTrace(const RHIRayTraceDesc& desc);
+		void DispatchRayTrace(const RayTraceDispatchArgs& desc);
 
 
 		void BuildRaytracingAccelerationStructure(const RHIBuildTLASDesc& desc);

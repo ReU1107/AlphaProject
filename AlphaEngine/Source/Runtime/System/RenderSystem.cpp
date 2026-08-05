@@ -11,6 +11,8 @@
 #include "RenderScene.h"
 #include "VertexComputePass.h"
 #include "VBufferPass.h"
+#include "FroxelLightingPass.h"
+#include "FogPass.h"
 
 #include <imgui/imgui.h>
 namespace Alpha
@@ -18,16 +20,12 @@ namespace Alpha
 	using namespace Renderer;
 	RenderSystem::~RenderSystem() = default;
 
-	static TUnique<Shader> rg;
-	static TUnique<Shader> ch;
-	static TUnique<Shader> mi;
-	static TUnique<Texture> result;
-
 	bool RenderSystem::Initialize(const Args& args)
 	{
 		m_layout = RenderCore::Get().CreatePipelineLayout(
 			[](PipelineLayout& layout)
 			{
+				layout.AddRootCBV(1, ERHIShaderFlags::All);
 				layout.AddRootCBV(1, ERHIShaderFlags::All);
 				layout.AddRootCBV(1, ERHIShaderFlags::All);
 				layout.SetFlags(ERHIPipelineLayoutFlags::Bindless);
@@ -40,52 +38,19 @@ namespace Alpha
 		m_vbuffer_pass = std::make_unique<VBufferPass>();
 		m_vbuffer_pass->Initialize({ args.render_core, m_layout.get() });
 
-		rg = RenderCore::Get().CreateShader(L"Asset/RayGenerate.hlsl", ERHIShaderType::Library, L"MyRayGen");
-		mi = RenderCore::Get().CreateShader(L"Asset/Miss.hlsl", ERHIShaderType::Library, L"MyMiss");
-		ch = RenderCore::Get().CreateShader(L"Asset/Hit.hlsl", ERHIShaderType::Library, L"MyClosestHit");
+		m_fog_pass = std::make_unique<FogPass>();
+		//m_fog_pass->Initialize({ args.render_core, m_layout.get() });
 
-		TArray<HitGroupArgs> hit_groups{};
-
-		HitGroupArgs hit_group = {
-			.name = L"Test",
-			.closest_hit_shader = ch.get(),
-		};
-
-		hit_groups.push_back(hit_group);
-
-		TArray<Shader*> miss_shaders{};
-		miss_shaders.push_back(mi.get());
+		m_froxel_pass = std::make_unique<FroxelLightingPass>();
+		m_froxel_pass->Initialize({ args.render_core, m_layout.get() });
 		
-		m_raytrace_pipeline = RenderCore::Get().CreateRayTracePipeline(
-			{
-				.pipeline_layout = m_layout.get(),
-				.ray_gen_shader = rg.get(),
-				.miss_shaders = miss_shaders,
-				.hit_groups = hit_groups,
-				.max_payload_size = 32,
-			}
-		);
-
-		result = RenderCore::Get().CreateTexture(1920, 1080, ERHIResourceBindFlags::ShaderResource | ERHIResourceBindFlags::UnorderedAccess);
-
 		return true;
-
 	}
 
 	void RenderSystem::Finalize()
 	{
 
 	}
-
-	struct Constants
-	{
-		float4x4 view_proj{ float4x4::Identity };
-		float4x4 proj_view{ float4x4::Identity };
-		float4 camera_pos;
-		float4 frustum_planes;
-
-		UInt32 instance_count;
-	};
 
 	void RenderSystem::Render(entt::registry& registry, RenderContext& ctx)
 	{
@@ -106,6 +71,7 @@ namespace Alpha
 		constants.proj_view = Matrix4x4Inverse(constants.view_proj);
 		constants.camera_pos = camera_t.GetLocalToWorld()._4();
 		constants.instance_count = m_scene->GetInstanceCount();
+		constants.light_count = m_scene->GetLightCount();
 
 		{
 			auto offset = RenderCore::Get().GetTransientAllocator()->WriteData<Constants>(&constants);
@@ -117,24 +83,10 @@ namespace Alpha
 		ctx.instance_count = constants.instance_count;
 		m_vbuffer_pass->Execute(ctx);
 
-		//ctx.command_list->SetRayTracePipeline(m_raytrace_pipeline.get());
+		m_froxel_pass->Execute(ctx);
 
 
+		//m_fog_pass->Execute(ctx);
 
-		//{
-		//	RHIRayTraceDesc desc = {};
-		//	desc.shader_table_buffer = m_raytrace_pipeline->GetShaderTableBuffer()->GetRHI();
-		//	desc.ray_gen_offset = m_raytrace_pipeline->GetRayGenerateTable().alloc.offset;
-		//	desc.miss_offset = m_raytrace_pipeline->GetMissTable().alloc.offset;
-		//	desc.hit_group_offset = m_raytrace_pipeline->GetHitGroupTable().alloc.offset;
-		//	desc.width = 1920;
-		//	desc.height = 1080;
-		//	desc.depth = 1;
-
-
-		//	ctx.command_list->DispatchRayTrace(desc);
-		//}
-
-		//ctx.command_list->UAVBarrier(result.get());
 	}
 }

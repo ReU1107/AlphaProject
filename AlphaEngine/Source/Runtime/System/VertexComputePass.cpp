@@ -1,6 +1,7 @@
 ﻿#include "VertexComputePass.h"
 #include "RenderCore/Module.h"
 #include "Renderer/Module.h"
+#include "Core/Math/MathUtil.h"
 
 namespace Alpha
 {
@@ -31,7 +32,7 @@ namespace Alpha
 
 		ctx.command_list->Transition(dynamic_vertex_buffer, ERHIResourceState::UnorderedAccess);
 
-		uint32_t dispatch_x = (vertex_count + 63) / 64;
+		UInt32 dispatch_x = RoundUp(vertex_count, 64);
 
 		ctx.command_list->Dispatch(dispatch_x, 1, 1);
 

@@ -21,7 +21,6 @@ namespace
 		case Alpha::ERHIShaderType::Amplification	: return L"as_";
 		case Alpha::ERHIShaderType::Mesh			: return L"ms_";
 		case Alpha::ERHIShaderType::Compute			: return L"cs_";
-		case Alpha::ERHIShaderType::RayTracing		: return L"lib_";
 		case Alpha::ERHIShaderType::Library			: return L"lib_";
 		default:
 			break;
@@ -78,11 +77,11 @@ namespace
 		std::vector<LPCWSTR> arguments = {};
 		arguments.push_back(desc.file_directory.c_str());					// シェーダーファイル
 
-
-		if (desc.type != Alpha::ERHIShaderType::Library && desc.type != Alpha::ERHIShaderType::RayTracing)
+		// ライブラリ以外はエントリーポイントを指定するし必ず1つ
+		if (desc.type != Alpha::ERHIShaderType::Library)
 		{
 			arguments.push_back(L"-E");
-			arguments.push_back(desc.entry_point.c_str());				// エントリーポイント
+			arguments.push_back(desc.entry_points[0].c_str());				// エントリーポイント
 		}
 
 		std::wstring target = GetShaderTarget(desc.type);
@@ -149,7 +148,7 @@ namespace
 				//ALPHA_LOG_ERROR(L"Shader Compile Error:\n{}", Alpha::Text(error_blob->GetStringPointer()).c_str());
 				//error_blob->Release();
 			}
-			return false; // ここで失敗を返すようにする
+			return false;
 		}
 
 		result->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(out_blob), nullptr);
@@ -187,7 +186,7 @@ namespace Alpha
 		}
 
 		m_shader_blob = shader_blob;
-		m_entry_point = desc.entry_point;
+		m_entry_points = desc.entry_points;
 		return true;
 	}
 }

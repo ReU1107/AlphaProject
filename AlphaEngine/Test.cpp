@@ -27,9 +27,13 @@
 #include "Source/Runtime/System/VertexComputePass.h"
 #include "Source/Runtime/System/RenderScene.h"
 #include "Source/Runtime/System/VBufferPass.h"
+#include "Source/Runtime/System/FroxelLightingPass.h"
+#include "Source/Runtime/System/FogPass.h"
 #include "Source/Runtime/Renderer/CameraComponent.h"
 
 #include "RHI/Definitions.h"
+
+#include "Source/Core/Math/MathF.h"
 
 #include <thread>
 #include <chrono>
@@ -260,36 +264,102 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		ma.SetBaseColor(0, Color3(0.63f, 0.06f, 0.04f));
     }
 
-    // 右の壁 (Right Wall) - 緑
+
     {
         const auto entity = registry.create();
         auto& mesh = registry.emplace<MeshComponent>(entity);
         mesh.mesh_index = cube_index;
 
         auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(30.5f, 30.0f, 0.0f)); // 右（Xプラス）
-        transform.SetLocalScale(Vector3(1.0f, 60.0f, 60.0f));
+        transform.SetLocalPosition(Vector3(30.5f, 10.0f, 0.0f));
+        transform.SetLocalScale(Vector3(1.0f, 20.0f, 60.0f));
+
         auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
         ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
         ma.SetBaseColor(0, Color3(0.15f, 0.48f, 0.09f));
-
     }
 
-    // 天井の中央光源 (Ceiling Light) - 発光
     {
         const auto entity = registry.create();
         auto& mesh = registry.emplace<MeshComponent>(entity);
         mesh.mesh_index = cube_index;
 
         auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(0.0f, 59.9f, 0.0f)); // 天井のほんの少し下
-        transform.SetLocalScale(Vector3(15.0f, 0.1f, 15.0f));   // 天井の1/4サイズのエリアライト
+        transform.SetLocalPosition(Vector3(30.5f, 50.0f, 0.0f));
+        transform.SetLocalScale(Vector3(1.0f, 20.0f, 60.0f));
+
         auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
         ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
-        ma.SetBaseColor(0, Color3(1.0f, 1.0f, 1.0f));
-        ma.SetEmissiveColor(0, Color3(1.0f, 1.0f, 1.0f));
-        ma.SetEmissiveIntensity(0, 15.0f);
+        ma.SetBaseColor(0, Color3(0.15f, 0.48f, 0.09f));
+    }
 
+    {
+        const auto entity = registry.create();
+        auto& mesh = registry.emplace<MeshComponent>(entity);
+        mesh.mesh_index = cube_index;
+
+        auto& transform = registry.emplace<TransformComponent>(entity);
+        transform.SetLocalPosition(Vector3(30.5f, 30.0f, -20.0f));
+        transform.SetLocalScale(Vector3(1.0f, 20.0f, 20.0f));
+
+        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
+        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
+        ma.SetBaseColor(0, Color3(0.15f, 0.48f, 0.09f));
+    }
+
+    {
+        const auto entity = registry.create();
+        auto& mesh = registry.emplace<MeshComponent>(entity);
+        mesh.mesh_index = cube_index;
+
+        auto& transform = registry.emplace<TransformComponent>(entity);
+        transform.SetLocalPosition(Vector3(30.5f, 30.0f, 20.0f));
+        transform.SetLocalScale(Vector3(1.0f, 20.0f, 20.0f));
+
+        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
+        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
+        ma.SetBaseColor(0, Color3(0.15f, 0.48f, 0.09f));
+    }
+
+    {
+        const auto entity = registry.create();
+        auto& light = registry.emplace<LightComponent>(entity);
+        light.type = 2; // Directional Light
+
+        light.direction = VectorNormalize(Vector3(-1.0f, -0.5f, 0.0f));
+        light.SetColor(float3(1.0f, 0.95f, 0.8f));
+        light.SetIntensity(8.0f);                  
+    }
+
+    {
+        const auto entity = registry.create();
+
+        auto& transform = registry.emplace<TransformComponent>(entity);
+        // 天井（高さ60）の少し下（高さ50）の中央に配置
+        transform.SetLocalPosition(Vector3(0.0f, 50.0f, 0.0f));
+
+        auto& light = registry.emplace<LightComponent>(entity);
+        light.type = 0; // Point Light
+        light.SetColor(float3(1.0f, 0.95f, 0.85f)); // 暖かみのある電球色
+        light.SetIntensity(5.0f);                  // 部屋全体に行き渡る強度
+        light.SetRadius(45.0f);                    // 床や壁に綺麗に減衰が届く半径
+    }
+
+    {
+        const auto entity = registry.create();
+
+        auto& transform = registry.emplace<TransformComponent>(entity);
+        // 右上の手前（X:20, Y:45, Z:-20）に配置し、左奥（X:-10, Y:0, Z:5）を見下ろす
+        transform.SetLocalPosition(Vector3(20.0f, 45.0f, -20.0f));
+        transform.LookAt(Vector3(-10.0f, 0.0f, 5.0f)); // キャラたちがいる付近を狙う
+
+        auto& light = registry.emplace<LightComponent>(entity);
+        light.type = 1; // Spot Light
+        light.SetColor(float3(0.2f, 0.6f, 1.0f));  // フロクセルに映える美しいSF風の青い光
+        light.SetIntensity(12.0f);                 // スポットライトなので強め
+        light.SetRadius(60.0f);                    // 部屋の対角線に届く半径
+
+        light.SetSpotAngleDegree(30.0f, 60.0f);
     }
 
     // カメラ

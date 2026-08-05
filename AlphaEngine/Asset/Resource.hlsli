@@ -75,6 +75,22 @@ struct InstanceData
     uint override_material_table_offset; // overrideのマテリアルテーブルのインデックス
 };
 
+struct LightData
+{
+    float3 position;
+    float radius;
+    float3 color;
+    float intensity;
+
+    float3 direction;
+    uint type;
+
+    float inner_cone;
+    float outer_cone;
+
+};
+
+
 struct SystemBufferIndices
 {
     // Static
@@ -98,6 +114,8 @@ struct SystemBufferIndices
     
     uint override_material;
     
+    uint light;
+    
     uint rt_structure;
 };
 
@@ -114,6 +132,8 @@ struct FrameRenderContext
     float4 frustum_planes;
 
     uint instance_num;
+    uint light_count;
+
 };
 
 

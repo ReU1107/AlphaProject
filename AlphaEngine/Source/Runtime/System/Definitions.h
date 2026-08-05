@@ -31,6 +31,15 @@ namespace Alpha
 	struct LightData
 	{
 		float3 position{};
+		float radius{ 1.0f };
+		float3 color{};
+		float intensity{ 1.0f };
+
+		float3 direction{};
+		UInt32 type{ 0 };				// ライト種別 (0:Point, 1:Spot, 2:Directional)
+
+		float inner_cone{ 1.0f };	// スポットライト内角のcos
+		float outer_cone{ 0.7f };	// スポットライト外角のcos
 
 	};
 
@@ -43,6 +52,8 @@ namespace Alpha
 		UInt32 current_position_uav{};      // 
 
 		UInt32 override_material{};
+
+		UInt32 light{};
 
 		UInt32 rt_structure{};		// TLASのSRV
 	};
@@ -62,11 +73,15 @@ namespace Alpha
 		UInt32 depth{};
 	};
 
-	enum class ESystemRootSlot
+	struct Constants
 	{
-		Buffers,
-		Textures,
-		Constants,
+		float4x4 view_proj{ float4x4::Identity };
+		float4x4 proj_view{ float4x4::Identity };
+		float4 camera_pos;
+		float4 frustum_planes;
+
+		UInt32 instance_count;
+		UInt32 light_count;
 	};
 
 }

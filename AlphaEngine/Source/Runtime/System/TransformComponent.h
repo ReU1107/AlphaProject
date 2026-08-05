@@ -8,16 +8,16 @@ namespace Alpha
 	struct TransformComponent
 	{
 	private:
-		mutable Matrix4x4 m_local_to_world{ Matrix4x4::Identity };// ローカル→ワールド変換行列
-		Matrix4x4 world_to_local{ Matrix4x4::Identity };// ワールド→ローカル変換行列
+		mutable Matrix4x4 m_local_to_world{ Matrix4x4::Identity };
+		Matrix4x4 world_to_local{ Matrix4x4::Identity };
 
-		Quaternion m_rotation{ Quaternion::Identity };	// 回転(四元数)
+		Quaternion m_rotation{ Quaternion::Identity };
 
-		Vector3 m_position{ Vector3::Zero };				// 位置		親からみた相対的な位置
-		Vector3 m_scale{ Vector3::One };					// スケーリング
+		Vector3 m_position{ Vector3::Zero };
+		Vector3 m_scale{ Vector3::One };
 
 		// ダーティパターン
-		mutable bool m_is_dirty{ true };							// 再計算(ワールド変換行列作成に必要な数値が変わったらtrue)
+		mutable bool m_is_dirty{ true };
 
 	public:
 		void SetLocalPosition(const Vector3& position);

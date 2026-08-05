@@ -148,7 +148,16 @@ namespace Alpha
 				がちがちに最適化するならここら辺を使うことになるのかな？
 				*/
 				// コピー用のデータ用意(RT,DSはいらない)
-				UInt32 subresource_num = resource_desc.MipLevels * resource_desc.DepthOrArraySize;
+				UInt32 subresource_num = 0;
+
+				if (resource_desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE3D)
+				{
+					subresource_num = resource_desc.MipLevels;
+				}
+				else
+				{
+					subresource_num = resource_desc.MipLevels * resource_desc.DepthOrArraySize;
+				}
 
 				m_layouts.resize(subresource_num);
 				std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> footprints(subresource_num);

@@ -12,6 +12,7 @@ namespace Alpha
 	class Shader;
 	class PipelineLayout;
 	class Buffer;
+	class RayTracePipeline;
 
 
 	struct GraphicsPipelineArgs
@@ -82,26 +83,16 @@ namespace Alpha
 
 	};
 
-	struct HitGroupArgs
-	{
-		String name{};
-		ERHIHitGroupType type{ ERHIHitGroupType::Triangles };
-
-		Shader* any_hit_shader{ nullptr };
-		Shader* closest_hit_shader{ nullptr };
-		Shader* intersection_shader{ nullptr };
-	};
-
 	struct RayTracePipelineArgs
 	{
 		RenderHardwareInterface* rhi{ nullptr };
 		PipelineLayout* pipeline_layout{ nullptr };
 
-		TArray<Shader*> libraries{}; // 複数エントリポイントを含む共有ライブラリがあれば追加
+		TArray<Shader*> libraries{};
 
-		Shader* ray_gen_shader{ nullptr };
-		TArray<Shader*> miss_shaders{};
-		TArray<HitGroupArgs> hit_groups{};
+		String ray_gen_entry_name{};
+		TArray<String> miss_entry_names{};
+		TArray<RHIRayTraceHitGroupDesc> hit_groups{};
 
 		UInt32 max_payload_size{ 0 };
 		UInt32 max_attribute_size{ 8 };
@@ -158,6 +149,16 @@ namespace Alpha
 		Allocation alloc = {};
 		TArray<String> export_names{};
 		TArray<UInt8> stream{};
+		UInt32 count{};
+	};
+
+	struct RayTraceDispatchArgs
+	{
+		RayTracePipeline* pipeline{ nullptr };
+	
+		UInt32 width{ 0 };
+		UInt32 height{ 0 };
+		UInt32 depth{ 0 };
 	};
 
 

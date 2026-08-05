@@ -27,15 +27,10 @@ namespace Alpha
 	{
         CD3DX12_STATE_OBJECT_DESC state_object_desc{ D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE };
 
-        // 同じシェーダーを重複してDXIL_LIBRARYとして積まないようにする
-        std::unordered_set<RHIShader*> added_shaders;
-
-
-        auto AddShaderLibrary = [&](RHIShader* shader)
+        for (RHIShader* shader : desc.libraries)
         {
-            if (!shader || added_shaders.contains(shader))
-                return;
-            added_shaders.insert(shader);
+            if(!shader)
+                continue;
 
             auto d3d12_shader = static_cast<D3D12Shader*>(shader);
 
@@ -43,26 +38,16 @@ namespace Alpha
             D3D12_SHADER_BYTECODE bytecode{ d3d12_shader->GetBytecodePointer(), d3d12_shader->GetBytecodeLength() };
             lib->SetDXILLibrary(&bytecode);
 
-            lib->DefineExport(d3d12_shader->GetEntryPoint());
-        };
+            for (const String& entry_point : d3d12_shader->GetEntryPoints())
+            {
+                lib->DefineExport(entry_point.c_str());
+            }
 
-        // 明示的に渡された共有ライブラリ（複数エントリを含みうるもの）
-        for (RHIShader* lib_shader : desc.libraries)
-            AddShaderLibrary(lib_shader);
-
-        // RayGeneration
-        AddShaderLibrary(desc.ray_gen_shader);
-
-        // Miss
-        for (RHIShader* miss : desc.miss_shaders)
-            AddShaderLibrary(miss);
+        }
 
         // HitGroup
         for (const RHIRayTraceHitGroupDesc& hit_group : desc.hit_groups)
         {
-            AddShaderLibrary(hit_group.any_hit_shader);
-            AddShaderLibrary(hit_group.closest_hit_shader);
-            AddShaderLibrary(hit_group.intersection_shader);
 
             auto hg = state_object_desc.CreateSubobject<CD3DX12_HIT_GROUP_SUBOBJECT>();
             hg->SetHitGroupExport(hit_group.name.c_str());
@@ -70,16 +55,17 @@ namespace Alpha
                 ? D3D12_HIT_GROUP_TYPE_TRIANGLES
                 : D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE);
 
-            if (hit_group.any_hit_shader)
-                hg->SetAnyHitShaderImport(hit_group.any_hit_shader->GetEntryPoint());
-            if (hit_group.closest_hit_shader)
-                hg->SetClosestHitShaderImport(hit_group.closest_hit_shader->GetEntryPoint());
-            if (hit_group.intersection_shader)
-                hg->SetIntersectionShaderImport(hit_group.intersection_shader->GetEntryPoint());
+            if (!hit_group.any_hit_entry_name.IsEmpty())
+                hg->SetAnyHitShaderImport(hit_group.any_hit_entry_name.c_str());
+
+            if (!hit_group.closest_hit_entry_name.IsEmpty())
+                hg->SetClosestHitShaderImport(hit_group.closest_hit_entry_name.c_str());
+
+            if (!hit_group.intersection_entry_name.IsEmpty())
+                hg->SetIntersectionShaderImport(hit_group.intersection_entry_name.c_str());
         }
 
         // Shader Config（Payload/Attributeサイズ）
-        // 1個だけならExportへの明示的な関連付けは不要。自動的に全Exportへ適用される
         auto shader_config = state_object_desc.CreateSubobject<CD3DX12_RAYTRACING_SHADER_CONFIG_SUBOBJECT>();
         shader_config->Config(desc.max_payload_size, desc.max_attribute_size);
 
