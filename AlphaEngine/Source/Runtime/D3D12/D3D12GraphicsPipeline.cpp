@@ -11,26 +11,6 @@
 
 namespace
 {
-	static DXGI_FORMAT GetDXGIFormat(Alpha::ERHIResourceFormat format)
-	{
-		switch (format)
-		{
-		case Alpha::ERHIResourceFormat::RGBAUnorm		: return DXGI_FORMAT_R8G8B8A8_UNORM;
-		case Alpha::ERHIResourceFormat::Depth24Stencil8	: return DXGI_FORMAT_D24_UNORM_S8_UINT;
-		case Alpha::ERHIResourceFormat::Depth16			: return DXGI_FORMAT_D16_UNORM;
-		case Alpha::ERHIResourceFormat::Depth32			: return DXGI_FORMAT_D32_FLOAT;
-		case Alpha::ERHIResourceFormat::RGBFloat		: return DXGI_FORMAT_R32G32B32_FLOAT;
-		case Alpha::ERHIResourceFormat::RGBAFloat		: return DXGI_FORMAT_R32G32B32A32_FLOAT;
-		case Alpha::ERHIResourceFormat::RGFloat			: return DXGI_FORMAT_R32G32_FLOAT;
-		case Alpha::ERHIResourceFormat::RGBA32UInt		: return DXGI_FORMAT_R32G32B32A32_UINT;
-
-		default:
-			return DXGI_FORMAT_UNKNOWN;
-		}
-
-		return DXGI_FORMAT_UNKNOWN;
-	}
-
 	static D3D12_PRIMITIVE_TOPOLOGY_TYPE GetD3D12PrimitiveTopologyType(Alpha::ERHIPrimitiveTopology topology)
 	{
 		switch (topology)
@@ -251,7 +231,7 @@ namespace Alpha
 				semantic_names[i] = src.semantic_name.ToUtf8();
 				dst.SemanticName = semantic_names[i].c_str();
 				dst.SemanticIndex = src.semantic_index;
-				dst.Format = GetDXGIFormat(src.format);
+				dst.Format = ConvertDXGIFormat(src.format);
 				dst.InputSlot = src.input_slot;
 				dst.AlignedByteOffset = src.aligned_offset;
 				dst.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
@@ -262,11 +242,15 @@ namespace Alpha
 			il_sub.data = { input_elements, desc.vertex_layout.element_count };
 			AddSubobject(stream_data, il_sub);
 
-			// Primitive Topology
-			PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PRIMITIVE_TOPOLOGY, D3D12_PRIMITIVE_TOPOLOGY_TYPE> topo_sub;
-			topo_sub.data = GetD3D12PrimitiveTopologyType(desc.primitive_topology);
-			AddSubobject(stream_data, topo_sub);
+
 		}
+
+		// Primitive Topology
+		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PRIMITIVE_TOPOLOGY, D3D12_PRIMITIVE_TOPOLOGY_TYPE> topo_sub;
+		topo_sub.data = GetD3D12PrimitiveTopologyType(desc.primitive_topology);
+		AddSubobject(stream_data, topo_sub);
+
+
 		// ラスタライザー
 		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER, D3D12_RASTERIZER_DESC> rs_sub;
 		rs_sub.data = GetDefaultRasterizerDesc();
@@ -285,13 +269,13 @@ namespace Alpha
 
 		// デプスステンシルフォーマット
 		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL_FORMAT, DXGI_FORMAT> dsv_fmt_sub;
-		dsv_fmt_sub.data = GetDXGIFormat(desc.depth_format);
+		dsv_fmt_sub.data = ConvertDXGIFormat(desc.depth_format);
 		AddSubobject(stream_data, dsv_fmt_sub);
 
 		// デプスステンシルステート
 		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL, D3D12_DEPTH_STENCIL_DESC> ds_sub;
 		ds_sub.data.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-		ds_sub.data.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		ds_sub.data.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
 		ds_sub.data.DepthEnable = desc.depth_enable;
 		ds_sub.data.StencilEnable = false;
 		AddSubobject(stream_data, ds_sub);
@@ -306,7 +290,7 @@ namespace Alpha
 
 		for (UInt32 i = 0; i < desc.render_target_count; i++)
 		{
-			rtv_fmts_sub.data.RTFormats[i] = GetDXGIFormat(desc.render_targets[i]);
+			rtv_fmts_sub.data.RTFormats[i] = ConvertDXGIFormat(desc.render_targets[i]);
 			blend_sub.data.RenderTarget[i] = GetBlendDesc(desc.blend_states[i]);
 		}
 		AddSubobject(stream_data, rtv_fmts_sub);

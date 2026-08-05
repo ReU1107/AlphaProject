@@ -1,5 +1,6 @@
 ﻿#include "D3D12Texture.h"
 #include "D3D12SwapChain.h"
+#include "D3D12Util.h"
 #include "RHI/Definitions.h"
 
 #if RHI_D3D12
@@ -23,31 +24,6 @@ namespace
 			break;
 		}
 		return D3D12_RESOURCE_DIMENSION_UNKNOWN;
-	}
-
-	static DXGI_FORMAT ConvertDXGIFormat(Alpha::ERHIResourceFormat format)
-	{
-		switch (format)
-		{
-		case Alpha::ERHIResourceFormat::RGBA32UInt		: return DXGI_FORMAT_R8G8B8A8_UINT;
-		case Alpha::ERHIResourceFormat::RGBA32SInt		: return DXGI_FORMAT_R8G8B8A8_SINT;
-		case Alpha::ERHIResourceFormat::RGBAFloat		: return DXGI_FORMAT_R32G32B32A32_FLOAT;
-		case Alpha::ERHIResourceFormat::RGBAHalf		: return DXGI_FORMAT_R16G16B16A16_FLOAT;
-		case Alpha::ERHIResourceFormat::RGBAUnorm		: return DXGI_FORMAT_R8G8B8A8_UNORM;
-		case Alpha::ERHIResourceFormat::RGBFloat		: return DXGI_FORMAT_R32G32B32_FLOAT;
-		case Alpha::ERHIResourceFormat::RGFloat			: return DXGI_FORMAT_R32G32_FLOAT;
-		case Alpha::ERHIResourceFormat::RFloat			: return DXGI_FORMAT_R32_FLOAT;
-		case Alpha::ERHIResourceFormat::RUInt			: return DXGI_FORMAT_R32_UINT;
-		case Alpha::ERHIResourceFormat::RGHalf			: return DXGI_FORMAT_R16G16_FLOAT;
-		case Alpha::ERHIResourceFormat::RHalf			: return DXGI_FORMAT_R16_FLOAT;
-		case Alpha::ERHIResourceFormat::Depth32			: return DXGI_FORMAT_D32_FLOAT;
-		case Alpha::ERHIResourceFormat::Depth16			: return DXGI_FORMAT_D16_UNORM;
-		case Alpha::ERHIResourceFormat::Depth24Stencil8	: return DXGI_FORMAT_D24_UNORM_S8_UINT;
-		case Alpha::ERHIResourceFormat::RGB10A2Unorm	: return DXGI_FORMAT_R10G10B10A2_UNORM;
-		default:
-			break;
-		}
-		return DXGI_FORMAT_R8G8B8A8_UINT;
 	}
 
 	D3D12_RESOURCE_FLAGS ConvertD3D12ResourceFlags(Alpha::ERHIResourceBindFlags flags)
@@ -172,7 +148,16 @@ namespace Alpha
 				がちがちに最適化するならここら辺を使うことになるのかな？
 				*/
 				// コピー用のデータ用意(RT,DSはいらない)
-				UInt32 subresource_num = resource_desc.MipLevels * resource_desc.DepthOrArraySize;
+				UInt32 subresource_num = 0;
+
+				if (resource_desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE3D)
+				{
+					subresource_num = resource_desc.MipLevels;
+				}
+				else
+				{
+					subresource_num = resource_desc.MipLevels * resource_desc.DepthOrArraySize;
+				}
 
 				m_layouts.resize(subresource_num);
 				std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> footprints(subresource_num);

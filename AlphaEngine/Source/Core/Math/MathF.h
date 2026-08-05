@@ -125,6 +125,7 @@ namespace Alpha
 
 	// 射影変換行列(左手座標系)
 	Matrix4x4 Matrix4x4PerspectiveFovLH(const float fov, const float aspect, const float nearZ, const float farZ);
+	Matrix4x4 Matrix4x4PerspectiveFovLHReverseZ(const float fov, const float aspect, const float nearZ, const float farZ);
 
 	Matrix4x4 Matrix4x4OrthographicLH(const float width, const float height, const float nearZ, const float farZ);
 	Matrix4x4 Matrix4x4OrthographicLH(const float left, const float right, const float top, const float bottom, const float nearZ, const float farZ);

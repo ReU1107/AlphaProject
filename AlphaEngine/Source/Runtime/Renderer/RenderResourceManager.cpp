@@ -34,6 +34,24 @@ namespace Alpha
         
         m_source_as_allocator       = CreatePersistentAllocator(args.render_core, 256, 32_MB, EBufferPresetType::RTAccelStructure, L"SourceAS");
 
+        m_gpu_data_transfer = std::make_unique<GPUDataTransfer>();
+        {
+            GPUDataTransfer::Args desc = {
+                .render_core = args.render_core,
+                .staging_buffer_size = 64_MB,
+            };
+            m_gpu_data_transfer->Initialize(desc);
+        }
+
+        m_as_builder = std::make_unique<ASBuilder>();
+        {
+            ASBuilder::Args desc = {
+                .render_core = args.render_core,
+                .staging_buffer_size = 32_MB,
+            };
+            m_as_builder->Initialize(desc);
+        }
+
         m_mesh_palette.Initialize(100);
         m_material_palette.Initialize(100);
         m_material_table_palette.Initialize(100);
@@ -462,9 +480,9 @@ namespace Alpha
         };
     }
 
-    RenderResourceManager::BufferIndices RenderResourceManager::GetBufferIndices() const
+    StaticBufferIndices RenderResourceManager::GetBufferIndices() const
     {
-        return BufferIndices{
+        return StaticBufferIndices{
             .position = m_vertex_position_allocator->GetSRVIndex(),
             .attribute = m_vertex_attribute_allocator->GetSRVIndex(),
             .index = m_index_allocator->GetSRVIndex(),

@@ -11,8 +11,6 @@ struct VertexOut
 
 };
 
-SamplerState sam : register(s0);
-
 
 ConstantBuffer<SystemBufferIndices> buffer_indices : register(b0);
 
@@ -36,7 +34,7 @@ float4 main(VertexOut input) : SV_TARGET
 
     }
     
-    
+    SamplerState sam = SamplerDescriptorHeap[SAMPLER_PRESET_LINEAR_CLAMP];
         
     Texture2D base_tex = ResourceDescriptorHeap[material.base_color_tex_idx];
     Texture2D emissive_tex = ResourceDescriptorHeap[material.emissive_tex_idx];

@@ -40,7 +40,7 @@ void main(
 {
     StructuredBuffer<InstanceData> instance_buffer = ResourceDescriptorHeap[buffer_indices.instance];
 
-    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[buffer_indices.dynamic_position_srv];
+    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[buffer_indices.current_position_srv];
     ByteAddressBuffer attribute_buffer = ResourceDescriptorHeap[buffer_indices.attribute];
     
     StructuredBuffer<MeshData> mesh_buffer = ResourceDescriptorHeap[buffer_indices.mesh];

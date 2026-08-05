@@ -24,6 +24,14 @@ namespace Alpha
 
 		Readback,               // GPUの計算結果（Structured/Raw問わず）をCPUに引き戻すための一時バッファ
 	};
+
+	enum class ETexturePresetType
+	{
+		ROTexture2D,
+		RWTexture2D,
+
+		RWTexture3D,
+	};
 	
 	enum class ESamplerPresetType
 	{ 

@@ -19,6 +19,7 @@
 #include "Timeline.h"
 
 #include "ASBuilder.h"
+#include "GPUDataTransfer.h"
 
 #include "TransientBufferAllocator.h"
 #include "PersistentBufferAllocator.h"

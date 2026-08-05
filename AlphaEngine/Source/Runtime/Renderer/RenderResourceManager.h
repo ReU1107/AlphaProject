@@ -13,8 +13,11 @@ namespace Alpha
     class TextureHandle;
 
     class RenderCore;
+    class GPUDataTransfer;
+    class ASBuilder;
     class Buffer;
     class PersistentBufferAllocator;
+
 
     /*
     * GPUResourceManager
@@ -41,6 +44,10 @@ namespace Alpha
         TUnique<PersistentBufferAllocator> m_mesh_allocator{ nullptr };
         TUnique<PersistentBufferAllocator> m_material_allocator{ nullptr };
         TUnique<PersistentBufferAllocator> m_material_table_allocator{ nullptr };
+
+        // RenderCoreから引っ越し
+        TUnique<GPUDataTransfer> m_gpu_data_transfer{};
+        TUnique<ASBuilder> m_as_builder{};
 
 
         UInt32 m_default_mesh_index{ 0 };
@@ -85,21 +92,6 @@ namespace Alpha
 
         Buffers GetBuffers() const;
 
-
-        struct BufferIndices
-        {
-            UInt32 position{};
-            UInt32 attribute{};
-            UInt32 index{};
-            UInt32 vertex_indices{};
-            UInt32 triangle_indices{};
-            UInt32 meshlet{};
-            UInt32 mesh{};
-            UInt32 submesh{};
-            UInt32 material{};
-            UInt32 material_table{};
-        };
-
-        BufferIndices GetBufferIndices() const;
+        StaticBufferIndices GetBufferIndices() const;
     };
 }

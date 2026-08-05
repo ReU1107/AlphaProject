@@ -47,6 +47,8 @@ namespace Alpha
 
 		UInt64 GetSize() const;
 
+		ERHIResourceFormat GetFormat() const;
+
 		DescriptorHandle GetSRVHandle() const { return m_srv_handle; }
 		DescriptorHandle GetUAVHandle() const { return m_uav_handle; }
 		DescriptorHandle GetRTVHandle() const { return m_rtv_handle; }

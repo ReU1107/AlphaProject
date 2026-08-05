@@ -24,7 +24,6 @@ namespace Alpha
 
 	void RayTracePipeline::Initialize(const RayTracePipelineArgs& args)
 	{
-
         RHIRayTracePipelineDesc desc = {};
         desc.global_layout = args.pipeline_layout->GetRHI();
 
@@ -35,45 +34,24 @@ namespace Alpha
         }
 
         UInt32 shader_record_count = 0;
-        if (args.ray_gen_shader)
+        desc.ray_gen_entry_name = args.ray_gen_entry_name;
+		m_ray_gen_table.export_names.push_back(args.ray_gen_entry_name);
+        shader_record_count++;
+
+		desc.miss_entry_names = args.miss_entry_names;
+
+        m_miss_table.export_names = args.miss_entry_names;
+
+		shader_record_count += args.miss_entry_names.size();
+
+        desc.hit_groups = args.hit_groups;
+        m_hit_group_table.export_names.reserve(args.hit_groups.size());
+
+        for (const auto& hg : args.hit_groups)
         {
-            desc.ray_gen_shader = args.ray_gen_shader->GetRHI();
-            m_ray_gen_table.export_names.push_back(args.ray_gen_shader->GetEntryPoint());
-            shader_record_count++;
+            m_hit_group_table.export_names.push_back(hg.name);
         }
-
-        for (Shader* miss : args.miss_shaders)
-        {
-            if (miss)
-            {
-                desc.miss_shaders.push_back(miss->GetRHI());
-                m_miss_table.export_names.push_back(miss->GetEntryPoint());
-                shader_record_count++;
-            }
-        }
-
-        for (const HitGroupArgs& hit_group_args : args.hit_groups)
-        {
-            RHIRayTraceHitGroupDesc hit_group_desc = {};
-            hit_group_desc.name = hit_group_args.name;
-            hit_group_desc.type = hit_group_args.type;
-
-            if (hit_group_args.any_hit_shader)
-                hit_group_desc.any_hit_shader = hit_group_args.any_hit_shader->GetRHI();
-
-            if (hit_group_args.closest_hit_shader)
-                hit_group_desc.closest_hit_shader = hit_group_args.closest_hit_shader->GetRHI();
-
-            if (hit_group_args.intersection_shader)
-                hit_group_desc.intersection_shader = hit_group_args.intersection_shader->GetRHI();
-
-            desc.hit_groups.push_back(hit_group_desc);
-
-            m_hit_group_table.export_names.push_back(hit_group_args.name);
-
-            shader_record_count++;
-
-        }
+        shader_record_count += args.hit_groups.size();
 
         desc.max_payload_size = args.max_payload_size;
         desc.max_attribute_size = args.max_attribute_size;
@@ -116,6 +94,7 @@ namespace Alpha
 
 
             table->alloc = alloc;
+			table->count = num;
         };
 
         CreateShaderTable(&m_ray_gen_table);

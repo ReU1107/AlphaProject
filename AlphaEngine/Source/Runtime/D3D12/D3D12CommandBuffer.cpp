@@ -50,6 +50,8 @@ namespace
 		case Alpha::ERHIResourceState::ResolveSource			: return D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
 		case Alpha::ERHIResourceState::RaytracingStructure		: return D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
 		case Alpha::ERHIResourceState::GenericRead				: return D3D12_RESOURCE_STATE_GENERIC_READ;
+		case Alpha::ERHIResourceState::Present					: return D3D12_RESOURCE_STATE_PRESENT;
+		case Alpha::ERHIResourceState::AllShaderResource		: return D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
 		default:
 			return D3D12_RESOURCE_STATE_COMMON;
 		}
@@ -208,11 +210,16 @@ namespace Alpha
 		}
 	}
 
-	void D3D12CommandBuffer::SetPipelineLayout(RHIPipelineLayout* layout)
+	void D3D12CommandBuffer::SetGraphicsPipelineLayout(RHIPipelineLayout* layout)
 	{
 		auto d3d12_layout = static_cast<D3D12PipelineLayout*>(layout);
-
 		m_list->SetGraphicsRootSignature(d3d12_layout->GetNativeHandle());
+	}
+
+	void D3D12CommandBuffer::SetComputePipelineLayout(RHIPipelineLayout* layout)
+	{
+		auto d3d12_layout = static_cast<D3D12PipelineLayout*>(layout);
+		m_list->SetComputeRootSignature(d3d12_layout->GetNativeHandle());
 	}
 
 	void D3D12CommandBuffer::SetGraphicsPipeline(RHIGraphicsPipeline* pipeline, RHIPipelineLayout* layout)
@@ -439,20 +446,20 @@ namespace Alpha
 		m_list->ResourceBarrier(texture_num, barriers);
 	}
 
-	void D3D12CommandBuffer::SetRenderTarget(RHIDescriptorHeap* rtv_heap, UInt32 rtv_index, UInt32 rtv_count, RHIDescriptorHeap* dsv_heap, UInt32 dsv_index)
+	void D3D12CommandBuffer::SetRenderTarget(RHIDescriptorHeap* rtv_heap, TFixedArray<UInt32, 8> rtv_indices, UInt32 rtv_count, RHIDescriptorHeap* dsv_heap, UInt32 dsv_index)
 	{
 		auto d3d12_rtv_heap = static_cast<D3D12DescriptorHeap*>(rtv_heap);
 
+		// D3D12の最大値「8」で固定長配列を確保
 		D3D12_CPU_DESCRIPTOR_HANDLE rtv_handles[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = {};
 
 		for (UInt32 i = 0; i < rtv_count; ++i)
 		{
-			rtv_handles[i] = d3d12_rtv_heap->GetCPUHandle(rtv_index + i);
+			rtv_handles[i] = d3d12_rtv_heap->GetCPUHandle(rtv_indices[i]);
 		}
 
 		D3D12_CPU_DESCRIPTOR_HANDLE dsv_handle = {};
 		D3D12_CPU_DESCRIPTOR_HANDLE* p_dsv_handle = nullptr;
-
 		if (dsv_heap)
 		{
 			auto d3d12_dsv_heap = static_cast<D3D12DescriptorHeap*>(dsv_heap);
@@ -461,7 +468,6 @@ namespace Alpha
 		}
 
 		m_list->OMSetRenderTargets(rtv_count, rtv_handles, false, p_dsv_handle);
-
 	}
 
 	void D3D12CommandBuffer::ClearRenderTarget(RHIDescriptorHeap* rtv_heap, UInt32 rtv_index, const Rect2D& rect, const float* clear_color)
@@ -510,10 +516,10 @@ namespace Alpha
 	void D3D12CommandBuffer::SetScissorRect(const Rect2D& rect)
 	{
 		D3D12_RECT scissor = {};
-		scissor.left = rect.x;
-		scissor.right = rect.x + rect.width;
-		scissor.top = rect.y;
-		scissor.bottom = rect.y + rect.height;
+		scissor.left = (LONG)rect.x;
+		scissor.right = (LONG)rect.x + rect.width;
+		scissor.top = (LONG)rect.y;
+		scissor.bottom = (LONG)rect.y + rect.height;
 		m_list->RSSetScissorRects(1, &scissor);
 	}
 

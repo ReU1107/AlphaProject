@@ -113,6 +113,12 @@ namespace Alpha
 		return ((base + alignment - 1) / alignment) * alignment;
 	}
 
+	template<typename T, typename U>
+	inline T RoundUp(T value, U alignment)
+	{
+		return (value + alignment - 1) / alignment;
+	}
+
 	template<typename T>
 	inline void SwapIndex(T& current)
 	{

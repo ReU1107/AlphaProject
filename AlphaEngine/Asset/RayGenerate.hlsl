@@ -33,11 +33,11 @@ void MyRayGen()
     payload.color = float3(0, 0, 0);
 
     RaytracingAccelerationStructure tlas = ResourceDescriptorHeap[buffer_indices.rt_structure];
-    RWTexture2D<float4> outputTexture = ResourceDescriptorHeap[buffer_indices.rt_result];
+    //RWTexture2D<float4> outputTexture = ResourceDescriptorHeap[buffer_indices.rt_result];
     
-    // レイを飛ばすテスト
-    TraceRay(tlas, 0, 0xFF, 0, 0, 0, ray, payload);
+    //// レイを飛ばすテスト
+    //TraceRay(tlas, 0, 0xFF, 0, 0, 0, ray, payload);
     
-    outputTexture[index.xy] = float4(payload.color, 1.0f);
+    //outputTexture[index.xy] = float4(payload.color, 1.0f);
 
 }

@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "Core/Common.h"
-
+#include "Renderer/Definitions.h"
 
 namespace Alpha
 {
@@ -31,7 +31,57 @@ namespace Alpha
 	struct LightData
 	{
 		float3 position{};
+		float radius{ 1.0f };
+		float3 color{};
+		float intensity{ 1.0f };
 
+		float3 direction{};
+		UInt32 type{ 0 };				// ライト種別 (0:Point, 1:Spot, 2:Directional)
+
+		float inner_cone{ 1.0f };	// スポットライト内角のcos
+		float outer_cone{ 0.7f };	// スポットライト外角のcos
+
+	};
+
+	struct DynamicBufferIndices
+	{
+		UInt32 instance{};
+		UInt32 vertex_to_instance{};
+
+		UInt32 current_position_srv{};      // 
+		UInt32 current_position_uav{};      // 
+
+		UInt32 override_material{};
+
+		UInt32 light{};
+
+		UInt32 rt_structure{};		// TLASのSRV
+	};
+
+	struct SystemBufferIndices
+	{
+		StaticBufferIndices static_res{};
+		DynamicBufferIndices dynamic_res{};
+
+	};
+
+	struct SystemTextureIndices
+	{
+		UInt32 result{};
+		UInt32 visibility{};
+		UInt32 normal{};
+		UInt32 depth{};
+	};
+
+	struct Constants
+	{
+		float4x4 view_proj{ float4x4::Identity };
+		float4x4 proj_view{ float4x4::Identity };
+		float4 camera_pos;
+		float4 frustum_planes;
+
+		UInt32 instance_count;
+		UInt32 light_count;
 	};
 
 }

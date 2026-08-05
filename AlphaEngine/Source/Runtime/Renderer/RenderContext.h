@@ -16,6 +16,8 @@ namespace Alpha
 
 		UInt64 current_camera_offset{ 0 };
 
+		UInt32 instance_count{ 0 };
+
 		UInt32 width{ 0 };
 		UInt32 height{ 0 };
 

@@ -12,7 +12,7 @@ namespace Alpha
 	private:
 		ComPtr<IDxcBlob> m_shader_blob{ nullptr };
 
-		std::wstring m_entry_point{ L"main" };
+		TArray<String> m_entry_points{};
 
 	public:
 		D3D12Shader(D3D12Device* device);
@@ -26,8 +26,7 @@ namespace Alpha
 
 		SIZE_T GetBytecodeLength() const { return m_shader_blob->GetBufferSize(); }
 
-		const wchar_t* GetEntryPoint() const final { return m_entry_point.c_str(); }
-
+		const TArray<String>& GetEntryPoints() const { return m_entry_points; }
 
 	};
 }

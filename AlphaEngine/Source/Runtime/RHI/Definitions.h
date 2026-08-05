@@ -36,7 +36,7 @@ namespace Alpha
 		ERHIResourceFormat format{ ERHIResourceFormat::RGBAUnorm };			// フォーマット
 		
 		Vector4 clear_value_color{ 0.0f,0.0f,0.0f,1.0f };
-		Float clear_value_depth{ 1.0f };
+		Float clear_value_depth{ 0.0f };
 		UInt8 clear_value_stencil{ 0 };
 
 		RHISwapChain* swap_chain{ nullptr };	// SwapChainから作成する場合に指定
@@ -95,7 +95,7 @@ namespace Alpha
 	{
 		std::wstring file_directory{};
 		ERHIShaderType type{ ERHIShaderType::Vertex };
-		std::wstring entry_point{ L"main" };
+		TArray<String> entry_points{};
 
 		std::wstring shader_model{};
 		bool enable_debug{ true };
@@ -293,9 +293,10 @@ namespace Alpha
 	{
 		String name{};
 		ERHIHitGroupType type{ ERHIHitGroupType::Triangles };
-		RHIShader* any_hit_shader{ nullptr };
-		RHIShader* closest_hit_shader{ nullptr };
-		RHIShader* intersection_shader{ nullptr }; // Proceduralの時のみ
+
+		String any_hit_entry_name{};
+		String closest_hit_entry_name{};
+		String intersection_entry_name{}; // Proceduralの時のみ
 	};
 
 	struct RHIRayTracePipelineDesc
@@ -303,12 +304,13 @@ namespace Alpha
 		RHIPipelineLayout* global_layout{ nullptr };
 		TArray<RHIShader*> libraries{};
 
-		RHIShader* ray_gen_shader{ nullptr };
-		TArray<RHIShader*> miss_shaders{};
+		String ray_gen_entry_name{};
+		TArray<String> miss_entry_names{};
+
 		TArray<RHIRayTraceHitGroupDesc> hit_groups{};
 
 		UInt32 max_payload_size{ 0 };
-		UInt32 max_attribute_size{ 0 };
+		UInt32 max_attribute_size{ 8 };
 		UInt32 max_recursion_depth{ 1 };
 	};
 

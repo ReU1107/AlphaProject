@@ -10,6 +10,7 @@
 
 #include "MeshComponent.h"
 #include "MaterialOverrideComponent.h"
+#include "LightComponent.h"
 
 
 #include "Definitions.h"
