@@ -90,6 +90,16 @@ struct LightData
 
 };
 
+struct VolumeData
+{
+    float3 min;
+    float3 max;
+    
+    float density;
+    float anisotropy;
+    float absorption;
+    float scattering;
+};
 
 struct SystemBufferIndices
 {
@@ -115,6 +125,7 @@ struct SystemBufferIndices
     uint override_material;
     
     uint light;
+    uint volume;
     
     uint rt_structure;
 };
@@ -126,6 +137,7 @@ struct SystemTextureIndices
 
 struct FrameRenderContext
 {
+    float4x4 view;
     float4x4 view_proj;
     float4x4 proj_view;
     float4 camera_pos;

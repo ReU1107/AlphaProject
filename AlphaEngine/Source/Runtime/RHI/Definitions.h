@@ -318,6 +318,8 @@ namespace Alpha
 	{
 		UInt64 index_byte_offset{};
 		UInt32 index_count{};
+		UInt32 aabb_count{};
+
 		bool is_opaque{ false };
 	};
 
@@ -332,12 +334,15 @@ namespace Alpha
 	{
 		RHIBuffer* vertex_buffer{ nullptr };
 		RHIBuffer* index_buffer{ nullptr };
+		RHIBuffer* procedural_buffer{ nullptr };
 		RHIBuffer* result_as_buffer{ nullptr };
 		RHIBuffer* scratch_as_buffer{ nullptr };
 		RHIBuffer* source_as_buffer{ nullptr };
 
 		UInt64 vertex_offset{};
 		UInt64 index_offset{};
+		UInt64 procedural_offset{};
+
 		UInt64 result_as_offset{};
 		UInt64 scratch_as_offset{};
 		UInt64 source_as_offset{};
@@ -345,6 +350,8 @@ namespace Alpha
 		TArray<RHIBottomLevelGeometryDesc> geometries{};
 
 		UInt32 vertex_count{ 0 };
+		bool allow_update{ true };
+
 		
 	};
 

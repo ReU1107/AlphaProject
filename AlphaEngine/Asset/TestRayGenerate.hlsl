@@ -9,6 +9,13 @@ struct [raypayload] RayPayload
 ConstantBuffer<SystemBufferIndices> buffer_indices : register(b0);
 ConstantBuffer<FrameRenderContext> frame : register(b1);
 
+struct PassConstants
+{
+    uint result_index;
+};
+
+ConstantBuffer<PassConstants> pass_info : register(b2);
+
 [shader("raygeneration")]
 void MyRayGen()
 {
@@ -33,11 +40,11 @@ void MyRayGen()
     payload.color = float3(0, 0, 0);
 
     RaytracingAccelerationStructure tlas = ResourceDescriptorHeap[buffer_indices.rt_structure];
-    //RWTexture2D<float4> outputTexture = ResourceDescriptorHeap[buffer_indices.rt_result];
+    RWTexture2D<float4> outputTexture = ResourceDescriptorHeap[pass_info.result_index];
     
-    //// レイを飛ばすテスト
-    //TraceRay(tlas, 0, 0xFF, 0, 0, 0, ray, payload);
+    // レイを飛ばすテスト
+    TraceRay(tlas, 0, 0xFF, 0, 0, 0, ray, payload);
     
-    //outputTexture[index.xy] = float4(payload.color, 1.0f);
+    outputTexture[index.xy] = float4(payload.color, 1.0f);
 
 }

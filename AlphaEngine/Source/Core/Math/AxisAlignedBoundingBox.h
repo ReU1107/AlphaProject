@@ -1,14 +1,11 @@
 ﻿#pragma once
+#include "Vector.h"
 
 namespace Alpha
 {
 	struct AxisAlignedBoundingBox
 	{
-		float minX;
-		float minY;
-		float minZ;
-		float maxX;
-		float maxY;
-		float maxZ;
+		float3 min{};
+		float3 max{};
 	};
 }

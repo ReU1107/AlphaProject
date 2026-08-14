@@ -277,6 +277,21 @@ namespace Alpha
 		m_rhi->UAVBarrier(textures, 1);
 	}
 
+	void CommandList::UAVBarrier(Texture** textures, UInt32 num)
+	{
+		RHITexture* rhi_resources[128] = {};
+
+		for (UInt32 i = 0; i < num; ++i)
+		{
+			if (textures[i])
+			{
+				rhi_resources[i] = textures[i]->GetRHI();
+			}
+		}
+
+		m_rhi->UAVBarrier(rhi_resources, num);
+	}
+
 	void CommandList::Draw(UInt32 vertex_count, UInt32 instance_count, UInt32 start_vertex, UInt32 start_instance)
 	{
 		m_rhi->Draw(vertex_count, instance_count, start_vertex, start_instance);

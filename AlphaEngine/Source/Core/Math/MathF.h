@@ -231,13 +231,13 @@ namespace Alpha
 		return normal * VectorDot(normal, -dir) * 2 + dir;
 	}
 
-	template<class Type, UInt32 N>
-	TVector<Type, N> VectorClamp(const TVector<Type, N>& vec, const Type min, const Type max)
+	template<class Type, UInt32 N, class MinType, class MaxType>
+	TVector<Type, N> VectorClamp(const TVector<Type, N>& vec, const MinType min, const MaxType max)
 	{
 		TVector<Type, N> v;
 		for (UInt32 i = 0; i < N; i++)
 		{
-			v[i] = Clamp(vec[i], min, max);
+			v[i] = static_cast<Type>(Clamp(vec[i], min, max));
 		}
 
 		return v;

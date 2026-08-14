@@ -102,6 +102,7 @@ namespace Alpha
 
 		void UAVBarrier(Buffer* buffer);
 		void UAVBarrier(Texture* texture);
+		void UAVBarrier(Texture** textures, UInt32 num);
 
 		void Draw(UInt32 vertex_count, UInt32 instance_count, UInt32 start_vertex, UInt32 start_instance);
 

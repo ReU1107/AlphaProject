@@ -31,6 +31,7 @@ namespace Alpha
 
 		void Execute(RenderContext& ctx);
 
+		Texture* GetResult() const { return m_result.get(); }
 
 	};
 

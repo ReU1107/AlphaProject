@@ -27,6 +27,24 @@ namespace Alpha
 		UInt64 blas_gpu_address{ 0 };
 	};
 
+	struct VolumeMaterial
+	{
+		// 今後テクスチャ対応予定
+		//Texture density_texture;
+
+		//Texture noise_texture;
+
+		float3 min{};
+		float3 max{};
+
+		float density{ 1.0f };
+
+		float anisotropy{ 1.0f };
+
+		float absorption{ 1.0f };
+
+		float scattering{ 1.0f };
+	};
 
 	struct LightData
 	{
@@ -54,6 +72,7 @@ namespace Alpha
 		UInt32 override_material{};
 
 		UInt32 light{};
+		UInt32 volume{};
 
 		UInt32 rt_structure{};		// TLASのSRV
 	};
@@ -75,6 +94,7 @@ namespace Alpha
 
 	struct Constants
 	{
+		float4x4 view{ float4x4::Identity };
 		float4x4 view_proj{ float4x4::Identity };
 		float4x4 proj_view{ float4x4::Identity };
 		float4 camera_pos;

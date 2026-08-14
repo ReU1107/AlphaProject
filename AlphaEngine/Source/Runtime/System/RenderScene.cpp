@@ -37,10 +37,13 @@ namespace Alpha
 		m_override_material_allocator = CreateTransientAllocator(args.render_core, sizeof(MaterialData), 4_MB, EBufferPresetType::UploadStructured, L"OverrideMaterial");
 		
 		m_light_allocator = CreateTransientAllocator(args.render_core, sizeof(LightData), 4_MB, EBufferPresetType::UploadStructured, L"Light");
+		m_procedural_primitive_allocator = CreateTransientAllocator(args.render_core, sizeof(AxisAlignedBoundingBox), 4_MB, EBufferPresetType::UploadStructured, L"ProceduralPrimitive");
+		m_volume_allocator = CreateTransientAllocator(args.render_core, sizeof(VolumeMaterial), 4_MB, EBufferPresetType::UploadStructured, L"VolumeMaterial");
 
 		m_lights.reserve(100);
+		m_volume_materials.reserve(100);
 		m_instances.reserve(10000);
-
+		m_procedural_primitives.reserve(1000);
 
 		m_vertex_compute_pass = std::make_unique<VertexComputePass>();
 		m_vertex_compute_pass->Initialize({ args.render_core, args.layout });
@@ -62,6 +65,9 @@ namespace Alpha
 		m_result_blas_allocator->Reset(ctx.current_frame_index);
 		m_override_material_allocator->Reset(ctx.current_frame_index);
 		m_light_allocator->Reset(ctx.current_frame_index);
+		m_procedural_primitive_allocator->Reset(ctx.current_frame_index);
+		m_volume_allocator->Reset(ctx.current_frame_index);
+		m_instance_tlas_allocator->Reset(ctx.current_frame_index);
 
 		m_instances.clear();
 
@@ -133,8 +139,9 @@ namespace Alpha
 					{
 						.index_byte_offset = sub.index_element_offset * sizeof(UInt32),
 						.index_count = sub.index_count,
+						.is_opaque = true,
 					}
-					);
+				);
 			}
 
 			RenderCore::Get().BuildBLAS(request);
@@ -143,6 +150,9 @@ namespace Alpha
 			as_instance.instance_id = current_instance_id;
 			as_instance.blas_gpu_address = m_result_blas_allocator->GetBuffer()->GetGPUAddress() + as_byte_offset;
 			as_instance.transform = MatrixTranspose(instance.world_matrix);
+			
+			as_instance.hit_group_offset = 0;
+
 
 			m_instance_tlas_allocator->WriteData(&as_instance);
 
@@ -151,12 +161,70 @@ namespace Alpha
 		}
 
 		{
+			auto view = registry.view<VolumeComponent, TransformComponent>();
+			m_volume_materials.clear();
 
+			for (auto [entity, volume_com, transform] : view.each())
+			{
+				m_procedural_primitives.clear();
+
+				Vector3 half_size = volume_com.GetSize() * 0.5f;
+				AxisAlignedBoundingBox aabb = {};
+				aabb.min = Vector3::Zero - half_size;
+				aabb.max = Vector3::Zero + half_size;
+
+				m_procedural_primitives.push_back(aabb);
+
+				UInt32 aabb_count = m_procedural_primitives.size();
+
+				UInt64 procedural_byte_offset = m_procedural_primitive_allocator->WriteData(m_procedural_primitives.data(), aabb_count);
+
+				BLASRequest request = {
+					.procedural_buffer = m_procedural_primitive_allocator->GetBuffer(),
+					.procedural_offset = procedural_byte_offset,
+					.result_buffer = m_result_blas_allocator->GetBuffer(),
+					.allow_update = false,
+				};
+
+				request.geometries.push_back(
+					{
+						.procedural_count = aabb_count,
+					}
+				);
+
+				ASBuildSize build_size = RenderCore::Get().PreBuildBLAS(request);
+				UInt64 as_byte_offset = m_result_blas_allocator->AllocateOffset(build_size.result);
+				request.result_offset = as_byte_offset;
+				request.scratch_size = build_size.scratch;
+
+				RenderCore::Get().BuildBLAS(request);
+
+				UInt32 fog_id = static_cast<UInt32>(m_volume_materials.size());
+
+				VolumeMaterial v_mat = {};
+				v_mat.min = aabb.min;
+				v_mat.max = aabb.max;
+				v_mat.density = volume_com.GetDensity();
+
+				m_volume_materials.push_back(v_mat);
+
+				ASInstanceData as_instance = {};
+				as_instance.instance_id = fog_id;
+				as_instance.blas_gpu_address = m_result_blas_allocator->GetBuffer()->GetGPUAddress() + as_byte_offset;
+				as_instance.transform = MatrixTranspose(transform.GetLocalToWorld());
+				as_instance.hit_group_offset = 4;
+
+				m_instance_tlas_allocator->WriteData(&as_instance);
+			}
+			m_volume_allocator->WriteData(m_volume_materials.data(), m_volume_materials.size());
+		}
+
+		{
+			// ライトデータ
 			m_lights.clear();
 
 			auto view = registry.view<LightComponent, TransformComponent>();
 
-			// ライトの情報を
 			for (auto [entity, light_com, transform] : view.each())
 			{
 
@@ -205,7 +273,7 @@ namespace Alpha
 
 		// TLASの構築
 		{
-			tlas_request.instance_count = m_instances.size();
+			tlas_request.instance_count = m_instance_tlas_allocator->GetAllocateCount();
 
 			RHIBuildTLASDesc desc = {};
 			desc.instance_count = tlas_request.instance_count;
@@ -228,6 +296,7 @@ namespace Alpha
 			.current_position_uav = m_dynamic_vertex_allocator->GetUAVIndex(),
 			.override_material = m_override_material_allocator->GetSRVIndex(),
 			.light = m_light_allocator->GetSRVIndex(),
+			.volume = m_volume_allocator->GetSRVIndex(),
 			.rt_structure = m_result_tlas_allocator->GetSRVIndex(),
 		};
 	}

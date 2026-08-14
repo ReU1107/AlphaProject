@@ -35,5 +35,9 @@ namespace Alpha
 
 		void Execute(RenderContext& ctx);
 
+		Texture* GetVisibilityTex() const { return m_visibility.get(); }
+
+		Texture* GetDepthTex() const { return m_depth.get(); }
+
 	};
 }

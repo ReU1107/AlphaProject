@@ -320,5 +320,6 @@ namespace Alpha
 	enum class ERHIHitGroupType
 	{
 		Triangles,
+		Procedural,
 	};
 }

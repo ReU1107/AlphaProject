@@ -23,9 +23,9 @@ struct VertexOutput
 
 //[Shader("node")]
 //[NodeLaunch("coalescing")]
-[Shader("node")] // 1. ノードシェーダーであることを宣言
-[NodeLaunch("mesh")] // 2. メッシュノードとして起動することを指定
-[NodeDispatchGrid(1, 1, 1)] // 3. 必須パラメータ
+[Shader("node")] 
+[NodeLaunch("mesh")]
+[NodeDispatchGrid(1, 1, 1)]
 [NumThreads(MAX_VERTICES, 1, 1)]
 [OutputTopology("triangle")]
 void MeshNode(

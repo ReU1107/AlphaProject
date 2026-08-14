@@ -554,15 +554,15 @@ namespace Alpha
 		D3D12_GPU_VIRTUAL_ADDRESS shader_table_address = desc.shader_table_buffer->GetGPUAddress();
 
 		rayDesc.RayGenerationShaderRecord.StartAddress = shader_table_address + desc.ray_gen_offset;
-		rayDesc.RayGenerationShaderRecord.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+		rayDesc.RayGenerationShaderRecord.SizeInBytes = D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT;
 
 		rayDesc.MissShaderTable.StartAddress = shader_table_address + desc.miss_offset;
-		rayDesc.MissShaderTable.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES * desc.miss_count;
-		rayDesc.MissShaderTable.StrideInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+		rayDesc.MissShaderTable.SizeInBytes = D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT * desc.miss_count;
+		rayDesc.MissShaderTable.StrideInBytes = D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT;
 
 		rayDesc.HitGroupTable.StartAddress = shader_table_address + desc.hit_group_offset;
-		rayDesc.HitGroupTable.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES * desc.hit_group_count;
-		rayDesc.HitGroupTable.StrideInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+		rayDesc.HitGroupTable.SizeInBytes = D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT * desc.hit_group_count;
+		rayDesc.HitGroupTable.StrideInBytes = D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT;
 
 		// 今は無視
 		rayDesc.CallableShaderTable;
@@ -576,31 +576,60 @@ namespace Alpha
 		UInt32 geometry_count = desc.geometries.size();
 		TArray<D3D12_RAYTRACING_GEOMETRY_DESC> geometry_desc(geometry_count);
 
-		D3D12_GPU_VIRTUAL_ADDRESS vertex_address = desc.vertex_buffer->GetGPUAddress() + desc.vertex_offset;
-		D3D12_GPU_VIRTUAL_ADDRESS index_address = desc.index_buffer->GetGPUAddress() + desc.index_offset;
+		bool is_traiangle = (desc.vertex_buffer);
 
-
-		for (UInt32 i = 0; i < geometry_count; ++i)
+		if (is_traiangle)
 		{
-			auto& geometry = geometry_desc[i];
-			geometry.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
-			geometry.Flags = (desc.geometries[i].is_opaque) ? D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE : D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
 
-			geometry.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
-			geometry.Triangles.VertexCount = desc.vertex_count;
+			D3D12_GPU_VIRTUAL_ADDRESS vertex_address = desc.vertex_buffer->GetGPUAddress() + desc.vertex_offset;
+			D3D12_GPU_VIRTUAL_ADDRESS index_address = desc.index_buffer->GetGPUAddress() + desc.index_offset;
 
-			geometry.Triangles.VertexBuffer.StartAddress = vertex_address;
-			geometry.Triangles.VertexBuffer.StrideInBytes = sizeof(Vector3);
-			
-			geometry.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
-			geometry.Triangles.IndexCount = desc.geometries[i].index_count;
 
-			geometry.Triangles.IndexBuffer = index_address + desc.geometries[i].index_byte_offset;
+			for (UInt32 i = 0; i < geometry_count; ++i)
+			{
+				auto& geometry = geometry_desc[i];
+				geometry.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+				geometry.Flags = (desc.geometries[i].is_opaque) ? D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE : D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
+
+				geometry.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+				geometry.Triangles.VertexCount = desc.vertex_count;
+
+				geometry.Triangles.VertexBuffer.StartAddress = vertex_address;
+				geometry.Triangles.VertexBuffer.StrideInBytes = sizeof(Vector3);
+
+				geometry.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
+				geometry.Triangles.IndexCount = desc.geometries[i].index_count;
+
+				geometry.Triangles.IndexBuffer = index_address + desc.geometries[i].index_byte_offset;
+
+			}
+		}
+		else
+		{
+
+			D3D12_GPU_VIRTUAL_ADDRESS procedural_address = desc.procedural_buffer->GetGPUAddress() + desc.procedural_offset;
+
+			for (UInt32 i = 0; i < geometry_count; ++i)
+			{
+				auto& geometry = geometry_desc[i];
+				geometry.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS;
+				geometry.Flags = (desc.geometries[i].is_opaque) ? D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE : D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
+
+				geometry.AABBs.AABBCount = desc.geometries[i].aabb_count;
+				geometry.AABBs.AABBs.StartAddress = procedural_address;
+				geometry.AABBs.AABBs.StrideInBytes = sizeof(D3D12_RAYTRACING_AABB);
+
+			}
 
 		}
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
 
-		// 一旦updateにしとく
-		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+		if (desc.allow_update) {
+			flags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+		}
+		else {
+			flags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+		}
 
 		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
 		inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;

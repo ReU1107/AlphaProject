@@ -11,6 +11,7 @@
 #include "MeshComponent.h"
 #include "MaterialOverrideComponent.h"
 #include "LightComponent.h"
+#include "VolumeComponent.h"
 
 
 #include "Definitions.h"
