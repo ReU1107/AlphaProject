@@ -12,7 +12,7 @@ namespace Alpha
 	{
         float dt = 1.0f / 60;
 
-        float move_speed = 5.0f;
+        float move_speed = 10.0f;
         float rotation_speed = 2.5f;
 
 		auto view = registry.view<CameraComponent, TransformComponent>();

@@ -12,13 +12,16 @@
 #include "VertexComputePass.h"
 #include "VBufferPass.h"
 #include "FroxelLightingPass.h"
-#include "FogPass.h"
+#include "VolumetricPass.h"
+#include "CompositePass.h"
 
 #include <imgui/imgui.h>
 namespace Alpha
 {
 	using namespace Renderer;
 	RenderSystem::~RenderSystem() = default;
+
+	static TUnique<Texture> test = nullptr;
 
 	bool RenderSystem::Initialize(const Args& args)
 	{
@@ -38,12 +41,25 @@ namespace Alpha
 		m_vbuffer_pass = std::make_unique<VBufferPass>();
 		m_vbuffer_pass->Initialize({ args.render_core, m_layout.get() });
 
-		m_fog_pass = std::make_unique<FogPass>();
-		//m_fog_pass->Initialize({ args.render_core, m_layout.get() });
-
 		m_froxel_pass = std::make_unique<FroxelLightingPass>();
 		m_froxel_pass->Initialize({ args.render_core, m_layout.get() });
+
+		m_volumetric_pass = std::make_unique<VolumetricPass>();
+		m_volumetric_pass->Initialize({ args.render_core, m_layout.get(), m_froxel_pass->GetResult(), m_vbuffer_pass->GetDepthTex() });
+
+
 		
+		test = RenderCore::Get().CreateTexture(
+			1920, 1080,
+			ERHIResourceBindFlags::ShaderResource | ERHIResourceBindFlags::UnorderedAccess,
+			ERHIResourceFormat::RGBAFloat
+		);
+
+		m_composite_pass = std::make_unique<CompositePass>();
+		m_composite_pass->Initialize({ args.render_core, m_layout.get(), test.get(), m_volumetric_pass->GetRadianceTex(), m_volumetric_pass->GetTransmittanceTex(),m_vbuffer_pass->GetVisibilityTex() });
+
+
+
 		return true;
 	}
 
@@ -67,6 +83,7 @@ namespace Alpha
 
 
 		Constants constants = {};
+		constants.view = camera.view_matrix;
 		constants.view_proj = MatrixMultiply(camera.view_matrix, camera.GetProjectionMatrix());
 		constants.proj_view = Matrix4x4Inverse(constants.view_proj);
 		constants.camera_pos = camera_t.GetLocalToWorld()._4();
@@ -85,8 +102,16 @@ namespace Alpha
 
 		m_froxel_pass->Execute(ctx);
 
+		m_volumetric_pass->Execute(ctx);
 
-		//m_fog_pass->Execute(ctx);
+		m_composite_pass->Execute(ctx);
+
+
+		ImGui::Begin("Composite Pass");
+
+		ImGui::Image(test.get(), ImVec2(960, 540));
+
+		ImGui::End();
 
 	}
 }

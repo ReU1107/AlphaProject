@@ -22,6 +22,7 @@ namespace Alpha
 		m_pipeline = RenderCore::Get().CreateComputePipeline(pipeline_args);
 
 		m_result = RenderCore::Get().CreateTexture(ResolutionX, ResolutionY, ResolutionZ, ERHIResourceFormat::RGBAFloat, ETexturePresetType::RWTexture3D);
+		m_result->SetName(L"FroxelRadiance");
 
 		return true;
 	}

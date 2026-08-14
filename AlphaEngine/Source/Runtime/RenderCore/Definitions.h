@@ -114,6 +114,9 @@ namespace Alpha
 		Buffer* index_buffer{ nullptr };
 		UInt64 index_offset{ 0 };
 
+		Buffer* procedural_buffer{ nullptr };
+		UInt64 procedural_offset{ 0 };
+
 		Buffer* result_buffer{ nullptr };
 		UInt64 result_offset{ 0 };
 
@@ -126,12 +129,14 @@ namespace Alpha
 		{
 			UInt64 index_byte_offset{};
 			UInt32 index_count{};
+			UInt32 procedural_count{};
 			bool is_opaque{ false };
 		};
 
 		TArray<Sub> geometries{};
 
 		UInt32 vertex_count{ 0 };
+		bool allow_update{ true };
 	};
 
 	struct TLASRequest
@@ -158,7 +163,7 @@ namespace Alpha
 	
 		UInt32 width{ 0 };
 		UInt32 height{ 0 };
-		UInt32 depth{ 0 };
+		UInt32 depth{ 1 };
 	};
 
 

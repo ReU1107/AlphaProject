@@ -63,7 +63,6 @@ namespace Alpha
         static const size_t ShaderTableSize = 64;
         static const size_t ShaderIdSize = 32; // D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES
 
-        // ちょっと多めに作っとく
         m_shader_table_allocator = CreatePersistentAllocator(RenderCore::GetPtr(), ShaderTableSize, ShaderTableSize * shader_record_count, EBufferPresetType::ROStructured, L"ShaderTable");
 
         /*
@@ -76,7 +75,7 @@ namespace Alpha
         auto CreateShaderTable = [&](ShaderTable* table)
         {
             UInt32 num = table->export_names.size();
-            UInt32 size = ShaderIdSize * num;
+            UInt32 size = ShaderTableSize * num;
             Allocation alloc = {};
             m_shader_table_allocator->AllocateBySize(size, &alloc);
 
@@ -87,7 +86,7 @@ namespace Alpha
                 ALPHA_CHECK_ERROR((shader_id != nullptr), L"shader_idがありませんでした");
 
                 table->stream.insert(table->stream.end(), (const uint8_t*)shader_id, (const uint8_t*)shader_id + ShaderIdSize);
-
+                
             }
 
             RenderCore::Get().UploadBuffer(m_shader_table_allocator->GetBuffer(), alloc.offset, table->stream.data(), table->stream.size());

@@ -163,6 +163,7 @@
     <ClCompile Include="Source\Core\Window\Win32Window.cpp" />
     <ClCompile Include="Source\Core\Window\WindowSystem.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimationComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\VolumeComponent.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\LightComponent.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\MaterialOverrideComponent.cpp" />
     <ClCompile Include="Source\Runtime\System\AnimationSystem.cpp" />
@@ -229,7 +230,8 @@
     <ClCompile Include="Source\Runtime\Scene\Scene.cpp" />
     <ClCompile Include="Source\Runtime\Scene\SceneObject.cpp" />
     <ClCompile Include="Source\Runtime\System\CameraSystem.cpp" />
-    <ClCompile Include="Source\Runtime\System\FogPass.cpp" />
+    <ClCompile Include="Source\Runtime\System\CompositePass.cpp" />
+    <ClCompile Include="Source\Runtime\System\VolumetricPass.cpp" />
     <ClCompile Include="Source\Runtime\System\FroxelLightingPass.cpp" />
     <ClCompile Include="Source\Runtime\System\RenderScene.cpp" />
     <ClCompile Include="Source\Runtime\System\RenderSystem.cpp" />
@@ -309,13 +311,15 @@
     <ClInclude Include="Source\Runtime\RenderCore\Definitions.h" />
     <ClInclude Include="Source\Runtime\RenderCore\RayTracePipeline.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Util.h" />
+    <ClInclude Include="Source\Runtime\Renderer\VolumeComponent.h" />
     <ClInclude Include="Source\Runtime\Renderer\LightComponent.h" />
     <ClInclude Include="Source\Runtime\Renderer\MaterialOverrideComponent.h" />
     <ClInclude Include="Source\Runtime\Renderer\Module.h" />
     <ClInclude Include="Source\Runtime\RHI\RHIRayTracePipeline.h" />
     <ClInclude Include="Source\Runtime\System\CameraSystem.h" />
+    <ClInclude Include="Source\Runtime\System\CompositePass.h" />
     <ClInclude Include="Source\Runtime\System\Definitions.h" />
-    <ClInclude Include="Source\Runtime\System\FogPass.h" />
+    <ClInclude Include="Source\Runtime\System\VolumetricPass.h" />
     <ClInclude Include="Source\Runtime\System\FroxelLightingPass.h" />
     <ClInclude Include="Source\Runtime\System\RayTracingPass.h" />
     <ClInclude Include="Source\Runtime\System\RenderScene.h" />
@@ -506,6 +510,7 @@
     <ClInclude Include="ThirdParty\std\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Asset\Lighting.hlsli" />
     <None Include="Asset\Resource.hlsli" />
     <None Include="packages.config" />
   </ItemGroup>

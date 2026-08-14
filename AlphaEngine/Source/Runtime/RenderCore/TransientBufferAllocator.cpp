@@ -53,6 +53,11 @@ namespace Alpha
 		return aligned_offset;
 	}
 
+	UInt32 TransientBufferAllocator::GetAllocateCount() const
+	{
+		return m_blocks[m_current_block_index].current_offset / m_alignment;
+	}
+
 	Buffer* TransientBufferAllocator::GetBuffer() const
 	{
 		return m_blocks[m_current_block_index].buffer.get();

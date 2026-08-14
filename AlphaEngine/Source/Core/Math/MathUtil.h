@@ -42,6 +42,8 @@ namespace Alpha
 	static inline Float Sin(const Float angle) { return std::sinf(angle); }
 	static inline Float Tan(const Float angle) { return std::tanf(angle);  }
 
+	static inline Float Ceil(const Float value) { return std::ceilf(value);  }
+
 	static inline Float ACos(const Float t) { return std::acosf(std::clamp(t, -1.0f, 1.0f));  }
 	static inline Float ASin(const Float t) { return std::asinf(std::clamp(t, -1.0f, 1.0f));  }
 	static inline Float ATan(const Float t) { return std::atanf(t); }

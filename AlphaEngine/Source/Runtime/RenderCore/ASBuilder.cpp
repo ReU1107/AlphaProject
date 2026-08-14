@@ -29,11 +29,24 @@ namespace Alpha
 		for (auto& request : m_requests)
 		{
 			RHIBuildBLASDesc build_desc = {};
-			build_desc.vertex_buffer = request.vertex_buffer->GetRHI();
-			build_desc.vertex_offset = request.vertex_offset;
 
-			build_desc.index_buffer = request.index_buffer->GetRHI();
-			build_desc.index_offset = request.index_offset;
+			if (request.vertex_buffer)
+			{
+				build_desc.vertex_buffer = request.vertex_buffer->GetRHI();
+				build_desc.vertex_offset = request.vertex_offset;
+			}
+
+			if (request.index_buffer)
+			{
+				build_desc.index_buffer = request.index_buffer->GetRHI();
+				build_desc.index_offset = request.index_offset;
+			}
+
+			if (request.procedural_buffer)
+			{
+				build_desc.procedural_buffer = request.procedural_buffer->GetRHI();
+				build_desc.procedural_offset = request.procedural_offset;
+			}
 
 			build_desc.result_as_buffer = request.result_buffer->GetRHI();
 			build_desc.result_as_offset = request.result_offset;
@@ -58,11 +71,14 @@ namespace Alpha
 				{
 					.index_byte_offset = geo.index_byte_offset,
 					.index_count = geo.index_count,
+					.aabb_count = geo.procedural_count,
 					.is_opaque = geo.is_opaque,
 				};
 
 				build_desc.geometries.push_back(geometry);
 			}
+
+			build_desc.allow_update = request.allow_update;
 
 			command_list->BuildRaytracingAccelerationStructure(build_desc);
 

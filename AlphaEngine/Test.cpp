@@ -28,7 +28,8 @@
 #include "Source/Runtime/System/RenderScene.h"
 #include "Source/Runtime/System/VBufferPass.h"
 #include "Source/Runtime/System/FroxelLightingPass.h"
-#include "Source/Runtime/System/FogPass.h"
+#include "Source/Runtime/System/VolumetricPass.h"
+#include "Source/Runtime/System/CompositePass.h"
 #include "Source/Runtime/Renderer/CameraComponent.h"
 
 #include "RHI/Definitions.h"
@@ -323,6 +324,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     {
         const auto entity = registry.create();
+        auto& transform = registry.emplace<TransformComponent>(entity);
+
         auto& light = registry.emplace<LightComponent>(entity);
         light.type = 2; // Directional Light
 
@@ -340,24 +343,23 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         auto& light = registry.emplace<LightComponent>(entity);
         light.type = 0; // Point Light
-        light.SetColor(float3(1.0f, 0.95f, 0.85f)); // 暖かみのある電球色
-        light.SetIntensity(5.0f);                  // 部屋全体に行き渡る強度
-        light.SetRadius(45.0f);                    // 床や壁に綺麗に減衰が届く半径
+        light.SetColor(float3(1.0f, 0.95f, 0.85f));
+        light.SetIntensity(5.0f);
+        light.SetRadius(45.0f);
     }
 
     {
         const auto entity = registry.create();
 
         auto& transform = registry.emplace<TransformComponent>(entity);
-        // 右上の手前（X:20, Y:45, Z:-20）に配置し、左奥（X:-10, Y:0, Z:5）を見下ろす
-        transform.SetLocalPosition(Vector3(20.0f, 45.0f, -20.0f));
-        transform.LookAt(Vector3(-10.0f, 0.0f, 5.0f)); // キャラたちがいる付近を狙う
+        transform.SetLocalPosition(Vector3(-10.0f, 20.0f, 10.0f));
+        transform.LookAt(Vector3(0.0f, -1.0f, -1.0f)); // キャラたちがいる付近を狙う
 
         auto& light = registry.emplace<LightComponent>(entity);
         light.type = 1; // Spot Light
-        light.SetColor(float3(0.2f, 0.6f, 1.0f));  // フロクセルに映える美しいSF風の青い光
-        light.SetIntensity(12.0f);                 // スポットライトなので強め
-        light.SetRadius(60.0f);                    // 部屋の対角線に届く半径
+        light.SetColor(float3(0.2f, 0.6f, 1.0f));
+        light.SetIntensity(12.0f);
+        light.SetRadius(60.0f);
 
         light.SetSpotAngleDegree(30.0f, 60.0f);
     }
@@ -370,6 +372,21 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         auto& camera = registry.emplace<CameraComponent>(entity);
 
+    }
+
+    {
+        const auto entity = registry.create();
+
+        auto& transform = registry.emplace<TransformComponent>(entity);
+        transform.SetLocalPosition(Vector3(0.0f, 25.0f, 0.0f));
+
+        //auto& fog = registry.emplace<VolumeComponent>(entity);
+
+        //fog.SetSize(Vector3(45.0f, 45.0f, 45.0f));
+
+        //fog.SetDensity(1.5f);
+
+        //fog.SetBaseCellSize(2.0f);
     }
 
 

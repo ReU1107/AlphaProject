@@ -77,6 +77,8 @@ namespace Alpha
 
 		UInt64 AllocateOffset(UInt64 size);
 
+		UInt32 GetAllocateCount() const;
+
 		Buffer* GetBuffer() const;
 
 		UInt32 GetSRVIndex() const;

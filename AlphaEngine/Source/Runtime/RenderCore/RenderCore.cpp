@@ -304,11 +304,14 @@ namespace Alpha
 			RHIBottomLevelGeometryDesc geometry =
 			{
 				.index_count = geo.index_count,
+				.aabb_count = geo.procedural_count,
 				.is_opaque = geo.is_opaque,
 			};
 
 			build_desc.geometries.push_back(geometry);
 		}
+
+		build_desc.allow_update = request.allow_update;
 
 		RHIASMemoryInfo info = {};
 
@@ -400,8 +403,6 @@ namespace Alpha
 
 		texture->Initialize(desc);
 		return texture;
-
-		return TUnique<Texture>();
 	}
 
 	TUnique<Texture> RenderCore::CreateTexture(UInt32 width, UInt32 height, ERHIResourceBindFlags flags, ERHIResourceFormat format, ERHIResourceDimension dimension, UInt32 array_size)

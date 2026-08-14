@@ -116,24 +116,48 @@ namespace Alpha
 		UInt32 geometry_count = desc.geometries.size();
 		TArray<D3D12_RAYTRACING_GEOMETRY_DESC> geometry_desc(geometry_count);
 
-		for (UInt32 i = 0; i < geometry_count; ++i)
+		bool is_traiangle = (desc.vertex_count > 0);
+
+		if (is_traiangle)
 		{
-			auto& geometry = geometry_desc[i];
-			geometry.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
-			geometry.Flags = (desc.geometries[i].is_opaque) ? D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE : D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
+			for (UInt32 i = 0; i < geometry_count; ++i)
+			{
+				auto& geometry = geometry_desc[i];
+				geometry.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+				geometry.Flags = (desc.geometries[i].is_opaque) ? D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE : D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
 
-			geometry.Triangles.VertexBuffer.StrideInBytes = sizeof(Vector3);
-			geometry.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
-			geometry.Triangles.VertexCount = desc.vertex_count;
+				geometry.Triangles.VertexBuffer.StrideInBytes = sizeof(Vector3);
+				geometry.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+				geometry.Triangles.VertexCount = desc.vertex_count;
 
 
-			geometry.Triangles.IndexCount = desc.geometries[i].index_count;
-			geometry.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
-	
+				geometry.Triangles.IndexCount = desc.geometries[i].index_count;
+				geometry.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
+
+			}
+		}
+		else
+		{
+			for (UInt32 i = 0; i < geometry_count; ++i)
+			{
+				auto& geometry = geometry_desc[i];
+				geometry.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS;
+				geometry.Flags = (desc.geometries[i].is_opaque) ? D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE : D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
+
+				geometry.AABBs.AABBCount = desc.geometries[i].aabb_count;
+				geometry.AABBs.AABBs.StrideInBytes = sizeof(D3D12_RAYTRACING_AABB);
+			}
+
 		}
 
-		// 一旦updateにしとく
-		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
+
+		if (desc.allow_update) {
+			flags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+		}
+		else {
+			flags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+		}
 
 		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
 		inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;

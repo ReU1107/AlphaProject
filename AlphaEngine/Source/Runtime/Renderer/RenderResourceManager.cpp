@@ -253,6 +253,7 @@ namespace Alpha
                     {
                         .index_byte_offset = sub.index_element_offset * sizeof(UInt32),
                         .index_count = sub.index_count,
+                        .is_opaque = true,
                     }
                 );
             }
