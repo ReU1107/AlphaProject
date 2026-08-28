@@ -7,6 +7,7 @@
 
 
 #include "Core/Math/MathF.h"
+#include "Core/Math/GeometryUtil.h"
 
 namespace Alpha
 {
@@ -93,13 +94,15 @@ namespace Alpha
 		tlas_request.instance_desc_buffer = m_instance_tlas_allocator->GetBuffer();
 		tlas_request.result_buffer = m_result_tlas_allocator->GetBuffer();
 
+		Frustum frustum = CreateFrustum(ctx.inv_view_proj, 1.0f, 0.0f);
+
 		// このフレームで描画する可能性のあるオブジェクトを全部詰め込む
 		for (auto [entity, mesh_com, transform] : view.each())
 		{
 			uint32_t current_instance_id = static_cast<uint32_t>(m_instances.size());
 
 			InstanceData instance = {};
-			instance.world_matrix = transform.GetLocalToWorld();
+			instance.world_matrix = transform.GetWorldMatrix();
 			instance.mesh_offset = RenderResourceManager::Get().GetGPUMeshOffset(mesh_com.mesh_index);
 
 			if (auto* material_com = registry.try_get<MaterialOverrideComponent>(entity))
@@ -168,10 +171,10 @@ namespace Alpha
 			{
 				m_procedural_primitives.clear();
 
-				Vector3 half_size = volume_com.GetSize() * 0.5f;
-				AxisAlignedBoundingBox aabb = {};
-				aabb.min = Vector3::Zero - half_size;
-				aabb.max = Vector3::Zero + half_size;
+				AxisAlignedBoundingBox aabb = volume_com.GetAABB();
+				TransformAABB(aabb, transform.GetLocalMatrix());
+				if (!Intersect(frustum, aabb))
+					continue;
 
 				m_procedural_primitives.push_back(aabb);
 
@@ -179,25 +182,34 @@ namespace Alpha
 
 				UInt64 procedural_byte_offset = m_procedural_primitive_allocator->WriteData(m_procedural_primitives.data(), aabb_count);
 
-				BLASRequest request = {
-					.procedural_buffer = m_procedural_primitive_allocator->GetBuffer(),
-					.procedural_offset = procedural_byte_offset,
-					.result_buffer = m_result_blas_allocator->GetBuffer(),
-					.allow_update = false,
-				};
+				// 一旦レイトレからは外しておく
+				//BLASRequest request = {
+				//	.procedural_buffer = m_procedural_primitive_allocator->GetBuffer(),
+				//	.procedural_offset = procedural_byte_offset,
+				//	.result_buffer = m_result_blas_allocator->GetBuffer(),
+				//	.allow_update = false,
+				//};
 
-				request.geometries.push_back(
-					{
-						.procedural_count = aabb_count,
-					}
-				);
+				//request.geometries.push_back(
+				//	{
+				//		.procedural_count = aabb_count,
+				//	}
+				//);
 
-				ASBuildSize build_size = RenderCore::Get().PreBuildBLAS(request);
-				UInt64 as_byte_offset = m_result_blas_allocator->AllocateOffset(build_size.result);
-				request.result_offset = as_byte_offset;
-				request.scratch_size = build_size.scratch;
+				//ASBuildSize build_size = RenderCore::Get().PreBuildBLAS(request);
+				//UInt64 as_byte_offset = m_result_blas_allocator->AllocateOffset(build_size.result);
+				//request.result_offset = as_byte_offset;
+				//request.scratch_size = build_size.scratch;
 
-				RenderCore::Get().BuildBLAS(request);
+				//RenderCore::Get().BuildBLAS(request);
+
+				//ASInstanceData as_instance = {};
+				//as_instance.instance_id = fog_id;
+				//as_instance.blas_gpu_address = m_result_blas_allocator->GetBuffer()->GetGPUAddress() + as_byte_offset;
+				//as_instance.transform = MatrixTranspose(transform.GetLocalToWorld());
+				//as_instance.hit_group_offset = 4;
+
+				//m_instance_tlas_allocator->WriteData(&as_instance);
 
 				UInt32 fog_id = static_cast<UInt32>(m_volume_materials.size());
 
@@ -208,13 +220,7 @@ namespace Alpha
 
 				m_volume_materials.push_back(v_mat);
 
-				ASInstanceData as_instance = {};
-				as_instance.instance_id = fog_id;
-				as_instance.blas_gpu_address = m_result_blas_allocator->GetBuffer()->GetGPUAddress() + as_byte_offset;
-				as_instance.transform = MatrixTranspose(transform.GetLocalToWorld());
-				as_instance.hit_group_offset = 4;
 
-				m_instance_tlas_allocator->WriteData(&as_instance);
 			}
 			m_volume_allocator->WriteData(m_volume_materials.data(), m_volume_materials.size());
 		}
@@ -229,7 +235,7 @@ namespace Alpha
 			{
 
 				LightData light = {};
-				const Matrix4x4& world_matrix = transform.GetLocalToWorld();
+				const Matrix4x4& world_matrix = transform.GetWorldMatrix();
 				light.position = world_matrix._4();
 
 				light.radius = light_com.GetRadius();
@@ -244,7 +250,7 @@ namespace Alpha
 				}
 				else if (light_com.type == 1) // Spot Light
 				{
-					light.direction = transform.Forward();
+					light.direction = Matrix4x4Forward(world_matrix);
 				}
 				else
 				{

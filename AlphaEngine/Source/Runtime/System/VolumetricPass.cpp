@@ -46,8 +46,8 @@ namespace Alpha
 		m_pipeline = RenderCore::Get().CreateRayTracePipeline(pipeline_args);
 
 
-		m_radiance_tex = RenderCore::Get().CreateTexture(1920, 1080, 1, ERHIResourceFormat::RGBAFloat, ETexturePresetType::RWTexture2D);
-		m_transmittance_tex = RenderCore::Get().CreateTexture(1920, 1080, 1, ERHIResourceFormat::RGBAFloat, ETexturePresetType::RWTexture2D);
+		m_radiance_tex = RenderCore::Get().CreateTexture(480, 270, 1, ERHIResourceFormat::RGBAFloat, ETexturePresetType::RWTexture2D);
+		m_transmittance_tex = RenderCore::Get().CreateTexture(480, 270, 1, ERHIResourceFormat::RGBAFloat, ETexturePresetType::RWTexture2D);
 
 		m_radiance_tex->SetName(L"Radiance");
 		m_transmittance_tex->SetName(L"Transmittance");
@@ -90,8 +90,8 @@ namespace Alpha
 
 		RayTraceDispatchArgs desc = {
 			.pipeline = m_pipeline.get(),
-			.width = 1920,
-			.height = 1080,
+			.width = 480,
+			.height = 270,
 			.depth = 1,
 		};
 

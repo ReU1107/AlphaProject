@@ -130,11 +130,20 @@ namespace Alpha
 		// q.V は (x, y, z) 部分、q.W はスカラー部分
 		Vector3 q_vec(q.X(), q.Y(), q.Z());
 
-		// 中間変数を用いた最適化計算
 		Vector3 t = 2.0f * Vector3Cross(q_vec, vec);
 		Vector3 result = vec + (q.W() * t) + Vector3Cross(q_vec, t);
 
 		return VectorNormalize(result);
+	}
+
+	Vector3 Vector3UnprojectNDC(const Vector3& ndc, const Matrix4x4& inv_view_proj)
+	{
+		Vector4 world = VectorMultiply(Vector4(ndc, 1.0f), inv_view_proj);
+
+		Vector3 result = world.XYZ();
+		result /= world.W();
+
+		return result;
 	}
 
 	Matrix4x4 Matrix4x4RotationRollPitchYaw(const float roll, const float pitch, const float yaw)
@@ -359,6 +368,36 @@ namespace Alpha
 		}
 	}
 
+	Vector3 Matrix4x4Forward(const Matrix4x4& mat)
+	{
+		return mat._3();
+	}
+
+	Vector3 Matrix4x4Backward(const Matrix4x4& mat)
+	{
+		return -mat._3();
+	}
+
+	Vector3 Matrix4x4Right(const Matrix4x4& mat)
+	{
+		return mat._1();
+	}
+
+	Vector3 Matrix4x4Left(const Matrix4x4& mat)
+	{
+		return -mat._1();
+	}
+
+	Vector3 Matrix4x4Up(const Matrix4x4& mat)
+	{
+		return mat._2();
+	}
+
+	Vector3 Matrix4x4Down(const Matrix4x4& mat)
+	{
+		return -mat._2();
+	}
+
 	float QuaternionLengthSq(const Quaternion& q)
 	{
 		const float x = q.X();
@@ -479,44 +518,52 @@ namespace Alpha
 
 	Quaternion QuaternionRotationMatrix(const Matrix4x4& mat)
 	{
-		const float t = (mat._11() + mat._22() + mat._33() + 1.0f);
-
 		Quaternion q = Quaternion::Identity;
 
-		if (t > 0)
+		const float trace = mat._11() + mat._22() + mat._33();
+
+		if (trace > 0.0f)
 		{
-			const float s = 0.5f / Sqrt(t);
-			q.W() = 0.25f / s;
-			q.X() = (mat._23() - mat._32()) * s;
-			q.Y() = (mat._31() - mat._13()) * s;
-			q.Z() = (mat._12() - mat._21()) * s;
+			const float s = Sqrt(trace + 1.0f) * 2.0f;
+			const float inv_s = 1.0f / s;
+
+			q.W() = 0.25f * s;
+			q.X() = (mat._23() - mat._32()) * inv_s;
+			q.Y() = (mat._31() - mat._13()) * inv_s;
+			q.Z() = (mat._12() - mat._21()) * inv_s;
 		}
-		else if ((mat._11() > mat._22()) && (mat._11() > mat._33()))
+		else if (mat._11() > mat._22() && mat._11() > mat._33())
 		{
-			const float s = Sqrt((1.0f + mat._11() - mat._22() - mat._33())) * 2;
-			q.W() = (mat._32() - mat._23()) / s;
+			const float s = Sqrt(1.0f + mat._11() - mat._22() - mat._33()) * 2.0f;
+			const float inv_s = 1.0f / s;
+
+			q.W() = (mat._23() - mat._32()) * inv_s;
 			q.X() = 0.25f * s;
-			q.Y() = (mat._12() - mat._21()) / s;
-			q.Z() = (mat._13() - mat._31()) / s;
+			q.Y() = (mat._12() + mat._21()) * inv_s;
+			q.Z() = (mat._13() + mat._31()) * inv_s;
 		}
 		else if (mat._22() > mat._33())
 		{
-			const float s = Sqrt((1.0f + mat._22() - mat._11() - mat._33())) * 2;
-			q.W() = (mat._13() - mat._31()) / s;
-			q.X() = (mat._12() - mat._21()) / s;
+			const float s = Sqrt(1.0f + mat._22() - mat._11() - mat._33()) * 2.0f;
+			const float inv_s = 1.0f / s;
+
+			q.W() = (mat._31() - mat._13()) * inv_s;
+			q.X() = (mat._12() + mat._21()) * inv_s;
 			q.Y() = 0.25f * s;
-			q.Z() = (mat._23() - mat._32()) / s;
+			q.Z() = (mat._23() + mat._32()) * inv_s;
 		}
 		else
 		{
-			const float s = Sqrt((1.0f + mat._33() - mat._11() - mat._22())) * 2;
-			q.W() = (mat._21() - mat._12()) / s;
-			q.X() = (mat._13() - mat._31()) / s;
-			q.Y() = (mat._23() - mat._32()) / s;
+			const float s = Sqrt(1.0f + mat._33() - mat._11() - mat._22()) * 2.0f;
+			const float inv_s = 1.0f / s;
+
+			q.W() = (mat._12() - mat._21()) * inv_s;
+			q.X() = (mat._13() + mat._31()) * inv_s;
+			q.Y() = (mat._23() + mat._32()) * inv_s;
 			q.Z() = 0.25f * s;
 		}
 
-		return q;
+		return QuaternionNormalize(q);
 	}
 
 	Quaternion QuaternionRotationFromTo(const Vector3& from, const Vector3& to)

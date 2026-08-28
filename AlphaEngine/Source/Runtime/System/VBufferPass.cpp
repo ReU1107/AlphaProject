@@ -77,6 +77,8 @@ namespace Alpha
 
 		ctx.command_list->DispatchMesh(ctx.instance_count, 1, 1);
 
+		DebugRenderer::Get().Flush(ctx);
+
 		// Debug限定でAllにしてる　本来はNonPixel
 		ctx.command_list->Transition(render_targets, 1, ERHIResourceState::AllShaderResource);
 		ctx.command_list->Transition(m_depth.get(), ERHIResourceState::AllShaderResource);

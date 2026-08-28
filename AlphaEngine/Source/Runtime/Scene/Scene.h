@@ -10,6 +10,8 @@ namespace Alpha
 	{
 	private:
 		entt::registry m_registry{};
+		TUniqueArray<SceneObject> m_objects;
+		TArray<SceneObject*> m_root_objects;
 
 	public:
 		Scene();
@@ -18,5 +20,14 @@ namespace Alpha
 		void Update(float delta_time);
 
 		entt::registry& GetRegistry() { return m_registry; }
+
+		SceneObject& CreateObject(const String& name);
+
+		bool Reparent(SceneObject* object, SceneObject* new_parent);
+
+		void DetachFromHierarchy(SceneObject* object);
+
+		void CompactHierarchy();
+
 	};
 }

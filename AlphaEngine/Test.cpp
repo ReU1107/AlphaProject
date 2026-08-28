@@ -16,6 +16,9 @@
 #include "Source/Runtime/Animation/Module.h"
 #include "Source/Runtime/Renderer/Module.h"
 
+#include "Source/Runtime/Scene/Module.h"
+
+
 #include "Source/Core/Serialization/ByteWriter.h"
 
 #include "ThirdParty/entt/entt.hpp"
@@ -44,69 +47,6 @@
 using Microsoft::WRL::ComPtr;
 using namespace Alpha;
 using namespace Alpha::Renderer;
-
-static void RenderDebugUI(entt::registry& registry, entt::entity floor,UInt32 cube_index)
-{
-    // 生成された床のエンティティが有効か一応チェック
-    if (floor == entt::null || !registry.valid(floor))
-    {
-        return;
-    }
-
-    ImGui::Begin("床のマテリアル変更デバッグ窓");
-    {
-        // すでに上書きコンポーネントを持っているかチェック
-        auto* override_com = registry.try_get<MaterialOverrideComponent>(floor);
-
-        if (!override_com)
-        {
-            if (ImGui::Button("マテリアル上書きを有効化"))
-            {
-                // ボタンを押した瞬間にコンポーネントを付与してデフォルト値で初期化！
-                auto& new_com = registry.emplace<MaterialOverrideComponent>(floor);
-                new_com.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
-            }
-            ImGui::Text("現在はメッシュ本来のデフォルトマテリアルで描画中");
-        }
-        else
-        {
-            if (ImGui::Button("上書きを解除してデフォルトに戻す"))
-            {
-                // コンポーネントを消去（これでGPU側には自動で 0xFFFFFFFF が送られる）
-                registry.remove<MaterialOverrideComponent>(floor);
-                ImGui::End();
-                return;
-            }
-
-            ImGui::Separator();
-
-            // 床のマテリアル配列を回して色を編集（床が単一マテリアルなら0番目だけでOKですが一応ループで）
-            for (int i = 0; i < static_cast<int>(override_com->materials.size()); ++i)
-            {
-                ImGui::PushID(i);
-
-                auto& current_prop = override_com->materials[i].props;
-
-                // ImGui用のバッファに現在の色をセット
-                float color_buffer[3] = { current_prop.base_color.X(), current_prop.base_color.Y(), current_prop.base_color.Z() };
-
-                if (ImGui::ColorEdit3("Base Color", color_buffer))
-                {
-                    // カラーピッカーが動いたら、先ほど作った Setter で安全に上書き
-                    Color3 new_color{ color_buffer[0], color_buffer[1], color_buffer[2] };
-                    override_com->SetBaseColor(i, new_color);
-                }
-
-                // 一緒に金属感や粗さも変えられるようにしておくとデバッグが捗ります
-                ImGui::SliderFloat("Roughness", &current_prop.roughness, 0.0f, 1.0f);
-                ImGui::SliderFloat("Metallic", &current_prop.metallic, 0.0f, 1.0f);
-
-                ImGui::PopID();
-            }
-        }
-    }
-    ImGui::End();
-}
 
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
@@ -144,6 +84,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     };
     GUISystem::Startup(gui_args);
 
+    DebugRenderer::Args debug_args = {
+        .render_core = RenderCore::GetPtr(),
+    };
+    DebugRenderer::Startup(debug_args);
+
+
     RenderResourceManager::Args resource_args = {
         .render_core = RenderCore::GetPtr(),
         .asset_manager = AssetManager::GetPtr(),
@@ -163,230 +109,336 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     RenderCore::Get().PostInitialize();
 
-    entt::registry registry;
+    Scene scene;
+    scene.Initialize();
 
+    // 既存処理でRegistryが必要な場合だけ参照を取る
+    entt::registry& registry = scene.GetRegistry();
+
+    auto create_mesh_object =
+        [&](const String& name,
+        UInt32 mesh_index,
+        const Vector3& position,
+        const Vector3& scale) -> SceneObject&
     {
-        const auto entity = registry.create();
+        SceneObject& object =
+            scene.CreateObject(name);
 
-        auto& mesh = registry.emplace<MeshComponent>(entity);
-        mesh.mesh_index = akari_index;
+        auto& mesh =
+            object.AddComponent<MeshComponent>();
 
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(10.0f, 0.0f, 0.0f));
+        mesh.mesh_index = mesh_index;
 
-    }
+        auto& transform =
+            object.GetComponent<TransformComponent>();
+
+        transform.SetLocalPosition(position);
+        transform.SetLocalScale(scale);
+
+        return object;
+    };
+
+    auto add_default_materials =
+        [&](SceneObject& object,
+        UInt32 mesh_index)
+        -> MaterialOverrideComponent&
     {
-        const auto entity = registry.create();
+        auto& material =
+            object.AddComponent<
+            MaterialOverrideComponent>();
 
-        auto& mesh = registry.emplace<MeshComponent>(entity);
-        mesh.mesh_index = akari_index;
+        material.materials =
+            RenderResourceManager::Get()
+            .GetDefaultMaterials(mesh_index);
 
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(10.0f, 0.0f, 10.0f));
+        return material;
+    };
 
-    }
+    const Vector3 default_scale(
+        1.0f,
+        1.0f,
+        1.0f);
 
+    // Akari 1
+    create_mesh_object(
+        L"Akari_1",
+        akari_index,
+        Vector3(10.0f, 0.0f, 0.0f),
+        default_scale);
+
+    // Akari 2
+    create_mesh_object(
+        L"Akari_2",
+        akari_index,
+        Vector3(10.0f, 0.0f, 10.0f),
+        default_scale);
+
+    // Patchouli
+    create_mesh_object(
+        L"Patchouli",
+        patchouli_index,
+        Vector3(-10.0f, 0.0f, 0.0f),
+        default_scale);
+
+    // Sphere
+    create_mesh_object(
+        L"Sphere",
+        sphere_index,
+        Vector3(-10.0f, 0.0f, 10.0f),
+        default_scale);
+
+    SceneObject* floor_object = nullptr;
+
+    // Floor
     {
-        const auto entity = registry.create();
+        SceneObject& object =
+            create_mesh_object(
+            L"Floor",
+            cube_index,
+            Vector3(0.0f, -0.5f, 0.0f),
+            Vector3(60.0f, 1.0f, 60.0f));
 
-        auto& mesh = registry.emplace<MeshComponent>(entity);
-        mesh.mesh_index = patchouli_index;
+        add_default_materials(
+            object,
+            cube_index);
 
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(-10.0f, 0.0f, 0.0f));
-
-    }
-
-    {
-        const auto entity = registry.create();
-
-        auto& mesh = registry.emplace<MeshComponent>(entity);
-        mesh.mesh_index = sphere_index;
-
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(-10.0f, 0.0f, 10.0f));
-
-    }
-
-    entt::entity floor = entt::null;
-
-    {
-        const auto entity = registry.create();
-
-        auto& mesh = registry.emplace<MeshComponent>(entity);
-        mesh.mesh_index = cube_index;
-
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(0.0f, -0.5f, 0.0f)); 
-        transform.SetLocalScale(Vector3(60.0f, 1.0f, 60.0f));
-
-        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
-        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
-
-        floor = entity;
-    }
-
-    {
-        const auto entity = registry.create();
-        auto& mesh = registry.emplace<MeshComponent>(entity);
-        mesh.mesh_index = cube_index;
-
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(0.0f, 60.5f, 0.0f)); // 高さ60
-        transform.SetLocalScale(Vector3(60.0f, 1.0f, 60.0f));
-        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
-        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
-    }
-
-    // 奥の壁 (Back Wall) - 白
-    {
-        const auto entity = registry.create();
-        auto& mesh = registry.emplace<MeshComponent>(entity);
-        mesh.mesh_index = cube_index;
-
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(0.0f, 30.0f, 30.5f)); // 奥（Zプラス）
-        transform.SetLocalScale(Vector3(60.0f, 60.0f, 1.0f));
-        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
-        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
-    }
-
-    // 左の壁 (Left Wall) - 赤
-    {
-        const auto entity = registry.create();
-        auto& mesh = registry.emplace<MeshComponent>(entity);
-        mesh.mesh_index = cube_index;
-
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(-30.5f, 30.0f, 0.0f)); // 左（Xマイナス）
-        transform.SetLocalScale(Vector3(1.0f, 60.0f, 60.0f));
-        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
-        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
-		ma.SetBaseColor(0, Color3(0.63f, 0.06f, 0.04f));
+        floor_object = &object;
     }
 
-
+    // Ceiling
     {
-        const auto entity = registry.create();
-        auto& mesh = registry.emplace<MeshComponent>(entity);
-        mesh.mesh_index = cube_index;
+        SceneObject& object =
+            create_mesh_object(
+            L"Ceiling",
+            cube_index,
+            Vector3(0.0f, 60.5f, 0.0f),
+            Vector3(60.0f, 1.0f, 60.0f));
 
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(30.5f, 10.0f, 0.0f));
-        transform.SetLocalScale(Vector3(1.0f, 20.0f, 60.0f));
-
-        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
-        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
-        ma.SetBaseColor(0, Color3(0.15f, 0.48f, 0.09f));
+        add_default_materials(
+            object,
+            cube_index);
     }
 
+    // Back wall
     {
-        const auto entity = registry.create();
-        auto& mesh = registry.emplace<MeshComponent>(entity);
-        mesh.mesh_index = cube_index;
+        SceneObject& object =
+            create_mesh_object(
+            L"BackWall",
+            cube_index,
+            Vector3(0.0f, 30.0f, 30.5f),
+            Vector3(60.0f, 60.0f, 1.0f));
 
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(30.5f, 50.0f, 0.0f));
-        transform.SetLocalScale(Vector3(1.0f, 20.0f, 60.0f));
-
-        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
-        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
-        ma.SetBaseColor(0, Color3(0.15f, 0.48f, 0.09f));
+        add_default_materials(
+            object,
+            cube_index);
     }
 
+    // Left wall
     {
-        const auto entity = registry.create();
-        auto& mesh = registry.emplace<MeshComponent>(entity);
-        mesh.mesh_index = cube_index;
+        SceneObject& object =
+            create_mesh_object(
+            L"LeftWall",
+            cube_index,
+            Vector3(-30.5f, 30.0f, 0.0f),
+            Vector3(1.0f, 60.0f, 60.0f));
 
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(30.5f, 30.0f, -20.0f));
-        transform.SetLocalScale(Vector3(1.0f, 20.0f, 20.0f));
+        auto& material =
+            add_default_materials(
+            object,
+            cube_index);
 
-        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
-        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
-        ma.SetBaseColor(0, Color3(0.15f, 0.48f, 0.09f));
+        material.SetBaseColor(
+            0,
+            Color3(0.63f, 0.06f, 0.04f));
     }
 
+    // Right wall lower
     {
-        const auto entity = registry.create();
-        auto& mesh = registry.emplace<MeshComponent>(entity);
-        mesh.mesh_index = cube_index;
+        SceneObject& object =
+            create_mesh_object(
+            L"RightWallLower",
+            cube_index,
+            Vector3(30.5f, 10.0f, 0.0f),
+            Vector3(1.0f, 20.0f, 60.0f));
 
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(30.5f, 30.0f, 20.0f));
-        transform.SetLocalScale(Vector3(1.0f, 20.0f, 20.0f));
+        auto& material =
+            add_default_materials(
+            object,
+            cube_index);
 
-        auto& ma = registry.emplace<MaterialOverrideComponent>(entity);
-        ma.materials = RenderResourceManager::Get().GetDefaultMaterials(cube_index);
-        ma.SetBaseColor(0, Color3(0.15f, 0.48f, 0.09f));
+        material.SetBaseColor(
+            0,
+            Color3(0.15f, 0.48f, 0.09f));
     }
 
+    // Right wall upper
     {
-        const auto entity = registry.create();
-        auto& transform = registry.emplace<TransformComponent>(entity);
+        SceneObject& object =
+            create_mesh_object(
+            L"RightWallUpper",
+            cube_index,
+            Vector3(30.5f, 50.0f, 0.0f),
+            Vector3(1.0f, 20.0f, 60.0f));
 
-        auto& light = registry.emplace<LightComponent>(entity);
-        light.type = 2; // Directional Light
+        auto& material =
+            add_default_materials(
+            object,
+            cube_index);
 
-        light.direction = VectorNormalize(Vector3(-1.0f, -0.5f, 0.0f));
-        light.SetColor(float3(1.0f, 0.95f, 0.8f));
-        light.SetIntensity(8.0f);                  
+        material.SetBaseColor(
+            0,
+            Color3(0.15f, 0.48f, 0.09f));
     }
 
+    // Right wall back
     {
-        const auto entity = registry.create();
+        SceneObject& object =
+            create_mesh_object(
+            L"RightWallBack",
+            cube_index,
+            Vector3(30.5f, 30.0f, -20.0f),
+            Vector3(1.0f, 20.0f, 20.0f));
 
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        // 天井（高さ60）の少し下（高さ50）の中央に配置
-        transform.SetLocalPosition(Vector3(0.0f, 50.0f, 0.0f));
+        auto& material =
+            add_default_materials(
+            object,
+            cube_index);
 
-        auto& light = registry.emplace<LightComponent>(entity);
-        light.type = 0; // Point Light
-        light.SetColor(float3(1.0f, 0.95f, 0.85f));
+        material.SetBaseColor(
+            0,
+            Color3(0.15f, 0.48f, 0.09f));
+    }
+
+    // Right wall front
+    {
+        SceneObject& object =
+            create_mesh_object(
+            L"RightWallFront",
+            cube_index,
+            Vector3(30.5f, 30.0f, 20.0f),
+            Vector3(1.0f, 20.0f, 20.0f));
+
+        auto& material =
+            add_default_materials(
+            object,
+            cube_index);
+
+        material.SetBaseColor(
+            0,
+            Color3(0.15f, 0.48f, 0.09f));
+    }
+
+    SceneObject* directional_light_object = nullptr;
+
+    // Directional light
+    {
+        SceneObject& object =
+            scene.CreateObject(
+            L"DirectionalLight");
+
+        auto& light =
+            object.AddComponent<LightComponent>();
+
+        light.type = 2;
+        light.direction =
+            VectorNormalize(
+            Vector3(-1.0f, -0.5f, 0.0f));
+
+        light.SetColor(
+            float3(1.0f, 0.95f, 0.8f));
+
+        light.SetIntensity(1.0f);
+
+        directional_light_object = &object;
+    }
+
+    // Point light
+    {
+        SceneObject& object =
+            scene.CreateObject(
+            L"PointLight");
+
+        auto& transform =
+            object.GetComponent<TransformComponent>();
+
+        transform.SetLocalPosition(
+            Vector3(0.0f, 50.0f, 0.0f));
+
+        auto& light =
+            object.AddComponent<LightComponent>();
+
+        light.type = 0;
+        light.SetColor(
+            float3(1.0f, 0.0f, 0.85f));
+
         light.SetIntensity(5.0f);
         light.SetRadius(45.0f);
     }
 
+    // Spot light
     {
-        const auto entity = registry.create();
+        SceneObject& object =
+            scene.CreateObject(
+            L"SpotLight");
 
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(-10.0f, 20.0f, 10.0f));
-        transform.LookAt(Vector3(0.0f, -1.0f, -1.0f)); // キャラたちがいる付近を狙う
+        auto& transform =
+            object.GetComponent<TransformComponent>();
 
-        auto& light = registry.emplace<LightComponent>(entity);
-        light.type = 1; // Spot Light
-        light.SetColor(float3(0.2f, 0.6f, 1.0f));
+        transform.SetLocalPosition(
+            Vector3(-10.0f, 20.0f, 10.0f));
+
+        transform.LookAt(
+            Vector3(0.0f, -1.0f, -1.0f));
+
+        auto& light =
+            object.AddComponent<LightComponent>();
+
+        light.type = 1;
+        light.SetColor(
+            float3(0.2f, 0.6f, 1.0f));
+
         light.SetIntensity(12.0f);
         light.SetRadius(60.0f);
 
-        light.SetSpotAngleDegree(30.0f, 60.0f);
+        light.SetSpotAngleDegree(
+            30.0f,
+            60.0f);
     }
 
-    // カメラ
+    // Camera
     {
-        const auto entity = registry.create();
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(0.0f, 20.0f, -20.0f));
+        SceneObject& object =
+            scene.CreateObject(
+            L"MainCamera");
 
-        auto& camera = registry.emplace<CameraComponent>(entity);
+        auto& transform =
+            object.GetComponent<TransformComponent>();
 
+        transform.SetLocalPosition(
+            Vector3(0.0f, 20.0f, -20.0f));
+
+        object.AddComponent<CameraComponent>();
     }
 
+    // Fog volume
     {
-        const auto entity = registry.create();
+        SceneObject& object =
+            scene.CreateObject(
+            L"FogVolume");
 
-        auto& transform = registry.emplace<TransformComponent>(entity);
-        transform.SetLocalPosition(Vector3(0.0f, 25.0f, 0.0f));
+        auto& transform =
+            object.GetComponent<TransformComponent>();
 
-        //auto& fog = registry.emplace<VolumeComponent>(entity);
+        transform.SetLocalPosition(
+            Vector3(0.0f, 25.0f, 0.0f));
 
-        //fog.SetSize(Vector3(45.0f, 45.0f, 45.0f));
+        auto& fog =
+            object.AddComponent<VolumeComponent>();
 
-        //fog.SetDensity(1.5f);
+        fog.SetSize(
+            Vector3(45.0f, 45.0f, 45.0f));
 
-        //fog.SetBaseCellSize(2.0f);
+        fog.SetDensity(1.5f);
     }
 
 
@@ -400,6 +452,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     while (WindowSystem::Get().ProcessMessages() && !WindowSystem::Get().ShouldClose())
     {
         auto frame_start = high_resolution_clock::now();
+
+        scene.Update(1.0f / 60);
 
         cm_sys.Update(registry);
 
@@ -415,10 +469,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         render_system.Render(registry, ctx);
 
 
-        RenderDebugUI(registry, floor, cube_index);
-
-
 		GUISystem::Get().EndFrame();
+
 
 		GUISystem::Get().Flush(ctx);
 

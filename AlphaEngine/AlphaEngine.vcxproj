@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.Direct3D.DXC.1.10.2605.2-preview\build\native\Microsoft.Direct3D.DXC.props" Condition="Exists('..\packages\Microsoft.Direct3D.DXC.1.10.2605.2-preview\build\native\Microsoft.Direct3D.DXC.props')" />
   <Import Project="..\packages\Microsoft.Direct3D.D3D12.1.720.0-preview\build\native\Microsoft.Direct3D.D3D12.props" Condition="Exists('..\packages\Microsoft.Direct3D.D3D12.1.720.0-preview\build\native\Microsoft.Direct3D.D3D12.props')" />
@@ -162,6 +162,7 @@
     <ClCompile Include="Source\Core\Time\TimeManager.cpp" />
     <ClCompile Include="Source\Core\Window\Win32Window.cpp" />
     <ClCompile Include="Source\Core\Window\WindowSystem.cpp" />
+    <ClCompile Include="Source\Editor\Viewport.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimationComponent.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\VolumeComponent.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\LightComponent.cpp" />
@@ -297,14 +298,16 @@
     <ClInclude Include="Source\Core\Common.h" />
     <ClInclude Include="Source\Core\Component.h" />
     <ClInclude Include="Source\Core\Math\AxisAlignedBoundingBox.h" />
+    <ClInclude Include="Source\Core\Math\Frustum.h" />
+    <ClInclude Include="Source\Core\Math\Plane.h" />
     <ClInclude Include="Source\Editor\AssetBrowser.h" />
     <ClInclude Include="Source\Editor\Console.h" />
     <ClInclude Include="Source\Editor\EditorContext.h" />
-    <ClInclude Include="Source\Editor\EditorWindowManager.h" />
     <ClInclude Include="Source\Editor\Gizmo.h" />
     <ClInclude Include="Source\Editor\Hierarchy.h" />
     <ClInclude Include="Source\Editor\Inspector.h" />
     <ClInclude Include="Source\Editor\Viewport.h" />
+    <ClInclude Include="Source\Editor\Panel.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12RayTracePipeline.h" />
     <ClInclude Include="Source\Runtime\RenderCore\ASBuilder.h" />
     <ClInclude Include="Source\Runtime\RenderCore\BufferAllocator.h" />
@@ -316,12 +319,13 @@
     <ClInclude Include="Source\Runtime\Renderer\MaterialOverrideComponent.h" />
     <ClInclude Include="Source\Runtime\Renderer\Module.h" />
     <ClInclude Include="Source\Runtime\RHI\RHIRayTracePipeline.h" />
+    <ClInclude Include="Source\Runtime\Scene\Module.h" />
+    <ClInclude Include="Source\Runtime\Scene\SceneGraph.h" />
     <ClInclude Include="Source\Runtime\System\CameraSystem.h" />
     <ClInclude Include="Source\Runtime\System\CompositePass.h" />
     <ClInclude Include="Source\Runtime\System\Definitions.h" />
     <ClInclude Include="Source\Runtime\System\VolumetricPass.h" />
     <ClInclude Include="Source\Runtime\System\FroxelLightingPass.h" />
-    <ClInclude Include="Source\Runtime\System\RayTracingPass.h" />
     <ClInclude Include="Source\Runtime\System\RenderScene.h" />
     <ClInclude Include="Source\Runtime\System\TransformComponent.h" />
     <ClInclude Include="Source\Core\Container\Array.h" />

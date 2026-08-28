@@ -90,6 +90,8 @@ namespace Alpha
 
 	Vector3 Vector3TransformDir(const Vector3& vec, const Quaternion& q);
 
+	Vector3 Vector3UnprojectNDC(const Vector3& ndc, const Matrix4x4& inv_view_proj);
+
 	// 逆行列
 	Matrix4x4 Matrix4x4Inverse(const Matrix4x4& mat);
 
@@ -132,6 +134,13 @@ namespace Alpha
 
 	// 行列より要素取り出し
 	void MatrixDecompose(const Matrix4x4& mat, Vector3* scale, Quaternion* rotation, Vector3* position);
+
+	Vector3 Matrix4x4Forward(const Matrix4x4& mat);
+	Vector3 Matrix4x4Backward(const Matrix4x4& mat);
+	Vector3 Matrix4x4Right(const Matrix4x4& mat);
+	Vector3 Matrix4x4Left(const Matrix4x4& mat);
+	Vector3 Matrix4x4Up(const Matrix4x4& mat);
+	Vector3 Matrix4x4Down(const Matrix4x4& mat);
 
 	// 四元数
 	float QuaternionLengthSq(const Quaternion& q);

@@ -96,7 +96,7 @@ namespace Alpha
 	{
 		float4x4 view{ float4x4::Identity };
 		float4x4 view_proj{ float4x4::Identity };
-		float4x4 proj_view{ float4x4::Identity };
+		float4x4 inv_view_proj{ float4x4::Identity };
 		float4 camera_pos;
 		float4 frustum_planes;
 
