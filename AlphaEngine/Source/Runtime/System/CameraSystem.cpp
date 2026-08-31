@@ -1,7 +1,7 @@
 ﻿#include "CameraSystem.h"
 #include "Renderer/CameraComponent.h"
 
-#include "TransformComponent.h"
+#include "Spatial/TransformComponent.h"
 
 #include "Core/Math/MathUtil.h"
 #include "Core/Math/MathF.h"

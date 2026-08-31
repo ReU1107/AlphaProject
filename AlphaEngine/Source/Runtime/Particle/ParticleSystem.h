@@ -1,32 +1,42 @@
 ﻿#pragma once
-#include "Core/Subsystem.h"
-#include "Core/Types.h"
+#include "Core/Common.h"
 #include "Context.h"
+#include <entt/entt.hpp>
+#include "Definitions.h"
 
 namespace Alpha
 {
 	class RenderCore;
-	class CommandQueue;
-	class CommandList;
-	class Timeline;
+
+	class PersistentBufferAllocator;
+	class TransientBufferAllocator;
+	class Buffer;
 	class PipelineLayout;
-	class RingBuffer;
+	class ComputePipeline;
+	class Shader;
 
-	namespace Particle
-	{
-		class Emitter;
-	}
-
-	class ParticleSystem : public Subsystem<ParticleSystem>
+	class ParticleSystem
 	{
 	private:
-		TUnique<CommandQueue> m_command_queue{};
-		TUnique<CommandList> m_command_list{};
-		TUnique<Timeline> m_timeline{};
-		TUnique<PipelineLayout> m_shape_pipeline_layout{};
-		TUnique<RingBuffer> m_dynamic_CB{};
+		
+		TUnique<TransientBufferAllocator> m_emit_command_allocator{ nullptr };
+		TFixedArray<TUnique<PersistentBufferAllocator>, 2> m_particle_allocator{};
+		TUnique<Buffer> m_particle_counter{ nullptr };
 
-		std::vector<Particle::Emitter*> m_emitters{};
+		TArray<ParticleEmitCommand> m_emit_commands{};
+
+		TUnique<PipelineLayout> m_layout{ nullptr };
+
+		TUnique<ComputePipeline> m_emit_pipeline{ nullptr };
+		TUnique<Shader> m_emit_cs{ nullptr };
+
+		TUnique<ComputePipeline> m_update_pipeline{ nullptr };
+		TUnique<Shader> m_update_cs{ nullptr };
+
+		TUnique<ComputePipeline> m_reset_pipeline{ nullptr };
+		TUnique<Shader> m_reset_cs{ nullptr };
+
+		UInt32 m_counter_index{ 0 };
 
 	public:
 		ParticleSystem();
@@ -41,10 +51,7 @@ namespace Alpha
 		bool Initialize(const Args& args);
 		void Finalize();
 
-		Particle::Emitter* CreateEmitter();
-
-		// パーティクルシステムの更新
-		void Update(Particle::Context& context);
+		void Update(entt::registry& registry, ParticleContext& ctx);
 
 	};
 }

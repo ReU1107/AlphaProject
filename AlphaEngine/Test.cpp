@@ -25,7 +25,6 @@
 #include "ThirdParty/imgui/imgui.h"
 
 #include "Source/Runtime/System/RenderSystem.h"
-#include "Source/Runtime/System/TransformComponent.h"
 #include "Source/Runtime/System/CameraSystem.h"
 #include "Source/Runtime/System/VertexComputePass.h"
 #include "Source/Runtime/System/RenderScene.h"
@@ -35,6 +34,7 @@
 #include "Source/Runtime/System/CompositePass.h"
 #include "Source/Runtime/Renderer/CameraComponent.h"
 
+#include "Source/Runtime/Spatial/TransformComponent.h"
 #include "RHI/Definitions.h"
 
 #include "Source/Core/Math/MathF.h"

@@ -4,7 +4,7 @@
 #include "Renderer/Module.h"
 
 #include "Definitions.h"
-#include "TransformComponent.h"
+#include "Spatial/TransformComponent.h"
 
 #include "Core/Math/MathF.h"
 

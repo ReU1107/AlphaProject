@@ -2,8 +2,8 @@
 #include "RenderCore/Module.h"
 #include "Renderer/Module.h"
 
-#include "TransformComponent.h"
 #include "VertexComputePass.h"
+#include "Spatial/TransformComponent.h"
 
 
 #include "Core/Math/MathF.h"

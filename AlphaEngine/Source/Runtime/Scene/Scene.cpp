@@ -1,6 +1,6 @@
 ﻿#include "Scene.h"
 #include "SceneObject.h"
-#include "System/TransformComponent.h"
+#include "Spatial/TransformComponent.h"
 
 #include "Core/Math/MathF.h"
 

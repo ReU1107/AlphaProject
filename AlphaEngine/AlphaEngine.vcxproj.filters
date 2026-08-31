@@ -16,6 +16,9 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="VertexShader.hlsl" />
+    <FxCompile Include="Asset\ParticleEmitCS.hlsl" />
+    <FxCompile Include="Asset\ParticleUpdateCS.hlsl" />
+    <FxCompile Include="Asset\ParticleResetCS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Test.cpp">
@@ -264,7 +267,7 @@
     <ClCompile Include="Source\Runtime\Animation\AnimationComponent.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\System\AnimationSystem.cpp">
+    <ClCompile Include="Source\Runtime\Animation\AnimationSystem.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Renderer\GUIVisitor.cpp">
@@ -387,7 +390,7 @@
     <ClCompile Include="Source\Runtime\Asset\Importer\FBX\FBXLoader.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\System\TransformComponent.cpp">
+    <ClCompile Include="Source\Runtime\Spatial\TransformComponent.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\RenderCore\Util.cpp">
@@ -439,6 +442,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\Viewport.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Particle\ParticleSystem.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -899,7 +905,7 @@
     <ClInclude Include="Source\Runtime\Animation\AnimationResource.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\System\AnimationSystem.h">
+    <ClInclude Include="Source\Runtime\Animation\AnimationSystem.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Animation\Module.h">
@@ -980,7 +986,7 @@
     <ClInclude Include="Source\Core\Math\Random.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\System\TransformComponent.h">
+    <ClInclude Include="Source\Runtime\Spatial\TransformComponent.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\System\RenderSystem.h">
@@ -1107,6 +1113,15 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Scene\Module.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Particle\Definitions.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Particle\ParticleEmitterComponent.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Particle\ParticleSystem.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
