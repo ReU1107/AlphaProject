@@ -16,9 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="VertexShader.hlsl" />
-    <FxCompile Include="Asset\ParticleEmitCS.hlsl" />
-    <FxCompile Include="Asset\ParticleUpdateCS.hlsl" />
-    <FxCompile Include="Asset\ParticleResetCS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Test.cpp">
@@ -445,6 +442,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Particle\ParticleSystem.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\RenderCore\CommandListPool.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1122,6 +1122,12 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Particle\ParticleSystem.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\RenderCore\CommandListPool.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\RHI\Constants.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

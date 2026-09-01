@@ -38,13 +38,13 @@ namespace Alpha
 	class GPUDataTransfer;
 	class ASBuilder;
 	class TransientBufferAllocator;
+	class CommandListPool;
 
 	class RenderCore : public Subsystem<RenderCore>
 	{
 	private:
 		TUnique<RenderHardwareInterface> m_rhi{ nullptr };
 		TUnique<CommandQueue> m_command_queue{};
-		TUnique<CommandList> m_command_list{};
 		TUnique<Timeline> m_timeline{};
 
 		TUnique<SwapChain> m_swap_chain{};
@@ -62,6 +62,7 @@ namespace Alpha
 
 		TUnique<GPUDataTransfer> m_gpu_data_transfer{};
 		TUnique<ASBuilder> m_as_builder{};
+		TUnique<CommandListPool> m_direct_pool{};
 
 		TUnique<TransientBufferAllocator> m_transient_allocator{};
 
@@ -107,8 +108,6 @@ namespace Alpha
 		ASBuildSize PreBuildBLAS(const BLASRequest& request);
 		ASBuildSize PreBuildTLAS(const TLASRequest& request);
 
-		void BuildBLAS(const BLASRequest& request);
-
 		TUnique<SamplerState> CreateSamplerState(ERHIFilter filter, ERHIAddressMode address);
 
 		TUnique<Texture> CreateTexture(UInt32 width, UInt32 height, UInt32 depth, ERHIResourceFormat format, ETexturePresetType type);
@@ -141,9 +140,10 @@ namespace Alpha
 		Texture* GetCurrentRenderTarget() const;
 		Texture* GetDepthTexture() const;
 
-		CommandList* GetCommandList() const { return m_command_list.get(); }
 		CommandQueue* GetCommandQueue() const { return m_command_queue.get(); }
 		Timeline* GetTimeline() const { return m_timeline.get(); }
+
+		CommandList* AcquireCommandList() const;
 
 		DescriptorHeap* GetResourceHeap() const { return m_resource_heap.get(); }
 		DescriptorHeap* GetSamplerHeap() const { return m_sampler_heap.get(); }
@@ -158,8 +158,6 @@ namespace Alpha
 		UInt32 GetHeight() const { return m_height; }
 
 		RenderHardwareInterface* GetRHI() const { return m_rhi.get(); }
-
-		bool PostInitialize();
 
 		void BeginFrame();
 

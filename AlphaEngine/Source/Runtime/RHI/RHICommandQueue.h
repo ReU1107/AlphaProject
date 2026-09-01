@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Core/Common.h"
 #include "Declarations.h"
+#include <span>
 
 namespace Alpha
 {
@@ -11,9 +12,9 @@ namespace Alpha
 
 		virtual bool Initialize(const RHICommandQueueDesc& desc) = 0;
 
-		virtual void ExecuteCommandBuffer(RHICommandBuffer* command_buffer_) = 0;
+		virtual void ExecuteCommandBuffer(RHICommandBuffer* command_buffer) = 0;
 
-		virtual void ExecuteCommandBuffers(RHICommandBuffer** command_buffers_, UInt32 command_buffer_count_) = 0;
+		virtual void ExecuteCommandBuffers(std::span<RHICommandBuffer*> command_buffers) = 0;
 
 		virtual void Signal(RHITimeline* timeline_, uint64_t value) = 0;
 

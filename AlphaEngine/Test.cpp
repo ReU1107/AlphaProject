@@ -17,6 +17,7 @@
 #include "Source/Runtime/Renderer/Module.h"
 
 #include "Source/Runtime/Scene/Module.h"
+#include "Source/Runtime/Particle/Module.h"
 
 
 #include "Source/Core/Serialization/ByteWriter.h"
@@ -107,7 +108,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	RenderSystem render_system;
 	render_system.Initialize(rs_args);
 
-    RenderCore::Get().PostInitialize();
+    ParticleSystem::Args ps_args = {
+        .render_core = RenderCore::GetPtr(),
+        .max_particle_count = 10000,
+    };
+    ParticleSystem particle_system;
+    particle_system.Initialize(ps_args);
 
     Scene scene;
     scene.Initialize();
@@ -441,6 +447,17 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         fog.SetDensity(1.5f);
     }
 
+    {
+        SceneObject& object = scene.CreateObject(L"Emitter");
+
+        auto& transform = object.GetComponent<TransformComponent>();
+
+        transform.SetLocalPosition(Vector3(0.0f, 25.0f, 0.0f));
+
+        auto& fog = object.AddComponent<ParticleEmitterComponent>();
+        
+    }
+
 
     using namespace std::chrono;
 
@@ -460,20 +477,48 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         RenderCore::Get().BeginFrame();
         GUISystem::Get().BeginFrame();
 
+        ParticleContext pctx = {};
+        pctx.command_list = RenderCore::Get().AcquireCommandList();
+        pctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
+        pctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
+        pctx.delta_time = 1.0f / 60;
+
+        particle_system.Update(registry, pctx);
+
 
         RenderContext ctx = {};
-        ctx.command_list = RenderCore::Get().GetCommandList();
+        ctx.command_list = RenderCore::Get().AcquireCommandList();
         ctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
         ctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
+
+        // 暫定でここに置いてるけどどこにおこう
+        RenderCore::Get().GetASBuilder()->RecordBuildCommands(ctx.command_list);
 
         render_system.Render(registry, ctx);
 
 
-		GUISystem::Get().EndFrame();
+        GUISystem::Get().EndFrame();
 
+        auto list = RenderCore::Get().AcquireCommandList();
 
-		GUISystem::Get().Flush(ctx);
+        UInt32 width = RenderCore::Get().GetWidth();
+        UInt32 height = RenderCore::Get().GetHeight();
 
+        list->Transition(RenderCore::Get().GetCurrentRenderTarget(), ERHIResourceState::RenderTarget);
+        list->Transition(RenderCore::Get().GetDepthTexture(), ERHIResourceState::DepthWrite);
+
+        list->SetRenderTarget(RenderCore::Get().GetCurrentRenderTarget(), RenderCore::Get().GetDepthTexture());
+        list->ClearRenderTarget(RenderCore::Get().GetCurrentRenderTarget(), Rect2D(0, 0, width, height), Color4::Gray);
+        list->ClearDepthStencil(RenderCore::Get().GetDepthTexture(), Rect2D(0, 0, width, height), 0.0f);
+        list->SetViewport(Viewport(0, 0, (float)width, (float)height, 0.0f, 1.0f));
+
+        list->SetScissorRect(0, 0, width, height);
+    
+        ctx.command_list = list;
+        GUISystem::Get().Flush(ctx);
+
+        list->Transition(RenderCore::Get().GetDepthTexture(), ERHIResourceState::Common);
+        list->Transition(RenderCore::Get().GetCurrentRenderTarget(), ERHIResourceState::Present);
 
         RenderCore::Get().EndFrame();
 

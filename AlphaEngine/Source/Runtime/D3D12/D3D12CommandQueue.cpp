@@ -1,7 +1,9 @@
 ﻿#include "D3D12CommandQueue.h"
 #include "D3D12CommandBuffer.h"
-#include "RHI/Definitions.h"
 #include "D3D12Timeline.h"
+#include "RHI/Definitions.h"
+#include "RHI/Constants.h"
+
 
 #if RHI_D3D12
 
@@ -65,17 +67,24 @@ namespace Alpha
 		ID3D12CommandList* lists[] = { native_list };
 
 		m_queue->ExecuteCommandLists(1, lists);
-		
-		//ComPtr<ID3D12DeviceRemovedExtendedData> pDred;
-		//if (SUCCEEDED(GetD3D12Device()->QueryInterface(IID_PPV_ARGS(&pDred)))) {
-		//	D3D12_DRED_AUTO_BREADCRUMBS_OUTPUT dredAutoBreadcrumbsOutput;
-		//	if (SUCCEEDED(pDred->GetAutoBreadcrumbsOutput(&dredAutoBreadcrumbsOutput))) {
-		//	}
-		//}
 	}
 
-	void D3D12CommandQueue::ExecuteCommandBuffers(RHICommandBuffer** command_buffers_, UInt32 command_buffer_count_)
+	void D3D12CommandQueue::ExecuteCommandBuffers(std::span<RHICommandBuffer*> command_buffers)
 	{
+		TFixedArray<ID3D12CommandList*, MaxSubmitCommandBufferCount> lists{};
+		UINT count = 0;
+		for (size_t i = 0; i < command_buffers.size(); ++i)
+		{
+			RHICommandBuffer* command_buffer = command_buffers[i];
+			if (!command_buffer)
+				break;
+
+			auto* d3d12_command_buffer = static_cast<D3D12CommandBuffer*>(command_buffer);
+
+			lists[count++] = d3d12_command_buffer->GetNativeHandle();
+		}
+	
+		m_queue->ExecuteCommandLists(count, lists.data());
 	}
 
 	void D3D12CommandQueue::Signal(RHITimeline* timeline_, UINT64 value)

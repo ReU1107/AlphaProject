@@ -137,36 +137,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <FxCompile Include="Asset\ParticleEmitCS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Asset\ParticleResetCS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Asset\ParticleUpdateCS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
-    </FxCompile>
     <FxCompile Include="VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Library</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
@@ -195,6 +165,7 @@
     <ClCompile Include="Source\Editor\Viewport.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimationComponent.cpp" />
     <ClCompile Include="Source\Runtime\Particle\ParticleSystem.cpp" />
+    <ClCompile Include="Source\Runtime\RenderCore\CommandListPool.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\VolumeComponent.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\LightComponent.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\MaterialOverrideComponent.cpp" />
@@ -345,6 +316,7 @@
     <ClInclude Include="Source\Runtime\Particle\ParticleSystem.h" />
     <ClInclude Include="Source\Runtime\RenderCore\ASBuilder.h" />
     <ClInclude Include="Source\Runtime\RenderCore\BufferAllocator.h" />
+    <ClInclude Include="Source\Runtime\RenderCore\CommandListPool.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Definitions.h" />
     <ClInclude Include="Source\Runtime\RenderCore\RayTracePipeline.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Util.h" />
@@ -352,6 +324,7 @@
     <ClInclude Include="Source\Runtime\Renderer\LightComponent.h" />
     <ClInclude Include="Source\Runtime\Renderer\MaterialOverrideComponent.h" />
     <ClInclude Include="Source\Runtime\Renderer\Module.h" />
+    <ClInclude Include="Source\Runtime\RHI\Constants.h" />
     <ClInclude Include="Source\Runtime\RHI\RHIRayTracePipeline.h" />
     <ClInclude Include="Source\Runtime\Scene\Module.h" />
     <ClInclude Include="Source\Runtime\Scene\SceneGraph.h" />

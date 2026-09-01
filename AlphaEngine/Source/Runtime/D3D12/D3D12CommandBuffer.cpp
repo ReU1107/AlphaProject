@@ -1,5 +1,6 @@
 ﻿#include "D3D12CommandBuffer.h"
 #include "RHI/Definitions.h"
+#include "RHI/Constants.h"
 
 #include "D3D12Buffer.h"
 #include "D3D12Texture.h"
@@ -28,7 +29,6 @@ namespace
 {
 	using namespace Alpha;
 	// 最大遷移数
-	static constexpr UInt32 MaxTranstionCount = 128;
 
 	static D3D12_RESOURCE_STATES GetD3D12ResourceStates(Alpha::ERHIResourceState state)
 	{

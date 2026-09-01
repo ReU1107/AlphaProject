@@ -326,10 +326,6 @@ namespace Alpha
 		ctx.command_list->SetGraphicsPipeline(m_pipeline.get());
 		ctx.command_list->SetDescriptorHeap(RenderCore::Get().GetResourceHeap(), RenderCore::Get().GetSamplerHeap());
 
-		ctx.command_list->SetRenderTarget(RenderCore::Get().GetCurrentRenderTarget(), RenderCore::Get().GetDepthTexture());
-
-
-
 		float L = draw_data->DisplayPos.x;
 		float R = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
 		float T = draw_data->DisplayPos.y;

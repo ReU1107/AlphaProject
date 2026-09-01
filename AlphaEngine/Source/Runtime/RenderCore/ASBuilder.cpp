@@ -19,14 +19,34 @@ namespace Alpha
 		m_scratch_blas_allocator = CreateTransientAllocator(args.render_core, 256, 64_MB, EBufferPresetType::RWByteAddress, L"ScratchASBuffer");
 	}
 
-	void ASBuilder::AddRequest(const BLASRequest& request)
+	void ASBuilder::AddBuildRequest(const BLASRequest& request)
 	{
-		m_requests.push_back(request);
+		m_build_requests.push_back(request);
+	}
+
+	void ASBuilder::AddUpdateRequest(const BLASRequest& request)
+	{
+		m_update_requests.push_back(request);
 	}
 
 	void ASBuilder::RecordBuildCommands(CommandList* command_list)
 	{
-		for (auto& request : m_requests)
+		RecordCommands(command_list, m_build_requests);
+	}
+
+	void ASBuilder::RecordUpdateCommands(CommandList* command_list)
+	{
+		RecordCommands(command_list, m_update_requests);
+	}
+
+	void ASBuilder::Reset(UInt32 current_buffer_index)
+	{
+		m_scratch_blas_allocator->Reset(current_buffer_index);
+	}
+
+	void ASBuilder::RecordCommands(CommandList* command_list, TArray<BLASRequest>& requests)
+	{
+		for (auto& request : requests)
 		{
 			RHIBuildBLASDesc build_desc = {};
 
@@ -81,14 +101,8 @@ namespace Alpha
 			build_desc.allow_update = request.allow_update;
 
 			command_list->BuildRaytracingAccelerationStructure(build_desc);
-
 		}
 
-		m_requests.clear();
-	}
-
-	void ASBuilder::Reset(UInt32 current_buffer_index)
-	{
-		m_scratch_blas_allocator->Reset(current_buffer_index);
+		requests.clear();
 	}
 }

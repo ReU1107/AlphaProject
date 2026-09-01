@@ -27,15 +27,15 @@ namespace Alpha
 		m_rhi->ExecuteCommandBuffer(command_list->GetRHI());
 	}
 
-	void CommandQueue::Execute(CommandList** command_lists, UInt32 count)
+	void CommandQueue::Execute(std::span<CommandList*> command_lists)
 	{
-		//RHICommandBuffer** rhi_command_buffers = 
-		//for (UInt32 i = 0; i < count; ++i)
-		//{
-		//	rhi_command_buffers[i] = command_lists[i]->GetRHI();
-		//}
-		//m_rhi->ExecuteCommandBuffers(rhi_command_buffers, count);
-		//AlphaDeleteArray(rhi_command_buffers);
+		RHICommandBuffer* rhi_command_buffers[8] = {};
+		for (size_t i = 0; i < command_lists.size(); ++i)
+		{
+			rhi_command_buffers[i] = command_lists[i]->GetRHI();
+		}
+
+		m_rhi->ExecuteCommandBuffers(rhi_command_buffers);
 	}
 
 	UInt64 CommandQueue::Signal(Timeline* timeline)

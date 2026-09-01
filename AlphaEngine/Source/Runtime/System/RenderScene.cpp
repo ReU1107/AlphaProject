@@ -147,7 +147,7 @@ namespace Alpha
 				);
 			}
 
-			RenderCore::Get().BuildBLAS(request);
+			RenderCore::Get().GetASBuilder()->AddUpdateRequest(request);
 
 			ASInstanceData as_instance = {};
 			as_instance.instance_id = current_instance_id;
@@ -273,8 +273,8 @@ namespace Alpha
 		// 頂点の整列やスキニング
 		m_vertex_compute_pass->Execute(ctx, m_dynamic_vertex_allocator->GetBuffer(), vertex_count);
 
-		// ↑で作った頂点バッファを利用してBLASの更新
-		RenderCore::Get().GetASBuilder()->RecordBuildCommands(ctx.command_list);
+		RenderCore::Get().GetASBuilder()->RecordUpdateCommands(ctx.command_list);
+
 		ctx.command_list->UAVBarrier(m_result_blas_allocator->GetBuffer());
 
 		// TLASの構築

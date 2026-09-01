@@ -25,6 +25,7 @@ namespace Alpha
 			ERHIResourceBindFlags::ShaderResource | ERHIResourceBindFlags::RenderTarget,
 			ERHIResourceFormat::RGBAFloat
 		);
+		m_visibility->SetName(L"VBufferPass::Visibility");
 
 		m_depth = RenderCore::Get().CreateTexture(
 			1920, 1080,
@@ -71,6 +72,9 @@ namespace Alpha
 
 		ctx.command_list->ClearRenderTargets(render_targets, 1, Rect2D(0, 0, 1920, 1080), Color4::Gray);
 		ctx.command_list->ClearDepthStencil(m_depth.get(), Rect2D(0, 0, 1920, 1080), 0.0f);
+		ctx.command_list->SetViewport(Viewport(0, 0, (float)1920, (float)1080, 0.0f, 1.0f));
+
+		ctx.command_list->SetScissorRect(0, 0, 1920, 1080);
 
 		ctx.command_list->SetGraphicsPipeline(m_pipeline.get());
 
@@ -83,7 +87,7 @@ namespace Alpha
 		ctx.command_list->Transition(render_targets, 1, ERHIResourceState::AllShaderResource);
 		ctx.command_list->Transition(m_depth.get(), ERHIResourceState::AllShaderResource);
 
-		ImGui::Begin("VBuffer Pass"); 
+		ImGui::Begin("VBuffer Pass");
 
 		ImGui::Image(m_visibility.get(), ImVec2(960, 540));
 

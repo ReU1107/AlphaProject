@@ -45,7 +45,7 @@ namespace Alpha
 		struct Args
 		{
 			RenderCore* render_core{ nullptr };
-			uint32_t max_particle_count{ 1024 };
+			UInt32 max_particle_count{ 10000 };
 		};
 
 		bool Initialize(const Args& args);

@@ -12,7 +12,8 @@ namespace Alpha
 	{
 	private:
 		TUnique<TransientBufferAllocator> m_scratch_blas_allocator{ nullptr };
-		TArray<BLASRequest> m_requests{};
+		TArray<BLASRequest> m_build_requests{};
+		TArray<BLASRequest> m_update_requests{};
 
 	public:
 		~ASBuilder();
@@ -24,11 +25,16 @@ namespace Alpha
 		};
 
 		void Initialize(const Args& args);
-		void AddRequest(const BLASRequest& request);
+		void AddBuildRequest(const BLASRequest& request);
+		void AddUpdateRequest(const BLASRequest& request);
 
 		void RecordBuildCommands(CommandList* command_list);
+		void RecordUpdateCommands(CommandList* command_list);
 
 		void Reset(UInt32 current_buffer_index);
+
+	private:
+		void RecordCommands(CommandList* command_list, TArray<BLASRequest>& requests);
 
 	};
 }
