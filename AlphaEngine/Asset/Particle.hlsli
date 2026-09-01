@@ -1,24 +1,56 @@
 ﻿
-struct Particle
+struct ParticleData
 {
     float3 position;
-    float life_time;
-    
-    float3 direction;
-    float max_life_time;
+    float age;
 
-    float4 color;
-        
+    float3 velocity;
+    float lifetime;
+
+    uint packed_color;
+    uint packed_size_rotation;
+    uint random_seed;
 };
 
-struct EmitInfo
+struct ParticleEmitCommand
 {
-    float4 color;
+    float3 world_position;
+    float delta_time;
 
-    float life_time;
-    uint max_num;
+    float3 initial_velocity;
+    float emission_rate;
+
+    float4 start_color;
+    float4 end_color;
+
+    float start_size;
+    float end_size;
+    float lifetime;
+    uint spawn_count;
+
+    uint material_index;
+    uint flags;
+    uint target_buffer_index;
+    uint padding;
 };
 
-static const uint OFFSET_COUNT = 0; // 最初のカウンタの位置
-static const uint OFFSET_DATA_START = 4; // データが始まる位置
-static const uint ELEMENT_SIZE = 4; // それぞれのデータのサイズ
+struct ParticleBufferIndices
+{
+    uint read_particle;
+    uint write_particle;
+
+    uint emit_command;
+    uint particle_counter;
+};
+
+struct ParticleFrameContext
+{
+    uint read_counter_index;
+    uint write_counter_index;
+    
+    uint max_particle_count;
+    uint emit_command_count;
+
+    float delta_time;
+};
+

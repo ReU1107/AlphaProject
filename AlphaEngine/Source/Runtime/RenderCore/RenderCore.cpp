@@ -25,6 +25,8 @@
 #include "GPUDataTransfer.h"
 #include "ASBuilder.h"
 
+#include "CommandListPool.h"
+
 #include "TransientBufferAllocator.h"
 
 #include "Core/Math/Vector.h"
@@ -43,7 +45,6 @@ namespace Alpha
 		m_rhi->Initialize(rhi_args);
 
 		m_command_queue = CreateCommandQueue(L"RenderCore::GraphicsQueue", ERHICommandType::Direct);
-		m_command_list = CreateCommandList(L"RenderCore::GraphicsList", ERHICommandType::Direct);
 
 		m_swap_chain = std::make_unique<SwapChain>();
 		{
@@ -112,6 +113,15 @@ namespace Alpha
 			m_as_builder->Initialize(desc);
 		}
 
+		m_direct_pool = std::make_unique<CommandListPool>();
+		{
+			CommandListPool::Args desc = {
+				.render_core = this,
+				.type = ERHICommandType::Direct,
+			};
+			m_direct_pool->Initialize(desc);
+		}
+
 		m_transient_allocator = std::make_unique<TransientBufferAllocator>();
 		{
 			TransientBufferAllocator::Args desc = {
@@ -158,7 +168,6 @@ namespace Alpha
 
 		m_swap_chain.reset();
 
-		m_command_list.reset();
 		m_command_queue.reset();
 
 		if (m_rhi)
@@ -343,11 +352,6 @@ namespace Alpha
 		return size;
 	}
 
-	void RenderCore::BuildBLAS(const BLASRequest& request)
-	{
-		m_as_builder->AddRequest(request);
-	}
-
 	TUnique<SamplerState> RenderCore::CreateSamplerState(ERHIFilter filter, ERHIAddressMode address)
 	{
 		auto sampler = std::make_unique<SamplerState>();
@@ -517,26 +521,17 @@ namespace Alpha
 		return m_depth_texture.get();
 	}
 
-	bool RenderCore::PostInitialize()
+	CommandList* RenderCore::AcquireCommandList() const
 	{
-		if (m_gpu_data_transfer->HasUpload())
-			m_gpu_data_transfer->Upload();
+		auto list = m_direct_pool->AcquireCommandList();
 
+		auto current_buffer_index = m_swap_chain->GetCurrentBackBufferIndex();
 
-		auto list = GetCommandList();
-		list->Begin(0);
+		list->Begin(current_buffer_index);
 
-		m_as_builder->RecordBuildCommands(list);
+		list->SetDescriptorHeap(m_resource_heap.get(), m_sampler_heap.get());
 
-		list->End();
-
-		m_command_queue->Execute(list);
-		m_command_queue->Signal(m_timeline.get());
-
-		m_timeline->WaitCPU();
-
-
-		return true;
+		return list;
 	}
 
 	void RenderCore::BeginFrame()
@@ -560,33 +555,21 @@ namespace Alpha
 
 		m_transient_allocator->Reset(current_buffer_index);
 
+		m_direct_pool->Reset();
+
 		m_as_builder->Reset(current_buffer_index);
-
-		m_command_list->Begin(current_buffer_index);
-
-		m_command_list->Transition(GetCurrentRenderTarget(), ERHIResourceState::RenderTarget);
-		m_command_list->Transition(GetDepthTexture(), ERHIResourceState::DepthWrite);
-
-		m_command_list->SetRenderTarget(GetCurrentRenderTarget(), GetDepthTexture());
-		m_command_list->ClearRenderTarget(GetCurrentRenderTarget(), Rect2D(0, 0, m_width, m_height), Color4::Gray);
-		m_command_list->ClearDepthStencil(GetDepthTexture(), Rect2D(0, 0, m_width, m_height), 0.0f);
-		m_command_list->SetViewport(Viewport(0, 0, (float)m_width, (float)m_height, 0.0f, 1.0f));
-
-		m_command_list->SetScissorRect(0, 0, m_width, m_height);
-
-		m_command_list->SetDescriptorHeap(m_resource_heap.get(), m_sampler_heap.get());
-
 	}
 
 	void RenderCore::EndFrame()
 	{
-		m_command_list->Transition(GetDepthTexture(), ERHIResourceState::Common);
-		m_command_list->Transition(GetCurrentRenderTarget(), ERHIResourceState::Present);
+		auto active_lists = m_direct_pool->GetActiveCommandLists();
 
-		m_command_list->End();
+		for (CommandList* list : active_lists)
+		{
+			list->End();
+		}
 
-		m_command_queue->Execute(m_command_list.get());
-
+		m_command_queue->Execute(active_lists);
 		m_command_queue->Signal(m_timeline.get());
 
 		m_swap_chain->Present();

@@ -7,9 +7,10 @@ namespace Alpha
 {
 	struct TransformComponent
 	{
+
 	private:
-		mutable Matrix4x4 m_local_to_world{ Matrix4x4::Identity };
-		Matrix4x4 world_to_local{ Matrix4x4::Identity };
+		mutable Matrix4x4 m_local_matrix{ Matrix4x4::Identity };
+		Matrix4x4 m_world_matrix{ Matrix4x4::Identity };
 
 		Quaternion m_rotation{ Quaternion::Identity };
 
@@ -27,7 +28,7 @@ namespace Alpha
 		void SetLocalRotation(const Vector3& euler);
 		void SetLocalRotation(const Quaternion& rotation);
 
-		const Matrix4x4& GetLocalToWorld() const;
+		const Matrix4x4& GetLocalMatrix() const;
 
 		// ローカル空間での平行移動
 		void LocalTranslate(const Vector3& displacement);
@@ -42,11 +43,8 @@ namespace Alpha
 
 		void RotateAround(const Vector3& point, const Vector3& axis, float radian);
 
-		Vector3 Forward() const;
-		Vector3 Backward() const;
-		Vector3 Right() const;
-		Vector3 Left() const;
-		Vector3 Up() const;
-		Vector3 Down() const;
+		void SetWorldMatrix(const Matrix4x4& mat);
+		const Matrix4x4& GetWorldMatrix() const;
+
 	};
 }

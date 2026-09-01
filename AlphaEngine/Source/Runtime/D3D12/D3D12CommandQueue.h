@@ -19,7 +19,7 @@ namespace Alpha
 
 		void ExecuteCommandBuffer(RHICommandBuffer* command_buffer_) final;
 
-		void ExecuteCommandBuffers(RHICommandBuffer** command_buffers_, UInt32 command_buffer_count_) final;
+		void ExecuteCommandBuffers(std::span<RHICommandBuffer*> command_buffers) final;
 
 		void Signal(RHITimeline* timeline_, UINT64 value) final;
 

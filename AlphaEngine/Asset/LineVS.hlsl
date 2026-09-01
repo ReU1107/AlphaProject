@@ -10,17 +10,25 @@ struct VSOutput
     float4 color : COLOR;
 };
 
-struct LineConstants
+struct FrameRenderContext
 {
-    float4x4 view_projection;
+    float4x4 view;
+    float4x4 view_proj;
+    float4x4 proj_view;
+    float4 camera_pos;
+    float4 frustum_planes;
+
+    uint instance_num;
+    uint light_count;
+
 };
 
-ConstantBuffer<LineConstants> constants : register(b0);
+ConstantBuffer<FrameRenderContext> frame : register(b0);
 
 
 VSOutput main(in LineVertex input)
 {
-    float4 position = mul(constants.view_projection,float4(input.position, 1.0f));
+    float4 position = mul(frame.view_proj, float4(input.position, 1.0f));
     
     VSOutput output;
     output.position = position;

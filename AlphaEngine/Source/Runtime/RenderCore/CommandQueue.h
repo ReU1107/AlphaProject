@@ -2,6 +2,8 @@
 #include "Core/Common.h"
 #include "RHI/Types.h"
 
+#include <span>
+
 namespace Alpha
 {
 	class RenderHardwareInterface;
@@ -35,7 +37,7 @@ namespace Alpha
 
 		void Execute(CommandList* command_list);
 
-		void Execute(CommandList** command_lists, UInt32 count);
+		void Execute(std::span<CommandList*> command_lists);
 
 		// 
 		UInt64 Signal(Timeline* timeline);

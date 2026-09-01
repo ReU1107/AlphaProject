@@ -15,7 +15,6 @@ namespace Alpha
 
 	bool RenderResourceManager::Initialize(const Args& args)
 	{
-
         m_vertex_position_allocator = CreatePersistentAllocator(args.render_core, sizeof(Vector3), 12_MB, EBufferPresetType::ROStructured, L"VertexPosition");
 		m_vertex_attribute_allocator= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 12_MB, EBufferPresetType::ROByteAddress, L"VertexAttribute");
 		
@@ -57,8 +56,6 @@ namespace Alpha
         m_material_table_palette.Initialize(100);
         m_texture_palette.Initialize(100);
 
-        /*if (ALPHA_CHECK_FATAL(args.asset_manager != nullptr, L"AssetManager が指定されていません。"))
-            return false;*/
 
         // テクスチャ
         auto white_tex = args.asset_manager->GetWhiteTexture();
@@ -269,10 +266,9 @@ namespace Alpha
             mesh.as.source_alloc = alloc;
 
             request.result_offset = mesh.as.source_alloc.offset;
-            request.scratch_size = mesh.as.scratch_size,
+            request.scratch_size = mesh.as.scratch_size;
 
-            RenderCore::Get().BuildBLAS(request);
-
+            RenderCore::Get().GetASBuilder()->AddBuildRequest(request);
 
         }
         return palette_index;

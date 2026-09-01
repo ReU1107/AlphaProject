@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Core/Common.h"
 #include "Core/Subsystem.h"
+#include "Core/Math/Frustum.h"
 
 namespace Alpha
 {
@@ -51,6 +52,8 @@ namespace Alpha
 		void DrawGizmo(const Vector3& position, const Vector3& dir, float thickness = 1.0f);
 		void DrawSphere(const Vector3& center, float radius, const Color4& color, float thickness = 1.0f);
 		void DrawBox(const Vector3& center, const Vector3& extents, const Color4& color, float thickness = 1.0f);
+		void DrawPlane(const Plane& plane, const Color4& color, float thickness = 1.0f);
+		void DrawFrustum(const Frustum& frustum, const Color4& color, float thickness = 1.0f);
 
 		void Flush(RenderContext& ctx);
 

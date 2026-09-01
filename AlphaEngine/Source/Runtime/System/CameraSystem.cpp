@@ -1,7 +1,7 @@
 ﻿#include "CameraSystem.h"
 #include "Renderer/CameraComponent.h"
 
-#include "TransformComponent.h"
+#include "Spatial/TransformComponent.h"
 
 #include "Core/Math/MathUtil.h"
 #include "Core/Math/MathF.h"
@@ -36,10 +36,10 @@ namespace Alpha
 
             Vector3 move_dir(0.0f, 0.0f, 0.0f);
 
-            if (GetKeyState('W') & 0x8000) { move_dir += transform.Forward(); }
-            if (GetKeyState('S') & 0x8000) { move_dir += transform.Backward(); }
-            if (GetKeyState('A') & 0x8000) { move_dir += transform.Left(); }
-            if (GetKeyState('D') & 0x8000) { move_dir += transform.Right(); }
+            if (GetKeyState('W') & 0x8000) { move_dir += Matrix4x4Forward(transform.GetWorldMatrix()); }
+            if (GetKeyState('S') & 0x8000) { move_dir += Matrix4x4Backward(transform.GetWorldMatrix()); }
+            if (GetKeyState('A') & 0x8000) { move_dir += Matrix4x4Left(transform.GetWorldMatrix()); }
+            if (GetKeyState('D') & 0x8000) { move_dir += Matrix4x4Right(transform.GetWorldMatrix()); }
             if (GetKeyState('Z') & 0x8000) { move_dir += Vector3::YAxis; }
             if (GetKeyState('X') & 0x8000) { move_dir += -Vector3::YAxis; }
 
@@ -51,7 +51,7 @@ namespace Alpha
                 transform.LocalTranslate(displacement);
             }
 
-            camera.view_matrix = Matrix4x4Inverse(transform.GetLocalToWorld());
+            camera.view_matrix = Matrix4x4Inverse(transform.GetWorldMatrix());
 		}
 
 	}

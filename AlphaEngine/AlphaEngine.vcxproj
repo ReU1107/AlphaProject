@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.Direct3D.DXC.1.10.2605.2-preview\build\native\Microsoft.Direct3D.DXC.props" Condition="Exists('..\packages\Microsoft.Direct3D.DXC.1.10.2605.2-preview\build\native\Microsoft.Direct3D.DXC.props')" />
   <Import Project="..\packages\Microsoft.Direct3D.D3D12.1.720.0-preview\build\native\Microsoft.Direct3D.D3D12.props" Condition="Exists('..\packages\Microsoft.Direct3D.D3D12.1.720.0-preview\build\native\Microsoft.Direct3D.D3D12.props')" />
@@ -162,11 +162,14 @@
     <ClCompile Include="Source\Core\Time\TimeManager.cpp" />
     <ClCompile Include="Source\Core\Window\Win32Window.cpp" />
     <ClCompile Include="Source\Core\Window\WindowSystem.cpp" />
+    <ClCompile Include="Source\Editor\Viewport.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimationComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Particle\ParticleSystem.cpp" />
+    <ClCompile Include="Source\Runtime\RenderCore\CommandListPool.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\VolumeComponent.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\LightComponent.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\MaterialOverrideComponent.cpp" />
-    <ClCompile Include="Source\Runtime\System\AnimationSystem.cpp" />
+    <ClCompile Include="Source\Runtime\Animation\AnimationSystem.cpp" />
     <ClCompile Include="Source\Runtime\Animation\Context\Graph.cpp" />
     <ClCompile Include="Source\Runtime\Animation\Context\IKSolver.cpp" />
     <ClCompile Include="Source\Runtime\Animation\Context\Node.cpp" />
@@ -235,7 +238,7 @@
     <ClCompile Include="Source\Runtime\System\FroxelLightingPass.cpp" />
     <ClCompile Include="Source\Runtime\System\RenderScene.cpp" />
     <ClCompile Include="Source\Runtime\System\RenderSystem.cpp" />
-    <ClCompile Include="Source\Runtime\System\TransformComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Spatial\TransformComponent.cpp" />
     <ClCompile Include="Source\Runtime\System\VBufferPass.cpp" />
     <ClCompile Include="Source\Runtime\System\VertexComputePass.cpp" />
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2Device.cpp" />
@@ -297,17 +300,23 @@
     <ClInclude Include="Source\Core\Common.h" />
     <ClInclude Include="Source\Core\Component.h" />
     <ClInclude Include="Source\Core\Math\AxisAlignedBoundingBox.h" />
+    <ClInclude Include="Source\Core\Math\Frustum.h" />
+    <ClInclude Include="Source\Core\Math\Plane.h" />
     <ClInclude Include="Source\Editor\AssetBrowser.h" />
     <ClInclude Include="Source\Editor\Console.h" />
     <ClInclude Include="Source\Editor\EditorContext.h" />
-    <ClInclude Include="Source\Editor\EditorWindowManager.h" />
     <ClInclude Include="Source\Editor\Gizmo.h" />
     <ClInclude Include="Source\Editor\Hierarchy.h" />
     <ClInclude Include="Source\Editor\Inspector.h" />
     <ClInclude Include="Source\Editor\Viewport.h" />
+    <ClInclude Include="Source\Editor\Panel.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12RayTracePipeline.h" />
+    <ClInclude Include="Source\Runtime\Particle\Definitions.h" />
+    <ClInclude Include="Source\Runtime\Particle\ParticleEmitterComponent.h" />
+    <ClInclude Include="Source\Runtime\Particle\ParticleSystem.h" />
     <ClInclude Include="Source\Runtime\RenderCore\ASBuilder.h" />
     <ClInclude Include="Source\Runtime\RenderCore\BufferAllocator.h" />
+    <ClInclude Include="Source\Runtime\RenderCore\CommandListPool.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Definitions.h" />
     <ClInclude Include="Source\Runtime\RenderCore\RayTracePipeline.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Util.h" />
@@ -315,15 +324,17 @@
     <ClInclude Include="Source\Runtime\Renderer\LightComponent.h" />
     <ClInclude Include="Source\Runtime\Renderer\MaterialOverrideComponent.h" />
     <ClInclude Include="Source\Runtime\Renderer\Module.h" />
+    <ClInclude Include="Source\Runtime\RHI\Constants.h" />
     <ClInclude Include="Source\Runtime\RHI\RHIRayTracePipeline.h" />
+    <ClInclude Include="Source\Runtime\Scene\Module.h" />
+    <ClInclude Include="Source\Runtime\Scene\SceneGraph.h" />
     <ClInclude Include="Source\Runtime\System\CameraSystem.h" />
     <ClInclude Include="Source\Runtime\System\CompositePass.h" />
     <ClInclude Include="Source\Runtime\System\Definitions.h" />
     <ClInclude Include="Source\Runtime\System\VolumetricPass.h" />
     <ClInclude Include="Source\Runtime\System\FroxelLightingPass.h" />
-    <ClInclude Include="Source\Runtime\System\RayTracingPass.h" />
     <ClInclude Include="Source\Runtime\System\RenderScene.h" />
-    <ClInclude Include="Source\Runtime\System\TransformComponent.h" />
+    <ClInclude Include="Source\Runtime\Spatial\TransformComponent.h" />
     <ClInclude Include="Source\Core\Container\Array.h" />
     <ClInclude Include="Source\Core\Container\Hierarchy.h" />
     <ClInclude Include="Source\Core\Container\Map.h" />
@@ -370,7 +381,7 @@
     <ClInclude Include="Source\Runtime\AHI\Types.h" />
     <ClInclude Include="Source\Runtime\Animation\AnimationComponent.h" />
     <ClInclude Include="Source\Runtime\Animation\AnimationResource.h" />
-    <ClInclude Include="Source\Runtime\System\AnimationSystem.h" />
+    <ClInclude Include="Source\Runtime\Animation\AnimationSystem.h" />
     <ClInclude Include="Source\Runtime\Animation\Context\ClipInstance.h" />
     <ClInclude Include="Source\Runtime\Animation\Context\Condition.h" />
     <ClInclude Include="Source\Runtime\Animation\Context\Graph.h" />

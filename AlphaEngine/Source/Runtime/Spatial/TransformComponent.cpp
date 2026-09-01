@@ -27,18 +27,18 @@ namespace Alpha
 		m_is_dirty = true;
 	}
 
-	const Matrix4x4& TransformComponent::GetLocalToWorld() const
+	const Matrix4x4& TransformComponent::GetLocalMatrix() const
 	{
 		if (m_is_dirty)
 		{
-			m_local_to_world = MatrixMultiply(Matrix4x4Scaling(m_scale), Matrix4x4Rotation(m_rotation));
+			m_local_matrix = MatrixMultiply(Matrix4x4Scaling(m_scale), Matrix4x4Rotation(m_rotation));
 
-			m_local_to_world._4() = m_position;
+			m_local_matrix._4() = m_position;
 
 			m_is_dirty = false;
 		}
 
-		return m_local_to_world;
+		return m_local_matrix;
 	}
 
 	void TransformComponent::LocalTranslate(const Vector3& displacement)
@@ -75,34 +75,16 @@ namespace Alpha
 	{
 	}
 
-	Vector3 TransformComponent::Forward() const
+	void TransformComponent::SetWorldMatrix(const Matrix4x4& mat)
 	{
-		return GetLocalToWorld()._3();
+		m_world_matrix = mat;
+		// 逆行列のセット
+
 	}
 
-	Vector3 TransformComponent::Backward() const
+	const Matrix4x4& TransformComponent::GetWorldMatrix() const
 	{
-		return GetLocalToWorld()._3() * -1.0f;
-	}
-
-	Vector3 TransformComponent::Right() const
-	{
-		return GetLocalToWorld()._1();
-	}
-
-	Vector3 TransformComponent::Left() const
-	{
-		return GetLocalToWorld()._1() * -1.0f;
-	}
-
-	Vector3 TransformComponent::Up() const
-	{
-		return GetLocalToWorld()._2();
-	}
-
-	Vector3 TransformComponent::Down() const
-	{
-		return GetLocalToWorld()._2() * -1.0f;
+		return m_world_matrix;
 	}
 }
 

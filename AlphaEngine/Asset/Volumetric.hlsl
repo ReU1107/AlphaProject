@@ -22,6 +22,17 @@ struct PassConstants
 // キルヒホフの放射法則
 ConstantBuffer<PassConstants> pass_info : register(b2);
 
+float PseudoRandom(uint2 p)
+{
+    return frac(sin(dot(float2(p), float2(12.9898, 78.233))) * 43758.5453);
+}
+
+float InterleavedGradientNoise(float2 pixel_coord)
+{
+    float3 magic = float3(0.06711056, 0.00583715, 52.9829189);
+    return frac(magic.z * frac(dot(pixel_coord, magic.xy)));
+}
+
 [shader("raygeneration")]
 void RayGenerate()
 {   
@@ -48,14 +59,14 @@ void RayGenerate()
     float3 origin = frame.camera_pos.xyz;
     float3 direction = normalize(far_clip_pos.xyz - origin);
     
-    float depth = depth_tex.Load(int3(index, 0));
+    float depth = depth_tex.SampleLevel(sam, uv, 0).r;
     
     float4 geometry_world_pos = mul(frame.proj_view, float4(ndc_pos, depth, 1.0f));
     geometry_world_pos.xyz /= geometry_world_pos.w;
     
     // カメラから遮蔽物（不透明オブジェクト）までの距離（最大距離）
     float max_t = length(geometry_world_pos.xyz - origin);
-    
+    float jitter = InterleavedGradientNoise(uv);
     
     uint step_count = 100;
     float step_size = 1.0f;
@@ -67,14 +78,14 @@ void RayGenerate()
     
     float3 light_dir = -light.direction;
 
-    float cossita = dot(-direction, light_dir);
+    float cossita = dot(direction, light_dir);
     float3 phase_r = RayleighPhase(cossita);
     float3 fog_color = float3(1.0f, 1.0f, 1.0f);
     float3 phase_m = HGPhase(cossita, 0.8f); // gの部分は今後場所によって変わるように
 
     for (uint i = 0; i < step_count; ++i)
     {
-        float t = (i + 0.5) * step_size;
+        float t = (i + jitter) * step_size;
         if (t >= max_t)
         {
             break;
@@ -112,27 +123,19 @@ void RayGenerate()
         
         float3 sigma_t = sigma_r + sigma_m + sigma_a;
 
-        //float3 scattering = sigma_r * phase_r + sigma_m * phase_m;
-        float3 scattering = (sigma_r + sigma_m) * IsotropicPhase();
-        //radiance += transmittance * volume_radiance * sigma_t * IsotropicPhase() * step_size;
+        radiance += transmittance * volume_radiance * IsotropicPhase() * step_size * sigma_t;
         
-        float3 Li = light.color * light.intensity * payload.visibility;
+        float3 scattering = sigma_r * phase_r + sigma_m * phase_m;
+        float3 dominant = light.color * light.intensity * payload.visibility;
         
-        radiance += transmittance * Li * scattering * step_size;
+        radiance += transmittance * dominant * scattering * step_size;
         
         
         // ランベルトベールで減衰
         transmittance *= exp(-sigma_t * step_size);
-
-        //// ほぼ完全に不透明なら打ち切り
-        //if (transmittance < 0.01)
-        //    break;
     }
 
     
-    // このピクセルの描画区間における↑で計算した結果をテクスチャに保存する
-    
-    // 次のパスでラスタライズ描画した結果と↑で計算したデータをブレンドする
     
     radiance_tex[index] = float4(radiance, 1.0f);
     transmittance_tex[index] = float4(transmittance, 1.0f);

@@ -122,9 +122,9 @@ namespace Alpha
 	}
 
 	template<typename T>
-	inline void SwapIndex(T& current)
+	inline T SwapIndex(T& current)
 	{
-		current = (1 - current);
+		return current = (1 - current);
 	}
 
 	template<typename T, typename U>

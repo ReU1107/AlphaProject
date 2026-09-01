@@ -4,7 +4,7 @@
 #include "Renderer/Module.h"
 
 #include "Definitions.h"
-#include "TransformComponent.h"
+#include "Spatial/TransformComponent.h"
 
 #include "Core/Math/MathF.h"
 
@@ -85,10 +85,13 @@ namespace Alpha
 		Constants constants = {};
 		constants.view = camera.view_matrix;
 		constants.view_proj = MatrixMultiply(camera.view_matrix, camera.GetProjectionMatrix());
-		constants.proj_view = Matrix4x4Inverse(constants.view_proj);
-		constants.camera_pos = camera_t.GetLocalToWorld()._4();
+		constants.inv_view_proj = Matrix4x4Inverse(constants.view_proj);
+		constants.camera_pos = camera_t.GetLocalMatrix()._4();
 		constants.instance_count = m_scene->GetInstanceCount();
 		constants.light_count = m_scene->GetLightCount();
+
+		ctx.inv_view_proj = constants.inv_view_proj;
+
 
 		{
 			auto offset = RenderCore::Get().GetTransientAllocator()->WriteData<Constants>(&constants);
@@ -96,8 +99,11 @@ namespace Alpha
 			ctx.command_list->SetGraphicsCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 1);
 			ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 1);
 
+			ctx.current_camera_offset = offset;
+
 		}
 		ctx.instance_count = constants.instance_count;
+
 		m_vbuffer_pass->Execute(ctx);
 
 		m_froxel_pass->Execute(ctx);
@@ -105,6 +111,9 @@ namespace Alpha
 		m_volumetric_pass->Execute(ctx);
 
 		m_composite_pass->Execute(ctx);
+
+		ctx.test = test.get();
+
 
 
 		ImGui::Begin("Composite Pass");
