@@ -66,7 +66,7 @@ namespace Alpha
 		ERHICommandType type{ ERHICommandType::Direct };
 	};
 
-	struct RHICommandSignatureDesc
+	struct RHICommandLayoutDesc
 	{
 		struct Argument
 		{
@@ -82,7 +82,7 @@ namespace Alpha
 			UInt32 slot_index{ 0 };
 		};
 
-		std::vector<Argument> arguments{};
+		TArray<Argument> arguments{};
 		RHIPipelineLayout* layout{ nullptr };
 		UInt32 stride{ 0 }; // 1コマンドあたりのバイトサイズ (0なら自動計算)
 	};
@@ -100,7 +100,7 @@ namespace Alpha
 		std::wstring shader_model{};
 		bool enable_debug{ true };
 		bool enable_optimize{ false };
-		std::vector<std::wstring> includes{};
+		TArray<std::wstring> includes{};
 	};
 
 	struct RHIResourceViewDesc

@@ -37,6 +37,9 @@ namespace Alpha
 
 		TUnique<RHICommandQueue> CreateCommandQueue(const RHICommandQueueDesc& desc);
 
+		TUnique<RHICommandLayout> CreateCommandLayout(const RHICommandLayoutDesc& desc);
+
+
 		TUnique<RHITimeline> CreateTimeline(const RHITimelineDesc& desc);
 
 		TUnique<RHISamplerState> CreateSamplerState(const RHISamplerStateDesc& desc);

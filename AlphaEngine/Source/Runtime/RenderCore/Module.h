@@ -10,6 +10,7 @@
 
 #include "CommandList.h"
 #include "CommandQueue.h"
+#include "CommandLayout.h"
 #include "DescriptorHandle.h"
 #include "DescriptorHeap.h"
 #include "SamplerState.h"

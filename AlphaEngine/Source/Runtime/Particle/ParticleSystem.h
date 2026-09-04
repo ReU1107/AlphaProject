@@ -12,8 +12,10 @@ namespace Alpha
 	class TransientBufferAllocator;
 	class Buffer;
 	class PipelineLayout;
+	class CommandLayout;
 	class ComputePipeline;
 	class Shader;
+	class RenderResourceManager;
 
 	class ParticleSystem
 	{
@@ -22,10 +24,12 @@ namespace Alpha
 		TUnique<TransientBufferAllocator> m_emit_command_allocator{ nullptr };
 		TFixedArray<TUnique<PersistentBufferAllocator>, 2> m_particle_allocator{};
 		TUnique<Buffer> m_particle_counter{ nullptr };
+		TUnique<Buffer> m_command_buffer{ nullptr };
 
 		TArray<ParticleEmitCommand> m_emit_commands{};
 
 		TUnique<PipelineLayout> m_layout{ nullptr };
+		TUnique<CommandLayout> m_command_layout{ nullptr };
 
 		TUnique<ComputePipeline> m_emit_pipeline{ nullptr };
 		TUnique<Shader> m_emit_cs{ nullptr };
@@ -36,7 +40,11 @@ namespace Alpha
 		TUnique<ComputePipeline> m_reset_pipeline{ nullptr };
 		TUnique<Shader> m_reset_cs{ nullptr };
 
+
+
 		UInt32 m_counter_index{ 0 };
+
+		UInt32 m_max_particle_count{ 10000 };
 
 	public:
 		ParticleSystem();

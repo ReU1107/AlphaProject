@@ -99,6 +99,32 @@ namespace Alpha
 		UInt32 max_recursion_depth{ 1 };
 	};
 
+	struct CommandLayoutArgs
+	{
+		struct Argument
+		{
+			ERHIIndirectArgType type{};
+
+			UInt32 root_parameter_index{ 0 };
+			UInt32 dest_runtime_constant_offset{ 0 };
+			UInt32 num_32bit_values_to_set{ 0 };
+
+			UInt32 slot_index{ 0 };
+		};
+
+		RenderHardwareInterface* rhi{ nullptr };
+		PipelineLayout* pipeline_layout{ nullptr };
+
+		TArray<Argument> arguments{};
+	};
+
+	struct DispatchMeshArgs
+	{
+		UInt32 thred_group_count_x{ 0 };
+		UInt32 thred_group_count_y{ 0 };
+		UInt32 thred_group_count_z{ 0 };
+	};
+
 	struct ASBuildSize
 	{
 		UInt64 result{ 0 };

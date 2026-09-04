@@ -8,6 +8,7 @@
 #include "D3D12ComputePipeline.h"
 #include "D3D12RayTracePipeline.h"
 #include "D3D12PipelineLayout.h"
+#include "D3D12CommandLayout.h"
 #include "D3D12DescriptorHeap.h"
 
 #include "Core/Assertion.h"
@@ -541,6 +542,19 @@ namespace Alpha
 	void D3D12CommandBuffer::DispatchMesh(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z)
 	{
 		m_list->DispatchMesh(thread_group_x, thread_group_y, thread_group_z);
+	}
+
+	void D3D12CommandBuffer::ExecuteIndirect(RHICommandLayout* layout, RHIBuffer* command_buffer, UInt32 count)
+	{
+		auto d3d12_layout = static_cast<D3D12CommandLayout*>(layout);
+		auto native_resource = static_cast<ID3D12Resource1*>(command_buffer->GetNative());
+
+		m_list->ExecuteIndirect(d3d12_layout->GetNativeHandle(), count, native_resource, 0, nullptr, 0);
+	}
+
+	void D3D12CommandBuffer::ExecuteIndirect(RHICommandLayout* layout, RHIBuffer* command_buffer, RHIBuffer* count_buffer)
+	{
+		// TODO
 	}
 
 	void D3D12CommandBuffer::DispatchRayTrace(const RHIRayTraceDesc& desc)

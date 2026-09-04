@@ -86,6 +86,9 @@ namespace Alpha
 		void DispatchMesh(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z) final;
 
 
+		void ExecuteIndirect(RHICommandLayout* layout, RHIBuffer* command_buffer, UInt32 count) final;
+		void ExecuteIndirect(RHICommandLayout* layout, RHIBuffer* command_buffer, RHIBuffer* count_buffer) final;
+
 		void DispatchRayTrace(const RHIRayTraceDesc& desc) final;
 
 		void BuildBLAS(const RHIBuildBLASDesc& desc) final;

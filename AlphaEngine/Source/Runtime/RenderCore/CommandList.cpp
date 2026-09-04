@@ -15,6 +15,7 @@
 #include "ComputePipeline.h"
 #include "RayTracePipeline.h"
 #include "PipelineLayout.h"
+#include "CommandLayout.h"
 
 #include "Definitions.h"
 
@@ -333,6 +334,16 @@ namespace Alpha
 
 		m_rhi->DispatchRayTrace(desc);
 
+	}
+
+	void CommandList::ExecuteIndirect(CommandLayout* layout, Buffer* command_buffer, UInt32 count)
+	{
+		m_rhi->ExecuteIndirect(layout->GetRHI(), command_buffer->GetRHI(), count);
+	}
+
+	void CommandList::ExecuteIndirect(CommandLayout* layout, Buffer* command_buffer, Buffer* count_buffer)
+	{
+		// あとで
 	}
 
 	void CommandList::BuildRaytracingAccelerationStructure(const RHIBuildTLASDesc& desc)

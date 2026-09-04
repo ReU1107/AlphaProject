@@ -45,6 +45,7 @@ namespace Alpha
 		Draw,
 		DrawIndexed,
 		Dispatch,
+		DispatchMesh,
 		Constant,
 		VertexBuffer,
 		IndexBuffer,

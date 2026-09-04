@@ -114,7 +114,7 @@
     <ClCompile Include="Source\Runtime\D3D12\D3D12CommandQueue.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\D3D12\D3D12CommandSignature.cpp">
+    <ClCompile Include="Source\Runtime\D3D12\D3D12CommandLayout.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\D3D12\D3D12ComputePipeline.cpp">
@@ -447,6 +447,9 @@
     <ClCompile Include="Source\Runtime\RenderCore\CommandListPool.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\RenderCore\CommandLayout.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\IO\BinaryReader.h">
@@ -620,7 +623,7 @@
     <ClInclude Include="Source\Runtime\RHI\RHICommandQueue.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\RHI\RHICommandSignature.h">
+    <ClInclude Include="Source\Runtime\RHI\RHICommandLayout.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RHI\RHIComputePipeline.h">
@@ -671,7 +674,7 @@
     <ClInclude Include="Source\Runtime\D3D12\D3D12CommandQueue.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\D3D12\D3D12CommandSignature.h">
+    <ClInclude Include="Source\Runtime\D3D12\D3D12CommandLayout.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\D3D12\D3D12ComputePipeline.h">
@@ -1130,10 +1133,14 @@
     <ClInclude Include="Source\Runtime\RHI\Constants.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\RenderCore\CommandLayout.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="Asset\Resource.hlsli" />
     <None Include="Asset\Lighting.hlsli" />
+    <None Include="Asset\Particle.hlsli" />
   </ItemGroup>
 </Project>

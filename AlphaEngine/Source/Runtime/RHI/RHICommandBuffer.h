@@ -76,6 +76,9 @@ namespace Alpha
 
 		virtual void DispatchRayTrace(const RHIRayTraceDesc& desc) = 0;
 
+		virtual void ExecuteIndirect(RHICommandLayout* layout, RHIBuffer* command_buffer, UInt32 count) = 0;
+		virtual void ExecuteIndirect(RHICommandLayout* layout, RHIBuffer* command_buffer, RHIBuffer* count_buffer) = 0;
+
 		virtual void BuildBLAS(const RHIBuildBLASDesc& desc) = 0;
 		virtual void BuildTLAS(const RHIBuildTLASDesc& desc) = 0;
 

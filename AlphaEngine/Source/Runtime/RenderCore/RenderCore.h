@@ -34,6 +34,7 @@ namespace Alpha
 	class GraphicsPipeline;
 	class ComputePipeline;
 	class RayTracePipeline;
+	class CommandLayout;
 
 	class GPUDataTransfer;
 	class ASBuilder;
@@ -132,6 +133,8 @@ namespace Alpha
 		TUnique<ComputePipeline> CreateComputePipeline(ComputePipelineArgs args);
 
 		TUnique<RayTracePipeline> CreateRayTracePipeline(RayTracePipelineArgs args);
+
+		TUnique<CommandLayout> CreateCommandLayout(CommandLayoutArgs args);
 
 		ERHIResourceFormat GetBackBufferFormat() const { return m_back_buffer_format; }
 

@@ -5,7 +5,7 @@ namespace Alpha
 	class RHIBuffer;
 	class RHICommandBuffer;
 	class RHICommandQueue;
-	class RHICommandSignature;
+	class RHICommandLayout;
 	class RHIComputePipeline;
 	class RHIDescriptorHeap;
 	class RHIDescriptorView;
@@ -24,7 +24,7 @@ namespace Alpha
 	struct RHIBufferDesc;
 	struct RHICommandBufferDesc;
 	struct RHICommandQueueDesc;
-	struct RHICommandSignatureDesc;
+	struct RHICommandLayoutDesc;
 	struct RHIComputePipelineDesc;
 	struct RHIDescriptorHeapDesc;
 	struct RHIDescriptorLayoutDesc;

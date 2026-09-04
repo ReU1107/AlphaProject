@@ -9,6 +9,7 @@ namespace Alpha
 	class RHICommandBuffer;
 
 	class PipelineLayout;
+	class CommandLayout;
 	class GraphicsPipeline;
 	class ComputePipeline;
 	class RayTracePipeline;
@@ -112,6 +113,8 @@ namespace Alpha
 		void DispatchMesh(UInt32 group_count_x, UInt32 group_count_y, UInt32 group_count_z);
 		void DispatchRayTrace(const RayTraceDispatchArgs& desc);
 
+		void ExecuteIndirect(CommandLayout* layout, Buffer* command_buffer, UInt32 count);
+		void ExecuteIndirect(CommandLayout* layout, Buffer* command_buffer, Buffer* count_buffer);
 
 		void BuildRaytracingAccelerationStructure(const RHIBuildTLASDesc& desc);
 		void BuildRaytracingAccelerationStructure(const RHIBuildBLASDesc& desc);

@@ -5,6 +5,7 @@
 #include "CommandList.h"
 #include "CommandQueue.h"
 #include "Timeline.h"
+#include "CommandLayout.h"
 
 #include "DescriptorHeap.h"
 
@@ -39,7 +40,6 @@ namespace Alpha
 
 	bool RenderCore::Initialize(const Args& args)
 	{
-
 		m_rhi = std::make_unique<RenderHardwareInterface>();
 		RHI::Args rhi_args = {};
 		m_rhi->Initialize(rhi_args);
@@ -503,6 +503,16 @@ namespace Alpha
 		pipeline->Initialize(args);
 
 		return pipeline;
+	}
+
+	TUnique<CommandLayout> RenderCore::CreateCommandLayout(CommandLayoutArgs args)
+	{
+		auto command_layout = std::make_unique<CommandLayout>();
+		args.rhi = m_rhi.get();
+
+		command_layout->Initialize(args);
+
+		return command_layout;
 	}
 
 	UINT32 RenderCore::GetCurrentBackBufferIndex() const

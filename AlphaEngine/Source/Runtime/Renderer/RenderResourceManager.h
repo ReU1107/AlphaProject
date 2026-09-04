@@ -45,7 +45,7 @@ namespace Alpha
         TUnique<PersistentBufferAllocator> m_material_allocator{ nullptr };
         TUnique<PersistentBufferAllocator> m_material_table_allocator{ nullptr };
 
-        // RenderCoreから引っ越し
+        // RenderCoreから引っ越しするかも?
         TUnique<GPUDataTransfer> m_gpu_data_transfer{};
         TUnique<ASBuilder> m_as_builder{};
 

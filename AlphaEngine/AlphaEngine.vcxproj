@@ -120,6 +120,9 @@
     <FxCompile>
       <ShaderModel>6.8</ShaderModel>
     </FxCompile>
+    <PostBuildEvent>
+      <Command>xcopy /Y /S "$(ProjectDir)Asset" "$(TargetDir)Asset\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -165,6 +168,7 @@
     <ClCompile Include="Source\Editor\Viewport.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimationComponent.cpp" />
     <ClCompile Include="Source\Runtime\Particle\ParticleSystem.cpp" />
+    <ClCompile Include="Source\Runtime\RenderCore\CommandLayout.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\CommandListPool.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\VolumeComponent.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\LightComponent.cpp" />
@@ -206,7 +210,7 @@
     <ClCompile Include="Source\Runtime\D3D12\D3D12Buffer.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12CommandBuffer.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12CommandQueue.cpp" />
-    <ClCompile Include="Source\Runtime\D3D12\D3D12CommandSignature.cpp" />
+    <ClCompile Include="Source\Runtime\D3D12\D3D12CommandLayout.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12ComputePipeline.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12DescriptorHeap.cpp" />
     <ClCompile Include="Source\Runtime\D3D12\D3D12Device.cpp" />
@@ -316,6 +320,7 @@
     <ClInclude Include="Source\Runtime\Particle\ParticleSystem.h" />
     <ClInclude Include="Source\Runtime\RenderCore\ASBuilder.h" />
     <ClInclude Include="Source\Runtime\RenderCore\BufferAllocator.h" />
+    <ClInclude Include="Source\Runtime\RenderCore\CommandLayout.h" />
     <ClInclude Include="Source\Runtime\RenderCore\CommandListPool.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Definitions.h" />
     <ClInclude Include="Source\Runtime\RenderCore\RayTracePipeline.h" />
@@ -433,7 +438,7 @@
     <ClInclude Include="Source\Runtime\D3D12\D3D12Buffer.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12CommandBuffer.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12CommandQueue.h" />
-    <ClInclude Include="Source\Runtime\D3D12\D3D12CommandSignature.h" />
+    <ClInclude Include="Source\Runtime\D3D12\D3D12CommandLayout.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12ComputePipeline.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12DescriptorHeap.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12Device.h" />
@@ -490,7 +495,7 @@
     <ClInclude Include="Source\Runtime\RHI\RHIBuffer.h" />
     <ClInclude Include="Source\Runtime\RHI\RHICommandBuffer.h" />
     <ClInclude Include="Source\Runtime\RHI\RHICommandQueue.h" />
-    <ClInclude Include="Source\Runtime\RHI\RHICommandSignature.h" />
+    <ClInclude Include="Source\Runtime\RHI\RHICommandLayout.h" />
     <ClInclude Include="Source\Runtime\RHI\RHIComputePipeline.h" />
     <ClInclude Include="Source\Runtime\RHI\RHIDescriptorHeap.h" />
     <ClInclude Include="Source\Runtime\RHI\RHIDescriptorView.h" />
@@ -522,6 +527,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Lighting.hlsli" />
+    <None Include="Asset\Particle.hlsli" />
     <None Include="Asset\Resource.hlsli" />
     <None Include="packages.config" />
   </ItemGroup>
