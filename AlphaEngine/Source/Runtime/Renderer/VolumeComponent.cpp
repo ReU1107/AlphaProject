@@ -2,7 +2,7 @@
 #include "Core/Math/MathUtil.h"
 #include "Core/Math/MathF.h"
 
-namespace Alpha
+namespace Alpha::Renderer
 {
 	AxisAlignedBoundingBox VolumeComponent::GetAABB() const
 	{

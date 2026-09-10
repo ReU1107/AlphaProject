@@ -9,7 +9,7 @@ namespace Alpha
 
 		USize seed = 0;
 
-		hash_combine(seed, GetName());
+		HashCombine(seed, GetName());
 		m_id = seed;
 	}
 }

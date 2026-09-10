@@ -5,13 +5,17 @@
 
 namespace Alpha
 {
-	struct RenderContext;
-
 	class RenderCore;
 	class TransientBufferAllocator;
 	class Shader;
 	class PipelineLayout;
 	class GraphicsPipeline;
+
+}
+
+namespace Alpha::Renderer
+{
+	struct RenderContext;
 
 	struct LineVertex
 	{
@@ -32,10 +36,7 @@ namespace Alpha
 		TArray<DebugLine> m_lines{};
 		TUnique<TransientBufferAllocator> m_line_buffer{};
 
-		TUnique<Shader> m_line_vs{};
-		TUnique<Shader> m_line_ps{};
-		TUnique<PipelineLayout> m_line_pipeline_layout{};
-		TUnique<GraphicsPipeline> m_line_pipelie{};
+		GraphicsPipeline* m_line_pipelie{};
 
 	public:
 		struct Args

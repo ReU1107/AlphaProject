@@ -8,6 +8,7 @@
 
 namespace Alpha
 {
+    using namespace Renderer;
 	void CameraSystem::Update(entt::registry& registry)
 	{
         float dt = 1.0f / 60;

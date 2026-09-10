@@ -1,5 +1,6 @@
 ﻿#include "MaterialOverrideComponent.h"
-namespace Alpha
+
+namespace Alpha::Renderer
 {
     bool MaterialOverrideComponent::IsValidIndex(UInt32 index) const
     {

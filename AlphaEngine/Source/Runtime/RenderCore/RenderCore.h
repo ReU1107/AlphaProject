@@ -1,6 +1,7 @@
 ﻿#pragma once
-#include "Core/Subsystem.h"
 #include "Core/Common.h"
+#include "Core/Subsystem.h"
+#include "Core/Container/SlotPalette.h"
 #include "RHI/Types.h"
 #include "Types.h"
 #include "Definitions.h"
@@ -40,6 +41,8 @@ namespace Alpha
 	class ASBuilder;
 	class TransientBufferAllocator;
 	class CommandListPool;
+	class ShaderCache;
+	class PipelineCache;
 
 	class RenderCore : public Subsystem<RenderCore>
 	{
@@ -64,6 +67,10 @@ namespace Alpha
 		TUnique<GPUDataTransfer> m_gpu_data_transfer{};
 		TUnique<ASBuilder> m_as_builder{};
 		TUnique<CommandListPool> m_direct_pool{};
+
+		TUnique<ShaderCache> m_shader_cache{};
+		TUnique<PipelineCache> m_pipeline_cache{};
+
 
 		TUnique<TransientBufferAllocator> m_transient_allocator{};
 
@@ -123,16 +130,16 @@ namespace Alpha
 
 		void UploadTexture(Texture* texture, void* pixels);
 
-		TUnique<Shader> CreateShader(const std::wstring& file_path, ERHIShaderType shader_type, const std::wstring& entry_point = L"main");
-		TUnique<Shader> CreateShaderLibrary(StringView file_path, std::span<const StringView> entry_points);
+		Shader* CreateShader(StringView file_path, ERHIShaderType shader_type, StringView entry_point = L"main");
+		Shader* CreateShaderLibrary(StringView file_path, std::span<const StringView> entry_points);
 
-		TUnique<PipelineLayout> CreatePipelineLayout(std::function<void(PipelineLayout&)> config_func);
+		PipelineLayout* CreatePipelineLayout(std::function<void(PipelineLayout&)> config_func);
 
-		TUnique<GraphicsPipeline> CreateGraphicsPipeline(GraphicsPipelineArgs args);
+		GraphicsPipeline* CreateGraphicsPipeline(const GraphicsPipelineArgs& args);
 
-		TUnique<ComputePipeline> CreateComputePipeline(ComputePipelineArgs args);
+		ComputePipeline* CreateComputePipeline(const ComputePipelineArgs& args);
 
-		TUnique<RayTracePipeline> CreateRayTracePipeline(RayTracePipelineArgs args);
+		RayTracePipeline* CreateRayTracePipeline(const RayTracePipelineArgs& args);
 
 		TUnique<CommandLayout> CreateCommandLayout(CommandLayoutArgs args);
 

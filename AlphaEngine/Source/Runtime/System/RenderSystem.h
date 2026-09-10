@@ -3,40 +3,28 @@
 #include "Definitions.h"
 #include <entt/entt.hpp>
 
+namespace Alpha::Renderer
+{
+	class RenderScene;
+	class RenderGraph;
+	struct RenderContext;
+
+}
+
 namespace Alpha
 {
-	struct RenderContext;
 
 	class RenderCore;
 
-	class PipelineLayout;
-	class GraphicsPipeline;
-	class ComputePipeline;
-	class RayTracePipeline;
-	class Shader;
-	class Texture;
-
-	class RenderScene;
-	class VBufferPass;
-	class FroxelLightingPass;
-	class VolumetricPass;
-	class CompositePass;
+	class RenderSceneBuilder;
 
 	class RenderSystem
 	{
 	private:
-		TUnique<RenderScene> m_scene{ nullptr };
-
-		TUnique<PipelineLayout> m_layout{ nullptr };
-		TUnique<RayTracePipeline> m_raytrace_pipeline{ nullptr };
-		TUnique<VBufferPass> m_vbuffer_pass{ nullptr };
-		TUnique<FroxelLightingPass> m_froxel_pass{ nullptr };
-		TUnique<VolumetricPass> m_volumetric_pass{ nullptr };
-		TUnique<CompositePass> m_composite_pass{ nullptr };
-
-
-
-
+		TUnique<Renderer::RenderScene> m_scene{ nullptr };
+		TUnique<Renderer::RenderGraph> m_graph{ nullptr };
+		PipelineLayout* m_pipeline_layout{ nullptr };
+		TUnique<RenderSceneBuilder> m_scene_builder{ nullptr };
 
 	public:
 		~RenderSystem();
@@ -47,8 +35,10 @@ namespace Alpha
 		bool Initialize(const Args& args);
 		void Finalize();
 
-		void Render(entt::registry& registry, RenderContext& ctx);
+		void Render(entt::registry& registry, Renderer::RenderContext& ctx);
 
+		// 本当はよくないんだよな
+		Renderer::RenderGraph* GetGraph() const { return m_graph.get(); };
 
 	};
 }

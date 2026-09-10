@@ -141,20 +141,20 @@ namespace Alpha
 	struct RHIDescriptorRange 
 	{
 		UInt32 resource_num{ 0 };			// 同じリソースが連続する場合の数↓だと 8
-		UInt32 register_index{ 0 };		// 開始時の番号 Texture2D tex[8] : register(t5); なら5
-		ERHIResourceViewType view_type;
+		UInt32 register_index{ 0 };			// 開始時の番号 Texture2D tex[8] : register(t5); なら5
+		ERHIResourceViewType view_type{};
 	};
 
 	struct RHIPipelineLayoutDesc
 	{
 		struct Param
 		{
-			RHIDescriptorRange ranges[16];		// 
-			UInt32 range_num{ 0 };				// この数だけ  DescriptorTableが使用された場合はこの数がRangeの数を表す
-			UInt32 register_index{ 0 };			// この番号は
-			ERHIResourceViewType view_type;		// この種類のリソースをバインドする
-			ERHIShaderFlags shader_flags;		// 使用するシェーダーはこれ
-			ERHIParameterType parameter_type;	// 
+			RHIDescriptorRange ranges[16];						// 
+			UInt32 range_num{ 0 };								// この数だけ  DescriptorTableが使用された場合はこの数がRangeの数を表す
+			UInt32 register_index{ 0 };							// この番号は
+			ERHIResourceViewType view_type{};					// この種類のリソースをバインドする
+			ERHIShaderFlags shader_flags{};						// 使用するシェーダーはこれ
+			ERHIParameterType parameter_type{};					// 
 		};
 		TArray<Param> parameters;
 

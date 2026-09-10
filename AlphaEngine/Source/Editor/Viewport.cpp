@@ -33,4 +33,11 @@ namespace Alpha::Editor
     void Viewport::Resize(UInt32 width, UInt32 height)
     {
     }
+
+
+
+    Texture* Viewport::GetRenderTarget()
+    {
+        return m_render_target.get();
+    }
 }

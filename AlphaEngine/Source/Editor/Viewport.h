@@ -40,6 +40,7 @@ namespace Alpha::Editor
     private:
         void Resize(UInt32 width, UInt32 height);
 
+        Texture* GetRenderTarget();
 
     };
 

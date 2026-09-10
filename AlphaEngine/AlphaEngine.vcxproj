@@ -167,9 +167,14 @@
     <ClCompile Include="Source\Core\Window\WindowSystem.cpp" />
     <ClCompile Include="Source\Editor\Viewport.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimationComponent.cpp" />
-    <ClCompile Include="Source\Runtime\Particle\ParticleSystem.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\CommandLayout.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\CommandListPool.cpp" />
+    <ClCompile Include="Source\Runtime\RenderCore\PipelineCache.cpp" />
+    <ClCompile Include="Source\Runtime\RenderCore\ShaderCache.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\Definitions.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\Pass\OpaqueShadingPass.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\RenderGraph.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\RenderGraphBuilder.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\VolumeComponent.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\LightComponent.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\MaterialOverrideComponent.cpp" />
@@ -237,14 +242,15 @@
     <ClCompile Include="Source\Runtime\Scene\Scene.cpp" />
     <ClCompile Include="Source\Runtime\Scene\SceneObject.cpp" />
     <ClCompile Include="Source\Runtime\System\CameraSystem.cpp" />
-    <ClCompile Include="Source\Runtime\System\CompositePass.cpp" />
-    <ClCompile Include="Source\Runtime\System\VolumetricPass.cpp" />
-    <ClCompile Include="Source\Runtime\System\FroxelLightingPass.cpp" />
-    <ClCompile Include="Source\Runtime\System\RenderScene.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\Pass\CompositePass.cpp" />
+    <ClCompile Include="Source\Runtime\System\RenderSceneBuilder.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\Pass\VolumetricPass.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\Pass\FroxelLightingPass.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\RenderScene.cpp" />
     <ClCompile Include="Source\Runtime\System\RenderSystem.cpp" />
     <ClCompile Include="Source\Runtime\Spatial\TransformComponent.cpp" />
-    <ClCompile Include="Source\Runtime\System\VBufferPass.cpp" />
-    <ClCompile Include="Source\Runtime\System\VertexComputePass.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\Pass\VBufferPass.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\Pass\VertexComputePass.cpp" />
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2Device.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\Buffer.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\CommandList.cpp" />
@@ -269,6 +275,7 @@
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2SourceBus.cpp" />
     <ClCompile Include="Source\Runtime\XAudio2\XAudio2SubmixBus.cpp" />
     <ClCompile Include="Test.cpp" />
+    <ClCompile Include="TestScene\Scene1.cpp" />
     <ClCompile Include="ThirdParty\imgui\imgui.cpp" />
     <ClCompile Include="ThirdParty\imgui\imgui_demo.cpp" />
     <ClCompile Include="ThirdParty\imgui\imgui_draw.cpp" />
@@ -296,6 +303,7 @@
     <ClCompile Include="ThirdParty\meshoptimizer\vfetchoptimizer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Components.h" />
     <ClInclude Include="Source\Core\Allocator\Allocator.h" />
     <ClInclude Include="Source\Core\Allocator\FreeListAllocator.h" />
     <ClInclude Include="Source\Core\Allocator\LinearAllocator.h" />
@@ -315,16 +323,19 @@
     <ClInclude Include="Source\Editor\Viewport.h" />
     <ClInclude Include="Source\Editor\Panel.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12RayTracePipeline.h" />
-    <ClInclude Include="Source\Runtime\Particle\Definitions.h" />
-    <ClInclude Include="Source\Runtime\Particle\ParticleEmitterComponent.h" />
-    <ClInclude Include="Source\Runtime\Particle\ParticleSystem.h" />
     <ClInclude Include="Source\Runtime\RenderCore\ASBuilder.h" />
     <ClInclude Include="Source\Runtime\RenderCore\BufferAllocator.h" />
     <ClInclude Include="Source\Runtime\RenderCore\CommandLayout.h" />
     <ClInclude Include="Source\Runtime\RenderCore\CommandListPool.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Definitions.h" />
+    <ClInclude Include="Source\Runtime\RenderCore\PipelineCache.h" />
     <ClInclude Include="Source\Runtime\RenderCore\RayTracePipeline.h" />
+    <ClInclude Include="Source\Runtime\RenderCore\ShaderCache.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Util.h" />
+    <ClInclude Include="Source\Runtime\Renderer\Pass\OpaqueShadingPass.h" />
+    <ClInclude Include="Source\Runtime\Renderer\RenderGraph.h" />
+    <ClInclude Include="Source\Runtime\Renderer\RenderGraphBuilder.h" />
+    <ClInclude Include="Source\Runtime\Renderer\RenderGraphPass.h" />
     <ClInclude Include="Source\Runtime\Renderer\VolumeComponent.h" />
     <ClInclude Include="Source\Runtime\Renderer\LightComponent.h" />
     <ClInclude Include="Source\Runtime\Renderer\MaterialOverrideComponent.h" />
@@ -334,11 +345,12 @@
     <ClInclude Include="Source\Runtime\Scene\Module.h" />
     <ClInclude Include="Source\Runtime\Scene\SceneGraph.h" />
     <ClInclude Include="Source\Runtime\System\CameraSystem.h" />
-    <ClInclude Include="Source\Runtime\System\CompositePass.h" />
+    <ClInclude Include="Source\Runtime\Renderer\Pass\CompositePass.h" />
     <ClInclude Include="Source\Runtime\System\Definitions.h" />
-    <ClInclude Include="Source\Runtime\System\VolumetricPass.h" />
-    <ClInclude Include="Source\Runtime\System\FroxelLightingPass.h" />
-    <ClInclude Include="Source\Runtime\System\RenderScene.h" />
+    <ClInclude Include="Source\Runtime\System\RenderSceneBuilder.h" />
+    <ClInclude Include="Source\Runtime\Renderer\Pass\VolumetricPass.h" />
+    <ClInclude Include="Source\Runtime\Renderer\Pass\FroxelLightingPass.h" />
+    <ClInclude Include="Source\Runtime\Renderer\RenderScene.h" />
     <ClInclude Include="Source\Runtime\Spatial\TransformComponent.h" />
     <ClInclude Include="Source\Core\Container\Array.h" />
     <ClInclude Include="Source\Core\Container\Hierarchy.h" />
@@ -460,15 +472,14 @@
     <ClInclude Include="Source\Runtime\Renderer\GUISystem.h" />
     <ClInclude Include="Source\Runtime\Renderer\GUIVisitor.h" />
     <ClInclude Include="Source\Runtime\Renderer\MeshComponent.h" />
-    <ClInclude Include="Source\Runtime\Renderer\RenderContext.h" />
     <ClInclude Include="Source\Runtime\RenderCore\TransientBufferAllocator.h" />
     <ClInclude Include="Source\Runtime\Renderer\RenderResourceManager.h" />
     <ClInclude Include="Source\Runtime\System\RenderSystem.h" />
     <ClInclude Include="Source\Runtime\Renderer\Types.h" />
     <ClInclude Include="Source\Runtime\Scene\Scene.h" />
     <ClInclude Include="Source\Runtime\Scene\SceneObject.h" />
-    <ClInclude Include="Source\Runtime\System\VBufferPass.h" />
-    <ClInclude Include="Source\Runtime\System\VertexComputePass.h" />
+    <ClInclude Include="Source\Runtime\Renderer\Pass\VBufferPass.h" />
+    <ClInclude Include="Source\Runtime\Renderer\Pass\VertexComputePass.h" />
     <ClInclude Include="Source\Runtime\XAudio2\XAudio2Device.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Buffer.h" />
     <ClInclude Include="Source\Runtime\RenderCore\CommandList.h" />
@@ -515,6 +526,7 @@
     <ClInclude Include="Source\Runtime\XAudio2\XAudio2MasterBus.h" />
     <ClInclude Include="Source\Runtime\XAudio2\XAudio2SourceBus.h" />
     <ClInclude Include="Source\Runtime\XAudio2\XAudio2SubmixBus.h" />
+    <ClInclude Include="TestScene\Scene1.h" />
     <ClInclude Include="ThirdParty\entt\entt.hpp" />
     <ClInclude Include="ThirdParty\imgui\imconfig.h" />
     <ClInclude Include="ThirdParty\imgui\imgui.h" />
@@ -526,6 +538,7 @@
     <ClInclude Include="ThirdParty\std\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Asset\ExecuteIndirect.hlsli" />
     <None Include="Asset\Lighting.hlsli" />
     <None Include="Asset\Particle.hlsli" />
     <None Include="Asset\Resource.hlsli" />

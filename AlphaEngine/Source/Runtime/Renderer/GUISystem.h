@@ -4,14 +4,18 @@
 
 namespace Alpha
 {
-	struct RenderContext;
-
 	class RenderCore;
 	class TransientBufferAllocator;
 	class Texture;
 	class Shader;
 	class PipelineLayout;
 	class GraphicsPipeline;
+}
+
+namespace Alpha::Renderer
+{
+	struct RenderContext;
+	class RenderGraph;
 
 	class GUISystem : public Subsystem<GUISystem>
 	{
@@ -20,11 +24,6 @@ namespace Alpha
 		TUnique<TransientBufferAllocator> m_index_buffer{};
 		TUnique<Texture> m_font_texture{};
 
-		TUnique<Shader> m_vs{};
-		TUnique<Shader> m_ps{};
-		TUnique<PipelineLayout> m_pipeline_layout{};
-		TUnique<GraphicsPipeline> m_pipeline{};
-
 	public:
 		GUISystem();
 		~GUISystem();
@@ -32,6 +31,7 @@ namespace Alpha
 		struct Args
 		{
 			RenderCore* render_core{ nullptr };
+			RenderGraph* graph{ nullptr };
 			uint32_t max_vertex_num{ 1024 };
 
 		};
@@ -43,8 +43,6 @@ namespace Alpha
 
 		// フレームの終了 (命令の構築を隠蔽)
 		void EndFrame();
-
-		void Flush(RenderContext& ctx);
 
 
 	};

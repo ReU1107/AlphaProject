@@ -120,9 +120,9 @@ namespace Alpha
 
 	struct DispatchMeshArgs
 	{
-		UInt32 thred_group_count_x{ 0 };
-		UInt32 thred_group_count_y{ 0 };
-		UInt32 thred_group_count_z{ 0 };
+		UInt32 thread_group_count_x{ 0 };
+		UInt32 thread_group_count_y{ 0 };
+		UInt32 thread_group_count_z{ 0 };
 	};
 
 	struct ASBuildSize

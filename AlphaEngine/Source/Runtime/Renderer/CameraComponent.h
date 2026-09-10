@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "Core/Common.h"
 
-namespace Alpha
+namespace Alpha::Renderer
 {
 	// 投影法
 	enum class ProjectionType

@@ -501,6 +501,33 @@ namespace Alpha
 		m_list->ClearDepthStencilView(dsv_handle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
 	}
 
+	void D3D12CommandBuffer::ClearUnorderedAccess(RHIDescriptorHeap* uav_heap, UInt32 uav_index, RHITexture* texture, const float* clear_values)
+	{
+		auto d3d12_uav_heap = static_cast<D3D12DescriptorHeap*>(uav_heap);
+
+		auto native_resource = static_cast<ID3D12Resource1*>(texture->GetNative());
+
+		D3D12_CPU_DESCRIPTOR_HANDLE uav_cpu_handle = d3d12_uav_heap->GetCPUHandle(uav_index);
+		D3D12_GPU_DESCRIPTOR_HANDLE uav_gpu_handle = d3d12_uav_heap->GetGPUHandle(uav_index);
+
+		m_list->ClearUnorderedAccessViewFloat(uav_gpu_handle, uav_cpu_handle, native_resource, clear_values, 0, nullptr);
+	}
+
+	void D3D12CommandBuffer::ClearUnorderedAccess(RHIDescriptorHeap* uav_heap, UInt32 uav_index, RHIBuffer* buffer)
+	{
+		auto d3d12_uav_heap = static_cast<D3D12DescriptorHeap*>(uav_heap);
+
+		auto native_resource = static_cast<ID3D12Resource1*>(buffer->GetNative());
+
+		D3D12_CPU_DESCRIPTOR_HANDLE uav_cpu_handle = d3d12_uav_heap->GetCPUHandle(uav_index);
+		D3D12_GPU_DESCRIPTOR_HANDLE uav_gpu_handle = d3d12_uav_heap->GetGPUHandle(uav_index);
+
+
+		UINT clear_values[4] = { 0,0,0,0 };
+
+		m_list->ClearUnorderedAccessViewUint(uav_gpu_handle, uav_cpu_handle, native_resource, clear_values, 0, nullptr);
+	}
+
 	void D3D12CommandBuffer::SetViewport(const Viewport& viewport_)
 	{
 		D3D12_VIEWPORT viewport = {};

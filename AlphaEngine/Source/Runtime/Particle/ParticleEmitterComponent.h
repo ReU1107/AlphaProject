@@ -21,7 +21,7 @@ namespace Alpha
 
         float spawn_accumulator{ 0.0f };  
 
-        UInt32 source_model{ 0 };
+        UInt32 source_model{ 0 };   // どの形状でサンプリングするか
 
     };
 }

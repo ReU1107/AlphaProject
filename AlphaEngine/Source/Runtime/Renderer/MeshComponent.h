@@ -2,7 +2,7 @@
 #include "Core/Common.h"
 #include "Core/Component.h"
 
-namespace Alpha
+namespace Alpha::Renderer
 {
 	struct MeshComponent
 	{

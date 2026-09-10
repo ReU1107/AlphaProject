@@ -1,10 +1,13 @@
 ﻿#include "GUISystem.h"
 #include "RenderCore/Module.h"
 
-#include "RenderContext.h"
+#include "Definitions.h"
 
 #include "Core/Math/MathF.h"
 #include "Core/Window/WindowSystem.h"
+
+#include "RenderGraph.h"
+#include "RenderGraphBuilder.h"
 
 #include <imgui/imgui.h>
 #include <windowsx.h>
@@ -122,7 +125,7 @@ namespace
 	}
 }
 
-namespace Alpha
+namespace Alpha::Renderer
 {
 	GUISystem::GUISystem()
 	{
@@ -175,10 +178,10 @@ namespace Alpha
 			m_index_buffer->Initialize(desc);
 		}
 
-		m_vs = RenderCore::Get().CreateShader(L"Asset/GUIVS.hlsl", ERHIShaderType::Vertex);
-		m_ps = RenderCore::Get().CreateShader(L"Asset/GUIPS.hlsl", ERHIShaderType::Pixel);
+		auto vs = RenderCore::Get().CreateShader(L"Asset/GUIVS.hlsl", ERHIShaderType::Vertex);
+		auto ps = RenderCore::Get().CreateShader(L"Asset/GUIPS.hlsl", ERHIShaderType::Pixel);
 
-		m_pipeline_layout = RenderCore::Get().CreatePipelineLayout(
+		auto pipeline_layout = RenderCore::Get().CreatePipelineLayout(
 			[](PipelineLayout& layout)
 			{
 				layout.AddRootCBV(1, ERHIShaderFlags::Vertex);
@@ -191,15 +194,15 @@ namespace Alpha
 			}
 		);
 
-		m_pipeline = RenderCore::Get().CreateGraphicsPipeline(
+		auto pipeline = RenderCore::Get().CreateGraphicsPipeline(
 			{
 				.vertex_layout = VertexLayout()
 					.AddElement(L"POSITION", EVertexElementType::Float2, 0)
 					.AddElement(L"TEXCOORD", EVertexElementType::Float2, 0)
 					.AddElement(L"COLOR", EVertexElementType::Color, 0),
-				.pipeline_layout = m_pipeline_layout.get(),
-				.vertex_shader = m_vs.get(),
-				.pixel_shader = m_ps.get(),
+				.pipeline_layout = pipeline_layout,
+				.vertex_shader = vs,
+				.pixel_shader = ps,
 				.render_target_count = 1,
 				.render_targets = {
 					RenderCore::Get().GetBackBufferFormat()
@@ -211,6 +214,93 @@ namespace Alpha
 	
 			}
 		);
+
+
+		args.graph->AddPass(L"GUI",
+			[=](RenderGraphBuilder& builder)
+			{
+				builder.UsePipeline(pipeline, ERHIPipelineType::Graphics);
+			},
+			[=](RenderGraphContext& ctx)
+			{
+				auto draw_data = ImGui::GetDrawData();
+
+				if (!draw_data)
+					return;
+
+				ctx.command_list->Transition(ctx.current_back_buffer, ERHIResourceState::RenderTarget);
+
+
+				ctx.command_list->SetRenderTarget(ctx.current_back_buffer, nullptr);
+				ctx.command_list->ClearRenderTarget(ctx.current_back_buffer, Rect2D(0, 0, 1920, 1080), Color4::Gray);
+
+				ctx.command_list->SetViewport(Viewport(0, 0, (float)1920, (float)1080, 0.0f, 1.0f));
+
+				ctx.command_list->SetScissorRect(0, 0, 1920, 1080);
+
+				m_vertex_buffer->Reset(ctx.current_frame_index);
+				m_index_buffer->Reset(ctx.current_frame_index);
+
+				float L = draw_data->DisplayPos.x;
+				float R = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
+				float T = draw_data->DisplayPos.y;
+				float B = draw_data->DisplayPos.y + draw_data->DisplaySize.y;
+
+				// プロジェクション行列
+				Matrix4x4 projection = Matrix4x4OrthographicLH(L, R, T, B, 0.0f, 1.0f);
+
+				auto offset = RenderCore::Get().GetTransientAllocator()->WriteData(&projection);
+
+				ctx.command_list->SetGraphicsCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 0);
+
+				auto* sampler_sate = RenderCore::Get().GetPresetSampler(ESamplerPresetType::LinearClamp);
+
+				ctx.command_list->SetGraphicsSamplerState(sampler_sate, 1);
+
+				for (int n = 0; n < draw_data->CmdListsCount; n++)
+				{
+					const ImDrawList* cmd_list = draw_data->CmdLists[n];
+
+					uint64_t vertex_offset = 0;
+					uint64_t vertex_byte_size = cmd_list->VtxBuffer.Size * sizeof(ImDrawVert);
+					auto vertex_ptr = m_vertex_buffer->Allocate(vertex_byte_size, &vertex_offset);
+					memcpy(vertex_ptr, cmd_list->VtxBuffer.Data, vertex_byte_size);
+
+					uint64_t index_offset = 0;
+					uint64_t index_byte_size = cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx);
+					auto index_ptr = m_index_buffer->Allocate(index_byte_size, &index_offset);
+					memcpy(index_ptr, cmd_list->IdxBuffer.Data, index_byte_size);
+
+					ImVec2 clip_off = draw_data->DisplayPos;
+
+					for (int i = 0; i < cmd_list->CmdBuffer.Size; i++)
+					{
+						const ImDrawCmd* cmd = &cmd_list->CmdBuffer[i];
+						ImTextureID tex_id = cmd->GetTexID();
+						auto tex = (Texture*)(uintptr_t)tex_id;
+
+						ctx.command_list->Transition(tex, ERHIResourceState::AllShaderResource);
+
+						ctx.command_list->SetGraphicsTexture(tex, 2);
+
+						ctx.command_list->SetVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
+						ctx.command_list->SetIndexBuffer(m_index_buffer->GetBuffer(), ERHIIndexFormat::UInt16);
+
+						float clip_min_x = cmd->ClipRect.x - clip_off.x;
+						float clip_min_y = cmd->ClipRect.y - clip_off.y;
+						float clip_max_x = cmd->ClipRect.z - clip_off.x;
+						float clip_max_y = cmd->ClipRect.w - clip_off.y;
+
+						ctx.command_list->SetScissorRect(clip_min_x, clip_min_y, clip_max_x, clip_max_y);
+
+						ctx.command_list->DrawIndexed(cmd->ElemCount, (index_offset / sizeof(ImDrawIdx)) + cmd->IdxOffset, (vertex_offset / sizeof(ImDrawVert)) + cmd->VtxOffset);
+					}
+				}
+
+			}
+		);
+
+
 	
 		WindowSystem::Get().SetEventCallback([&](uint32_t msg, intptr_t wParam, intptr_t lParam)
 			{
@@ -290,10 +380,6 @@ namespace Alpha
 	{
 		ImGui::DestroyContext();
 
-		m_pipeline.reset();
-		m_pipeline_layout.reset();
-		m_vs.reset();
-		m_ps.reset();
 		m_vertex_buffer.reset();
 		m_index_buffer.reset();
 		m_font_texture.reset();
@@ -311,73 +397,5 @@ namespace Alpha
 	void GUISystem::EndFrame()
 	{
 		ImGui::Render();
-	}
-
-	void GUISystem::Flush(RenderContext& ctx)
-	{
-		auto draw_data = ImGui::GetDrawData();
-		
-		if (!draw_data) 
-			return;
-
-		m_vertex_buffer->Reset(ctx.current_frame_index);
-		m_index_buffer->Reset(ctx.current_frame_index);
-
-		ctx.command_list->SetGraphicsPipeline(m_pipeline.get());
-		ctx.command_list->SetDescriptorHeap(RenderCore::Get().GetResourceHeap(), RenderCore::Get().GetSamplerHeap());
-
-		float L = draw_data->DisplayPos.x;
-		float R = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
-		float T = draw_data->DisplayPos.y;
-		float B = draw_data->DisplayPos.y + draw_data->DisplaySize.y;
-
-		// プロジェクション行列
-		Matrix4x4 projection = Matrix4x4OrthographicLH(L, R, T, B, 0.0f, 1.0f);
-
-		auto constant_offset = ctx.transient_buffer->WriteData<matrix4x4>(&projection);
-		ctx.command_list->SetGraphicsCBV(ctx.transient_buffer->GetBuffer(), constant_offset, 0);
-
-		auto* sampler_sate = RenderCore::Get().GetPresetSampler(ESamplerPresetType::LinearClamp);
-
-		ctx.command_list->SetGraphicsSamplerState(sampler_sate, 1);
-
-		for (int n = 0; n < draw_data->CmdListsCount; n++)
-		{
-			const ImDrawList* cmd_list = draw_data->CmdLists[n];
-
-			uint64_t vertex_offset = 0;
-			uint64_t vertex_byte_size = cmd_list->VtxBuffer.Size * sizeof(ImDrawVert);
-			auto vertex_ptr = m_vertex_buffer->Allocate(vertex_byte_size, &vertex_offset);
-			memcpy(vertex_ptr, cmd_list->VtxBuffer.Data, vertex_byte_size);
-
-			uint64_t index_offset = 0;
-			uint64_t index_byte_size = cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx);
-			auto index_ptr = m_index_buffer->Allocate(index_byte_size, &index_offset);
-			memcpy(index_ptr, cmd_list->IdxBuffer.Data, index_byte_size);
-
-			ImVec2 clip_off = draw_data->DisplayPos;
-
-			for (int i = 0; i < cmd_list->CmdBuffer.Size; i++)
-			{
-				const ImDrawCmd* cmd = &cmd_list->CmdBuffer[i];
-				ImTextureID tex_id = cmd->GetTexID();
-				auto tex = (Texture*)(uintptr_t)tex_id;
-
-				ctx.command_list->SetGraphicsTexture(tex, 2);
-
-				ctx.command_list->SetVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
-				ctx.command_list->SetIndexBuffer(m_index_buffer->GetBuffer(), ERHIIndexFormat::UInt16);
-
-				float clip_min_x = cmd->ClipRect.x - clip_off.x;
-				float clip_min_y = cmd->ClipRect.y - clip_off.y;
-				float clip_max_x = cmd->ClipRect.z - clip_off.x;
-				float clip_max_y = cmd->ClipRect.w - clip_off.y;
-
-				ctx.command_list->SetScissorRect(clip_min_x, clip_min_y, clip_max_x, clip_max_y);
-
-				ctx.command_list->DrawIndexed(cmd->ElemCount, (index_offset / sizeof(ImDrawIdx)) + cmd->IdxOffset, (vertex_offset / sizeof(ImDrawVert)) + cmd->VtxOffset);
-			}
-		}
-
 	}
 }

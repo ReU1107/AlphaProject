@@ -15,21 +15,19 @@ namespace Alpha
     class RenderCore;
     class GPUDataTransfer;
     class ASBuilder;
-    class Buffer;
     class PersistentBufferAllocator;
+}
 
-
-    /*
-    * GPUResourceManager
-    */
+namespace Alpha::Renderer
+{
 
     class RenderResourceManager : public Subsystem<RenderResourceManager>
     {
     private:
-        TSlotPalette<Renderer::Mesh> m_mesh_palette{};
-        TSlotPalette<Renderer::Material> m_material_palette{};
-        TSlotPalette<Renderer::MaterialTable> m_material_table_palette{};
-        TSlotPalette<Renderer::TextureResource> m_texture_palette{};
+        TSlotPalette<Mesh> m_mesh_palette{};
+        TSlotPalette<Material> m_material_palette{};
+        TSlotPalette<MaterialTable> m_material_table_palette{};
+        TSlotPalette<TextureResource> m_texture_palette{};
 
         TUnique<PersistentBufferAllocator> m_vertex_position_allocator{ nullptr };
         TUnique<PersistentBufferAllocator> m_vertex_attribute_allocator{ nullptr };
@@ -70,17 +68,21 @@ namespace Alpha
         UInt32 RegisterMaterial(TShared<MaterialHandle> handle);
         UInt32 RegisterTexture(TShared<TextureHandle> handle);
 
-        const Renderer::Mesh& GetMeshByHandle(TShared<ModelHandle> handle);
-        const Renderer::Mesh& GetMeshByHandle(UInt64 id);
-        const Renderer::Mesh& GetMeshByIndex(UInt64 index);
-        TArray<Renderer::MaterialData> GetDefaultMaterials(UInt64 mesh_index);
+        const Mesh& GetMeshByHandle(TShared<ModelHandle> handle);
+        const Mesh& GetMeshByHandle(UInt64 id);
+        const Mesh& GetMeshByIndex(UInt64 index);
+        TArray<MaterialData> GetDefaultMaterials(UInt64 mesh_index);
 
-        const Renderer::Material& GetMaterialByIndex(UInt64 index);
-        const Renderer::MaterialTable& GetMaterialTableByIndex(UInt64 index);
-        const Renderer::MaterialTable& GetMaterialTableByMeshIndex(UInt64 index);
+        const Material& GetMaterialByIndex(UInt64 index);
+        const MaterialTable& GetMaterialTableByIndex(UInt64 index);
+        const MaterialTable& GetMaterialTableByMeshIndex(UInt64 index);
 
         UInt32 GetGPUMeshOffset(UInt64 index);
         UInt32 GetGPUMaterialTableOffset(UInt64 index);
+
+		UInt32 GetGPUTextureOffset(UInt64 index);
+
+		const TextureResource& GetTextureByIndex(UInt64 index) const;
 
         struct Buffers
         {

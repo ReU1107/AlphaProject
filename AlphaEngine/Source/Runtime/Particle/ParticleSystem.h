@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "Core/Common.h"
-#include "Context.h"
 #include <entt/entt.hpp>
 #include "Definitions.h"
 
@@ -15,7 +14,18 @@ namespace Alpha
 	class CommandLayout;
 	class ComputePipeline;
 	class Shader;
+
+	class GraphicsPipeline;
+	class Texture;
+}
+
+namespace Alpha::Renderer
+{
 	class RenderResourceManager;
+}
+
+namespace Alpha
+{
 
 	class ParticleSystem
 	{
@@ -40,6 +50,13 @@ namespace Alpha
 		TUnique<ComputePipeline> m_reset_pipeline{ nullptr };
 		TUnique<Shader> m_reset_cs{ nullptr };
 
+		TUnique<ComputePipeline> m_prerender_pipeline{ nullptr };
+		TUnique<Shader> m_prerender_cs{ nullptr };
+
+
+		TUnique<GraphicsPipeline> m_sprite_pipeline{ nullptr };
+		TUnique<Shader> m_sprite_ms{ nullptr };
+		TUnique<Shader> m_sprite_ps{ nullptr };
 
 
 		UInt32 m_counter_index{ 0 };
@@ -53,13 +70,23 @@ namespace Alpha
 		struct Args
 		{
 			RenderCore* render_core{ nullptr };
+			
+			Texture* render_target{ nullptr };
+			Texture* depth_target{ nullptr };
+
 			UInt32 max_particle_count{ 10000 };
+
 		};
 
 		bool Initialize(const Args& args);
 		void Finalize();
 
 		void Update(entt::registry& registry, ParticleContext& ctx);
+
+		//Buffer* GetParticleBuffer() const { return m_particle_allocator[m_counter_index]->GetBuffer(); }
+		//Buffer* GetCommandBuffer() const { return m_command_buffer.get(); }
+
+		//CommandLayout* GetCommandLayout() const { return m_command_layout.get(); }
 
 	};
 }

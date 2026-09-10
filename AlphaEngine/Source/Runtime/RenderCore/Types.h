@@ -31,6 +31,9 @@ namespace Alpha
 		RWTexture2D,
 
 		RWTexture3D,
+
+		RenderTarget2D,
+		DepthStencil2D,
 	};
 	
 	enum class ESamplerPresetType

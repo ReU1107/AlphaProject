@@ -1,6 +1,9 @@
 ﻿#include "VertexLayout.h"
 #include "Core/Assertion.h"
 
+#include "Core/Math/HashUtil.h"
+
+
 namespace Alpha
 {
 	VertexLayout& VertexLayout::AddElement(StringView name, EVertexElementType type, UInt32 semantic_index)
@@ -40,6 +43,28 @@ namespace Alpha
 		}
 
 		return desc;
+	}
+
+	UInt64 VertexLayout::GetHash() const
+	{
+		UInt64 handle_id = 0;
+
+		HashCombine(handle_id, m_stride);
+
+		HashCombine(handle_id, static_cast<UInt64>(m_elements.size()));
+
+		for (size_t i = 0; i < m_elements.size(); ++i)
+		{
+			const auto& element = m_elements[i];
+
+			HashCombine(handle_id, element.semantic_name);
+			HashCombine(handle_id, element.semantic_index);
+			HashCombine(handle_id, static_cast<UInt32>(element.format));
+			HashCombine(handle_id, element.input_slot);
+			HashCombine(handle_id, element.aligned_offset);
+		}
+
+		return handle_id;
 	}
 
 }
