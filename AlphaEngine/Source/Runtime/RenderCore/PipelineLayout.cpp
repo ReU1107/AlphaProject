@@ -2,6 +2,8 @@
 #include "RenderCore/RenderHardwareInterface.h"
 #include "RHI/RHIPipelineLayout.h"
 
+#include "Core/Math/HashUtil.h"
+
 namespace Alpha
 {
 	PipelineLayout::PipelineLayout() = default;
@@ -108,6 +110,46 @@ namespace Alpha
 		m_sam_count += num;
 
 		EndDescriptorTable();
+	}
+
+	UInt32 PipelineLayout::GetHash() const
+	{
+		UInt64 handle_id = 0;
+
+		HashCombine(handle_id, m_cbv_count);
+		HashCombine(handle_id, m_srv_count);
+		HashCombine(handle_id, m_uav_count);
+		HashCombine(handle_id, m_sam_count);
+
+		const auto& desc = m_descriptor_tables;
+
+		HashCombine(handle_id, static_cast<UInt32>(desc.flags));
+
+		HashCombine(handle_id, static_cast<UInt64>(desc.parameters.size()));
+
+		for (int i = 0; i < desc.parameters.size(); ++i)
+		{
+			const auto& param = desc.parameters[i];
+
+			HashCombine(handle_id, param.register_index);
+			HashCombine(handle_id, static_cast<UInt32>(param.view_type));
+			HashCombine(handle_id, static_cast<UInt32>(param.shader_flags));
+			HashCombine(handle_id, static_cast<UInt32>(param.parameter_type));
+			HashCombine(handle_id, param.range_num);
+
+			if (param.parameter_type == ERHIParameterType::DescriptorTable)
+			{
+				for (UInt32 j = 0; j < param.range_num; ++j)
+				{
+					const auto& range = param.ranges[j];
+					HashCombine(handle_id, range.resource_num);
+					HashCombine(handle_id, range.register_index);
+					HashCombine(handle_id, static_cast<UInt32>(range.view_type));
+				}
+			}
+		}
+
+		return handle_id;
 	}
 
 	void PipelineLayout::Build(RenderHardwareInterface* rhi)

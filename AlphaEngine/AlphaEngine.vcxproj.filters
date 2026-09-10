@@ -114,7 +114,7 @@
     <ClCompile Include="Source\Runtime\D3D12\D3D12CommandQueue.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\D3D12\D3D12CommandSignature.cpp">
+    <ClCompile Include="Source\Runtime\D3D12\D3D12CommandLayout.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\D3D12\D3D12ComputePipeline.cpp">
@@ -414,19 +414,19 @@
     <ClCompile Include="Source\Runtime\Renderer\MaterialOverrideComponent.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\System\VertexComputePass.cpp">
+    <ClCompile Include="Source\Runtime\Renderer\Pass\VertexComputePass.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\System\RenderScene.cpp">
+    <ClCompile Include="Source\Runtime\Renderer\RenderScene.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\System\VBufferPass.cpp">
+    <ClCompile Include="Source\Runtime\Renderer\Pass\VBufferPass.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\System\VolumetricPass.cpp">
+    <ClCompile Include="Source\Runtime\Renderer\Pass\VolumetricPass.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\System\FroxelLightingPass.cpp">
+    <ClCompile Include="Source\Runtime\Renderer\Pass\FroxelLightingPass.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Renderer\LightComponent.cpp">
@@ -435,16 +435,40 @@
     <ClCompile Include="Source\Runtime\Renderer\VolumeComponent.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\System\CompositePass.cpp">
+    <ClCompile Include="Source\Runtime\Renderer\Pass\CompositePass.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\Viewport.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Particle\ParticleSystem.cpp">
+    <ClCompile Include="Source\Runtime\RenderCore\CommandListPool.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\RenderCore\CommandListPool.cpp">
+    <ClCompile Include="Source\Runtime\RenderCore\CommandLayout.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="TestScene\Scene1.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Renderer\Definitions.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\System\RenderSceneBuilder.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Renderer\RenderGraph.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Renderer\RenderGraphBuilder.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\RenderCore\PipelineCache.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\RenderCore\ShaderCache.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Renderer\Pass\OpaqueShadingPass.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -620,7 +644,7 @@
     <ClInclude Include="Source\Runtime\RHI\RHICommandQueue.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\RHI\RHICommandSignature.h">
+    <ClInclude Include="Source\Runtime\RHI\RHICommandLayout.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RHI\RHIComputePipeline.h">
@@ -671,7 +695,7 @@
     <ClInclude Include="Source\Runtime\D3D12\D3D12CommandQueue.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\D3D12\D3D12CommandSignature.h">
+    <ClInclude Include="Source\Runtime\D3D12\D3D12CommandLayout.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\D3D12\D3D12ComputePipeline.h">
@@ -941,9 +965,6 @@
     <ClInclude Include="ThirdParty\std\stb_image.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Renderer\RenderContext.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Renderer\DebugRenderer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -1076,19 +1097,19 @@
     <ClInclude Include="Source\Runtime\Renderer\MaterialOverrideComponent.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\System\VertexComputePass.h">
+    <ClInclude Include="Source\Runtime\Renderer\Pass\VertexComputePass.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\System\RenderScene.h">
+    <ClInclude Include="Source\Runtime\Renderer\RenderScene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\System\VBufferPass.h">
+    <ClInclude Include="Source\Runtime\Renderer\Pass\VBufferPass.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\System\VolumetricPass.h">
+    <ClInclude Include="Source\Runtime\Renderer\Pass\VolumetricPass.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\System\FroxelLightingPass.h">
+    <ClInclude Include="Source\Runtime\Renderer\Pass\FroxelLightingPass.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Renderer\LightComponent.h">
@@ -1097,7 +1118,7 @@
     <ClInclude Include="Source\Runtime\Renderer\VolumeComponent.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\System\CompositePass.h">
+    <ClInclude Include="Source\Runtime\Renderer\Pass\CompositePass.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\Math\Frustum.h">
@@ -1115,19 +1136,40 @@
     <ClInclude Include="Source\Runtime\Scene\Module.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Particle\Definitions.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Particle\ParticleEmitterComponent.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Particle\ParticleSystem.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\RenderCore\CommandListPool.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RHI\Constants.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\RenderCore\CommandLayout.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="TestScene\Scene1.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Components.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\System\RenderSceneBuilder.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Renderer\RenderGraph.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Renderer\RenderGraphBuilder.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Renderer\RenderGraphPass.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\RenderCore\PipelineCache.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\RenderCore\ShaderCache.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Renderer\Pass\OpaqueShadingPass.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1135,5 +1177,7 @@
     <None Include="packages.config" />
     <None Include="Asset\Resource.hlsli" />
     <None Include="Asset\Lighting.hlsli" />
+    <None Include="Asset\Particle.hlsli" />
+    <None Include="Asset\ExecuteIndirect.hlsli" />
   </ItemGroup>
 </Project>

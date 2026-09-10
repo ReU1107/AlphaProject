@@ -1,7 +1,7 @@
 ﻿#include "LightComponent.h"
 #include "Core/Math/MathUtil.h"
 
-namespace Alpha
+namespace Alpha::Renderer
 {
     void LightComponent::SetSpotAngleDegree(float inner_cone, float outer_cone)
     {

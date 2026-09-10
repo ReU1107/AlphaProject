@@ -2,7 +2,7 @@
 #include "Core/Common.h"
 #include "Core/Math/AxisAlignedBoundingBox.h"
 
-namespace Alpha
+namespace Alpha::Renderer
 {
 	struct VolumeComponent
 	{

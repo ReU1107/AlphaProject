@@ -70,7 +70,6 @@ void main(
                 
         float3 position = position_buffer[instance.vertex_element_offset + vertex_index];
         
-        // 座標変換して出力
         outputs[gtid].position = mul(mat, float4(position, 1.0f));
     }
 

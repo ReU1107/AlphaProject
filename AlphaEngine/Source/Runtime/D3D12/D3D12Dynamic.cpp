@@ -4,7 +4,7 @@
 #include "D3D12Buffer.h"
 #include "D3D12CommandBuffer.h"
 #include "D3D12CommandQueue.h"
-#include "D3D12CommandSignature.h"
+#include "D3D12CommandLayout.h"
 #include "D3D12ComputePipeline.h"
 #include "D3D12DescriptorHeap.h"
 #include "D3D12GraphicsPipeline.h"
@@ -60,9 +60,9 @@ namespace Alpha
         return CreateRHIObject<D3D12CommandQueue>(m_device.get(), desc);
     }
 
-    TUnique<RHICommandSignature> D3D12Dynamic::CreateCommandSignature(const RHICommandSignatureDesc& desc)
+    TUnique<RHICommandLayout> D3D12Dynamic::CreateCommandLayout(const RHICommandLayoutDesc& desc)
     {
-        return CreateRHIObject<D3D12CommandSignature>(m_device.get(), desc);
+        return CreateRHIObject<D3D12CommandLayout>(m_device.get(), desc);
     }
 
     TUnique<RHITimeline> D3D12Dynamic::CreateTimeline(const RHITimelineDesc& desc)

@@ -17,7 +17,6 @@
 #include "Source/Runtime/Renderer/Module.h"
 
 #include "Source/Runtime/Scene/Module.h"
-#include "Source/Runtime/Particle/Module.h"
 
 
 #include "Source/Core/Serialization/ByteWriter.h"
@@ -26,19 +25,16 @@
 #include "ThirdParty/imgui/imgui.h"
 
 #include "Source/Runtime/System/RenderSystem.h"
+#include "Source/Runtime/System/RenderSceneBuilder.h"
 #include "Source/Runtime/System/CameraSystem.h"
-#include "Source/Runtime/System/VertexComputePass.h"
-#include "Source/Runtime/System/RenderScene.h"
-#include "Source/Runtime/System/VBufferPass.h"
-#include "Source/Runtime/System/FroxelLightingPass.h"
-#include "Source/Runtime/System/VolumetricPass.h"
-#include "Source/Runtime/System/CompositePass.h"
 #include "Source/Runtime/Renderer/CameraComponent.h"
 
 #include "Source/Runtime/Spatial/TransformComponent.h"
 #include "RHI/Definitions.h"
 
 #include "Source/Core/Math/MathF.h"
+
+#include "TestScene/Scene1.h"
 
 #include <thread>
 #include <chrono>
@@ -74,21 +70,20 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     auto model2 = AssetManager::Get().Load<ModelHandle>(L"C:/Users/owner/Desktop/Asset/パチュリーVer2.00/Model/パチュリーVer2.00_Type-C(フル_ポニテC_ミニスカ_ブーツC_パンプス)_サーモン.pmx");
     auto model3 = AssetManager::Get().GetSphere();
     auto model4 = AssetManager::Get().GetCube();
-    
+
+    auto texture1 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/church_bricks_03_4k.blend/textures/church_bricks_03_diff_4k.jpg");
+	texture1->SetName(L"church_bricks_03_diff_4k");
+    auto texture2 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/concrete_floor_4k.blend/textures/concrete_floor_diff_4k.jpg");
+	texture2->SetName(L"concrete_floor_diff_4k");
+    auto texture3 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/metal_plate_02_4k.blend/textures/metal_plate_02_diff_4k.jpg");
+    texture3->SetName(L"metal_plate_02_4k");
+    auto texture4 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/rocks_ground_06_4k.blend/textures/rocks_ground_06_diff_4k.jpg");
+    texture4->SetName(L"rocks_ground_06_4k");
+
     RenderCore::Args render_core_args = {};
     render_core_args.hWnd = (HWND)WindowSystem::Get().GetNativeHandle();
     render_core_args.transient_buffer_size = 1_MB;
     RenderCore::Startup(render_core_args);
-
-    GUISystem::Args gui_args = {
-        .render_core = RenderCore::GetPtr(),
-    };
-    GUISystem::Startup(gui_args);
-
-    DebugRenderer::Args debug_args = {
-        .render_core = RenderCore::GetPtr(),
-    };
-    DebugRenderer::Startup(debug_args);
 
 
     RenderResourceManager::Args resource_args = {
@@ -102,362 +97,40 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     UInt32 sphere_index = RenderResourceManager::Get().RegisterMesh(model3);
     UInt32 cube_index = RenderResourceManager::Get().RegisterMesh(model4);
 
+    UInt32 bricks_index = RenderResourceManager::Get().RegisterTexture(texture1);
+    UInt32 concrete_index = RenderResourceManager::Get().RegisterTexture(texture2);
+    UInt32 metal_index = RenderResourceManager::Get().RegisterTexture(texture3);
+    UInt32 rocks_index = RenderResourceManager::Get().RegisterTexture(texture4);
+
     RenderSystem::Args rs_args = {
         .render_core = RenderCore::GetPtr(),
     };
 	RenderSystem render_system;
 	render_system.Initialize(rs_args);
 
-    ParticleSystem::Args ps_args = {
+   /* ParticleSystem::Args ps_args = {
         .render_core = RenderCore::GetPtr(),
         .max_particle_count = 10000,
     };
     ParticleSystem particle_system;
-    particle_system.Initialize(ps_args);
+    particle_system.Initialize(ps_args);*/
 
     Scene scene;
     scene.Initialize();
 
-    // 既存処理でRegistryが必要な場合だけ参照を取る
-    entt::registry& registry = scene.GetRegistry();
-
-    auto create_mesh_object =
-        [&](const String& name,
-        UInt32 mesh_index,
-        const Vector3& position,
-        const Vector3& scale) -> SceneObject&
-    {
-        SceneObject& object =
-            scene.CreateObject(name);
-
-        auto& mesh =
-            object.AddComponent<MeshComponent>();
-
-        mesh.mesh_index = mesh_index;
-
-        auto& transform =
-            object.GetComponent<TransformComponent>();
-
-        transform.SetLocalPosition(position);
-        transform.SetLocalScale(scale);
-
-        return object;
-    };
-
-    auto add_default_materials =
-        [&](SceneObject& object,
-        UInt32 mesh_index)
-        -> MaterialOverrideComponent&
-    {
-        auto& material =
-            object.AddComponent<
-            MaterialOverrideComponent>();
-
-        material.materials =
-            RenderResourceManager::Get()
-            .GetDefaultMaterials(mesh_index);
-
-        return material;
-    };
-
-    const Vector3 default_scale(
-        1.0f,
-        1.0f,
-        1.0f);
-
-    // Akari 1
-    create_mesh_object(
-        L"Akari_1",
+    BuildShowcaseScene(
+        scene,
         akari_index,
-        Vector3(10.0f, 0.0f, 0.0f),
-        default_scale);
-
-    // Akari 2
-    create_mesh_object(
-        L"Akari_2",
-        akari_index,
-        Vector3(10.0f, 0.0f, 10.0f),
-        default_scale);
-
-    // Patchouli
-    create_mesh_object(
-        L"Patchouli",
         patchouli_index,
-        Vector3(-10.0f, 0.0f, 0.0f),
-        default_scale);
-
-    // Sphere
-    create_mesh_object(
-        L"Sphere",
         sphere_index,
-        Vector3(-10.0f, 0.0f, 10.0f),
-        default_scale);
+        cube_index,
 
-    SceneObject* floor_object = nullptr;
+        bricks_index,
+        concrete_index,
+        metal_index,
+        rocks_index);
 
-    // Floor
-    {
-        SceneObject& object =
-            create_mesh_object(
-            L"Floor",
-            cube_index,
-            Vector3(0.0f, -0.5f, 0.0f),
-            Vector3(60.0f, 1.0f, 60.0f));
-
-        add_default_materials(
-            object,
-            cube_index);
-
-        floor_object = &object;
-    }
-
-    // Ceiling
-    {
-        SceneObject& object =
-            create_mesh_object(
-            L"Ceiling",
-            cube_index,
-            Vector3(0.0f, 60.5f, 0.0f),
-            Vector3(60.0f, 1.0f, 60.0f));
-
-        add_default_materials(
-            object,
-            cube_index);
-    }
-
-    // Back wall
-    {
-        SceneObject& object =
-            create_mesh_object(
-            L"BackWall",
-            cube_index,
-            Vector3(0.0f, 30.0f, 30.5f),
-            Vector3(60.0f, 60.0f, 1.0f));
-
-        add_default_materials(
-            object,
-            cube_index);
-    }
-
-    // Left wall
-    {
-        SceneObject& object =
-            create_mesh_object(
-            L"LeftWall",
-            cube_index,
-            Vector3(-30.5f, 30.0f, 0.0f),
-            Vector3(1.0f, 60.0f, 60.0f));
-
-        auto& material =
-            add_default_materials(
-            object,
-            cube_index);
-
-        material.SetBaseColor(
-            0,
-            Color3(0.63f, 0.06f, 0.04f));
-    }
-
-    // Right wall lower
-    {
-        SceneObject& object =
-            create_mesh_object(
-            L"RightWallLower",
-            cube_index,
-            Vector3(30.5f, 10.0f, 0.0f),
-            Vector3(1.0f, 20.0f, 60.0f));
-
-        auto& material =
-            add_default_materials(
-            object,
-            cube_index);
-
-        material.SetBaseColor(
-            0,
-            Color3(0.15f, 0.48f, 0.09f));
-    }
-
-    // Right wall upper
-    {
-        SceneObject& object =
-            create_mesh_object(
-            L"RightWallUpper",
-            cube_index,
-            Vector3(30.5f, 50.0f, 0.0f),
-            Vector3(1.0f, 20.0f, 60.0f));
-
-        auto& material =
-            add_default_materials(
-            object,
-            cube_index);
-
-        material.SetBaseColor(
-            0,
-            Color3(0.15f, 0.48f, 0.09f));
-    }
-
-    // Right wall back
-    {
-        SceneObject& object =
-            create_mesh_object(
-            L"RightWallBack",
-            cube_index,
-            Vector3(30.5f, 30.0f, -20.0f),
-            Vector3(1.0f, 20.0f, 20.0f));
-
-        auto& material =
-            add_default_materials(
-            object,
-            cube_index);
-
-        material.SetBaseColor(
-            0,
-            Color3(0.15f, 0.48f, 0.09f));
-    }
-
-    // Right wall front
-    {
-        SceneObject& object =
-            create_mesh_object(
-            L"RightWallFront",
-            cube_index,
-            Vector3(30.5f, 30.0f, 20.0f),
-            Vector3(1.0f, 20.0f, 20.0f));
-
-        auto& material =
-            add_default_materials(
-            object,
-            cube_index);
-
-        material.SetBaseColor(
-            0,
-            Color3(0.15f, 0.48f, 0.09f));
-    }
-
-    SceneObject* directional_light_object = nullptr;
-
-    // Directional light
-    {
-        SceneObject& object =
-            scene.CreateObject(
-            L"DirectionalLight");
-
-        auto& light =
-            object.AddComponent<LightComponent>();
-
-        light.type = 2;
-        light.direction =
-            VectorNormalize(
-            Vector3(-1.0f, -0.5f, 0.0f));
-
-        light.SetColor(
-            float3(1.0f, 0.95f, 0.8f));
-
-        light.SetIntensity(1.0f);
-
-        directional_light_object = &object;
-    }
-
-    // Point light
-    {
-        SceneObject& object =
-            scene.CreateObject(
-            L"PointLight");
-
-        auto& transform =
-            object.GetComponent<TransformComponent>();
-
-        transform.SetLocalPosition(
-            Vector3(0.0f, 50.0f, 0.0f));
-
-        auto& light =
-            object.AddComponent<LightComponent>();
-
-        light.type = 0;
-        light.SetColor(
-            float3(1.0f, 0.0f, 0.85f));
-
-        light.SetIntensity(5.0f);
-        light.SetRadius(45.0f);
-    }
-
-    // Spot light
-    {
-        SceneObject& object =
-            scene.CreateObject(
-            L"SpotLight");
-
-        auto& transform =
-            object.GetComponent<TransformComponent>();
-
-        transform.SetLocalPosition(
-            Vector3(-10.0f, 20.0f, 10.0f));
-
-        transform.LookAt(
-            Vector3(0.0f, -1.0f, -1.0f));
-
-        auto& light =
-            object.AddComponent<LightComponent>();
-
-        light.type = 1;
-        light.SetColor(
-            float3(0.2f, 0.6f, 1.0f));
-
-        light.SetIntensity(12.0f);
-        light.SetRadius(60.0f);
-
-        light.SetSpotAngleDegree(
-            30.0f,
-            60.0f);
-    }
-
-    // Camera
-    {
-        SceneObject& object =
-            scene.CreateObject(
-            L"MainCamera");
-
-        auto& transform =
-            object.GetComponent<TransformComponent>();
-
-        transform.SetLocalPosition(
-            Vector3(0.0f, 20.0f, -20.0f));
-
-        object.AddComponent<CameraComponent>();
-    }
-
-    // Fog volume
-    {
-        SceneObject& object =
-            scene.CreateObject(
-            L"FogVolume");
-
-        auto& transform =
-            object.GetComponent<TransformComponent>();
-
-        transform.SetLocalPosition(
-            Vector3(0.0f, 25.0f, 0.0f));
-
-        auto& fog =
-            object.AddComponent<VolumeComponent>();
-
-        fog.SetSize(
-            Vector3(45.0f, 45.0f, 45.0f));
-
-        fog.SetDensity(1.5f);
-    }
-
-    {
-        SceneObject& object = scene.CreateObject(L"Emitter");
-
-        auto& transform = object.GetComponent<TransformComponent>();
-
-        transform.SetLocalPosition(Vector3(0.0f, 25.0f, 0.0f));
-
-        auto& fog = object.AddComponent<ParticleEmitterComponent>();
-        
-    }
-
+	auto& registry = scene.GetRegistry();
 
     using namespace std::chrono;
 
@@ -477,48 +150,60 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         RenderCore::Get().BeginFrame();
         GUISystem::Get().BeginFrame();
 
-        ParticleContext pctx = {};
-        pctx.command_list = RenderCore::Get().AcquireCommandList();
-        pctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
-        pctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
-        pctx.delta_time = 1.0f / 60;
+        //ParticleContext pctx = {};
+        //pctx.command_list = RenderCore::Get().AcquireCommandList();
+        //pctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
+        //pctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
+        //pctx.delta_time = 1.0f / 60;
 
-        particle_system.Update(registry, pctx);
+        //particle_system.Update(registry, pctx);
 
+        ImGui::DockSpaceOverViewport();
+
+        if (ImGui::BeginMainMenuBar())
+        {
+            if (ImGui::BeginMenu("File")) { ImGui::EndMenu(); }
+            if (ImGui::BeginMenu("Window")) { ImGui::EndMenu(); }
+            ImGui::EndMainMenuBar();
+        }
+
+        ImGui::Begin("Hierarchy");
+        ImGui::Text("Scene Root");
+        if (ImGui::TreeNode("Main Camera")) { ImGui::TreePop(); }
+        ImGui::End();
+
+        ImGui::Begin("Inspector");
+        static float pos[3] = { 0.0f, 0.0f, 0.0f };
+        ImGui::DragFloat3("Position", pos, 0.1f);
+        ImGui::End();
+
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        ImGui::Begin("Viewport");
+        {
+            ImVec2 viewport_size = ImGui::GetContentRegionAvail();
+
+            Texture* lit_scene_tex = render_system.GetGraph()->FindTexture(L"LitSceneColor");
+
+            ImGui::Image(lit_scene_tex, viewport_size);
+        }
+        ImGui::End();
+        ImGui::PopStyleVar();
 
         RenderContext ctx = {};
         ctx.command_list = RenderCore::Get().AcquireCommandList();
         ctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
         ctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
+        ctx.current_back_buffer = RenderCore::Get().GetCurrentRenderTarget();
 
         // 暫定でここに置いてるけどどこにおこう
         RenderCore::Get().GetASBuilder()->RecordBuildCommands(ctx.command_list);
 
+        GUISystem::Get().EndFrame();
+
         render_system.Render(registry, ctx);
 
 
-        GUISystem::Get().EndFrame();
-
-        auto list = RenderCore::Get().AcquireCommandList();
-
-        UInt32 width = RenderCore::Get().GetWidth();
-        UInt32 height = RenderCore::Get().GetHeight();
-
-        list->Transition(RenderCore::Get().GetCurrentRenderTarget(), ERHIResourceState::RenderTarget);
-        list->Transition(RenderCore::Get().GetDepthTexture(), ERHIResourceState::DepthWrite);
-
-        list->SetRenderTarget(RenderCore::Get().GetCurrentRenderTarget(), RenderCore::Get().GetDepthTexture());
-        list->ClearRenderTarget(RenderCore::Get().GetCurrentRenderTarget(), Rect2D(0, 0, width, height), Color4::Gray);
-        list->ClearDepthStencil(RenderCore::Get().GetDepthTexture(), Rect2D(0, 0, width, height), 0.0f);
-        list->SetViewport(Viewport(0, 0, (float)width, (float)height, 0.0f, 1.0f));
-
-        list->SetScissorRect(0, 0, width, height);
-    
-        ctx.command_list = list;
-        GUISystem::Get().Flush(ctx);
-
-        list->Transition(RenderCore::Get().GetDepthTexture(), ERHIResourceState::Common);
-        list->Transition(RenderCore::Get().GetCurrentRenderTarget(), ERHIResourceState::Present);
 
         RenderCore::Get().EndFrame();
 

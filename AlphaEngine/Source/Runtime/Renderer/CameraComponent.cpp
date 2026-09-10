@@ -3,7 +3,7 @@
 #include "Core/Math/MathF.h"
 
 
-namespace Alpha
+namespace Alpha::Renderer
 {
 	void CameraComponent::SetFOV(float fov)
 	{

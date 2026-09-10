@@ -28,7 +28,7 @@ namespace Alpha
 
         TUnique<RHICommandQueue> CreateCommandQueue(const RHICommandQueueDesc& desc) final;
 
-        TUnique<RHICommandSignature> CreateCommandSignature(const RHICommandSignatureDesc& desc) final;
+        TUnique<RHICommandLayout> CreateCommandLayout(const RHICommandLayoutDesc& desc) final;
 
         TUnique<RHITimeline> CreateTimeline(const RHITimelineDesc& desc) final;
 

@@ -21,7 +21,7 @@ namespace Alpha
 	class VertexLayout
 	{
 	private:
-		std::vector<RHIVertexElementDesc> m_elements{};
+		TArray<RHIVertexElementDesc> m_elements{};
 		UInt32 m_stride{ 0 };
 	public:
 		VertexLayout() = default;
@@ -29,11 +29,13 @@ namespace Alpha
 
 		VertexLayout& AddElement(StringView name, EVertexElementType type, UInt32 semantic_index = 0);
 		
-		const std::vector<RHIVertexElementDesc>& GetElements() const { return m_elements; }
+		const TArray<RHIVertexElementDesc>& GetElements() const { return m_elements; }
 		
 		UInt32 GetStride() const { return m_stride; }
 
 		RHIVertexLayoutDesc ToRHIDesc() const;
+
+		UInt64 GetHash() const;
 
 	};
 }

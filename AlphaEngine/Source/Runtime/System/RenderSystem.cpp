@@ -2,18 +2,21 @@
 
 #include "RenderCore/Module.h"
 #include "Renderer/Module.h"
+#include "Renderer/Pass/VBufferPass.h"
+#include "Renderer/Pass/FroxelLightingPass.h"
+#include "Renderer/Pass/VolumetricPass.h"
+#include "Renderer/Pass/CompositePass.h"
+#include "Renderer/Pass/VertexComputePass.h"
+#include "Renderer/Pass/OpaqueShadingPass.h"
+
 
 #include "Definitions.h"
 #include "Spatial/TransformComponent.h"
 
 #include "Core/Math/MathF.h"
 
-#include "RenderScene.h"
-#include "VertexComputePass.h"
-#include "VBufferPass.h"
-#include "FroxelLightingPass.h"
-#include "VolumetricPass.h"
-#include "CompositePass.h"
+#include "RenderSceneBuilder.h"
+
 
 #include <imgui/imgui.h>
 namespace Alpha
@@ -25,7 +28,7 @@ namespace Alpha
 
 	bool RenderSystem::Initialize(const Args& args)
 	{
-		m_layout = RenderCore::Get().CreatePipelineLayout(
+		m_pipeline_layout = RenderCore::Get().CreatePipelineLayout(
 			[](PipelineLayout& layout)
 			{
 				layout.AddRootCBV(1, ERHIShaderFlags::All);
@@ -36,29 +39,31 @@ namespace Alpha
 		);
 
 		m_scene = std::make_unique<RenderScene>();
-		m_scene->Initialize({ args.render_core, m_layout.get() });
+		m_scene->Initialize({ args.render_core });
 
-		m_vbuffer_pass = std::make_unique<VBufferPass>();
-		m_vbuffer_pass->Initialize({ args.render_core, m_layout.get() });
-
-		m_froxel_pass = std::make_unique<FroxelLightingPass>();
-		m_froxel_pass->Initialize({ args.render_core, m_layout.get() });
-
-		m_volumetric_pass = std::make_unique<VolumetricPass>();
-		m_volumetric_pass->Initialize({ args.render_core, m_layout.get(), m_froxel_pass->GetResult(), m_vbuffer_pass->GetDepthTex() });
+		m_scene_builder = std::make_unique<RenderSceneBuilder>();
+		m_scene_builder->Initialize({ args.render_core, m_pipeline_layout });
 
 
-		
-		test = RenderCore::Get().CreateTexture(
-			1920, 1080,
-			ERHIResourceBindFlags::ShaderResource | ERHIResourceBindFlags::UnorderedAccess,
-			ERHIResourceFormat::RGBAFloat
-		);
+		m_graph = std::make_unique<RenderGraph>();
+		m_graph->Initialize({ args.render_core });
 
-		m_composite_pass = std::make_unique<CompositePass>();
-		m_composite_pass->Initialize({ args.render_core, m_layout.get(), test.get(), m_volumetric_pass->GetRadianceTex(), m_volumetric_pass->GetTransmittanceTex(),m_vbuffer_pass->GetVisibilityTex() });
+		AddVBufferPass(args.render_core, m_pipeline_layout, m_graph.get());
+		AddFroxelLightingPass(args.render_core, m_pipeline_layout, m_graph.get());
+		AddVolumetricPass(args.render_core, m_pipeline_layout, m_graph.get());
+		AddOpaqueShadingPass(args.render_core, m_pipeline_layout, m_graph.get());
+		AddCompositePass(args.render_core, m_pipeline_layout, m_graph.get());
 
+		GUISystem::Args gui_args = {
+			.render_core = RenderCore::GetPtr(),
+			.graph = m_graph.get(),
+		};
+		GUISystem::Startup(gui_args);
 
+		//DebugRenderer::Args debug_args = {
+		//	.render_core = RenderCore::GetPtr(),
+		//};
+		//DebugRenderer::Startup(debug_args);
 
 		return true;
 	}
@@ -68,12 +73,25 @@ namespace Alpha
 
 	}
 
-	void RenderSystem::Render(entt::registry& registry, RenderContext& ctx)
+	void RenderSystem::Render(entt::registry& registry, Renderer::RenderContext& ctx)
 	{
 
-		ctx.command_list->SetPipelineLayout(m_layout.get());
+		ctx.command_list->SetPipelineLayout(m_pipeline_layout);
 
-		m_scene->Build(registry, ctx);
+		SystemBufferIndices indices =
+		{
+			.static_res = RenderResourceManager::Get().GetBufferIndices(),
+			.dynamic_res = m_scene->GetBufferIndices(),
+		};
+
+
+		auto* transient = ctx.transient_buffer;
+
+		UInt64 offset = transient->WriteData(&indices);
+
+		ctx.command_list->SetComputeCBV(transient->GetBuffer(), offset, 0);
+
+		ctx.command_list->SetGraphicsCBV(transient->GetBuffer(), offset, 0);
 
 		auto camera_view = registry.view<CameraComponent, TransformComponent>();
 
@@ -81,20 +99,25 @@ namespace Alpha
 		auto& camera = camera_view.get<CameraComponent>(camera_entity);
 		auto& camera_t = camera_view.get<TransformComponent>(camera_entity);
 
-
-		Constants constants = {};
+		FrameRenderContext constants = {};
 		constants.view = camera.view_matrix;
 		constants.view_proj = MatrixMultiply(camera.view_matrix, camera.GetProjectionMatrix());
 		constants.inv_view_proj = Matrix4x4Inverse(constants.view_proj);
-		constants.camera_pos = camera_t.GetLocalMatrix()._4();
-		constants.instance_count = m_scene->GetInstanceCount();
-		constants.light_count = m_scene->GetLightCount();
+		constants.camera_pos = camera_t.GetWorldMatrix()._4();
+		constants.camera_right = Matrix4x4Right(camera_t.GetWorldMatrix());
+		constants.camera_up = Matrix4x4Up(camera_t.GetWorldMatrix());
 
 		ctx.inv_view_proj = constants.inv_view_proj;
 
+		m_scene_builder->Build(registry, ctx, *m_scene.get());
+
+
+		constants.instance_count = m_scene->GetInstanceCount();
+		constants.light_count = m_scene->GetLightCount();
+
 
 		{
-			auto offset = RenderCore::Get().GetTransientAllocator()->WriteData<Constants>(&constants);
+			auto offset = RenderCore::Get().GetTransientAllocator()->WriteData(&constants);
 
 			ctx.command_list->SetGraphicsCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 1);
 			ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 1);
@@ -104,23 +127,12 @@ namespace Alpha
 		}
 		ctx.instance_count = constants.instance_count;
 
-		m_vbuffer_pass->Execute(ctx);
 
-		m_froxel_pass->Execute(ctx);
-
-		m_volumetric_pass->Execute(ctx);
-
-		m_composite_pass->Execute(ctx);
-
-		ctx.test = test.get();
+		m_graph->Execute(ctx);
 
 
+		ctx.command_list->Transition(ctx.current_back_buffer, ERHIResourceState::Present);
 
-		ImGui::Begin("Composite Pass");
-
-		ImGui::Image(test.get(), ImVec2(960, 540));
-
-		ImGui::End();
 
 	}
 }

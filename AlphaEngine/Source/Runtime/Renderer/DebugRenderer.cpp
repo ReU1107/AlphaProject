@@ -1,11 +1,12 @@
 ﻿#include "DebugRenderer.h"
 #include "RenderCore/Module.h"
 
+#include "Definitions.h"
+
 #include "Core/Math/MathF.h"
 
-#include "RenderContext.h"
 
-namespace Alpha
+namespace Alpha::Renderer
 { 
 	bool DebugRenderer::Initialize(const Args& args)
 	{
@@ -23,10 +24,10 @@ namespace Alpha
 
 		m_lines.reserve(args.max_line_num);
 
-		m_line_vs = args.render_core->CreateShader(L"Asset/LineVS.hlsl", ERHIShaderType::Vertex);
-		m_line_ps = args.render_core->CreateShader(L"Asset/LinePS.hlsl", ERHIShaderType::Pixel);
+		auto vs = args.render_core->CreateShader(L"Asset/LineVS.hlsl", ERHIShaderType::Vertex);
+		auto ps = args.render_core->CreateShader(L"Asset/LinePS.hlsl", ERHIShaderType::Pixel);
 
-		m_line_pipeline_layout = args.render_core->CreatePipelineLayout([](PipelineLayout& layout) {
+		auto pipeline_layout = args.render_core->CreatePipelineLayout([](PipelineLayout& layout) {
 				layout.AddRootCBV(1);
 				layout.SetFlags(ERHIPipelineLayoutFlags::InputAssembler);
 			}
@@ -37,9 +38,9 @@ namespace Alpha
 				.vertex_layout = VertexLayout()
 					.AddElement(L"POSITION", EVertexElementType::Float3, 0)
 					.AddElement(L"COLOR", EVertexElementType::Float4, 0),
-				.pipeline_layout = m_line_pipeline_layout.get(),
-				.vertex_shader = m_line_vs.get(),
-				.pixel_shader = m_line_ps.get(),
+				.pipeline_layout = pipeline_layout,
+				.vertex_shader = vs,
+				.pixel_shader = ps,
 				.render_target_count = 1,
 				.render_targets = {
 					ERHIResourceFormat::RGBAFloat
@@ -55,10 +56,6 @@ namespace Alpha
 	void DebugRenderer::Finalize()
 	{
 
-		m_line_pipelie.reset();
-		m_line_pipeline_layout.reset();
-		m_line_ps.reset();
-		m_line_vs.reset();
 	}
 
 	void DebugRenderer::DrawLine(const Vector3& start, const Vector3& end, const Color4& color, float thickness)
@@ -180,7 +177,7 @@ namespace Alpha
 			vertices++;
 		}
 
-		ctx.command_list->SetGraphicsPipeline(m_line_pipelie.get());
+		ctx.command_list->SetGraphicsPipeline(m_line_pipelie);
 		
 		ctx.command_list->SetGraphicsCBV(ctx.transient_buffer->GetBuffer(), ctx.current_camera_offset, 0);
 

@@ -76,6 +76,12 @@ namespace Alpha
 
 		void ClearRenderTarget(RHIDescriptorHeap* rtv_heap, UInt32 rtv_index, const Rect2D& rect, const float* clear_color) final;
 		void ClearDepthStencil(RHIDescriptorHeap* dsv_heap, UInt32 dsv_index, const Rect2D& rect, float depth, uint8_t stencil) final;
+
+		void ClearUnorderedAccess(RHIDescriptorHeap* uav_heap, UInt32 uav_index, RHITexture* texture, const float* clear_values) final;
+
+		void ClearUnorderedAccess(RHIDescriptorHeap* uav_heap, UInt32 uav_index, RHIBuffer* buffer) final;
+
+
 		void SetViewport(const Viewport& viewport) final;
 		void SetScissorRect(const Rect2D& rect) final;
 
@@ -85,6 +91,9 @@ namespace Alpha
 		void Dispatch(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z) final;
 		void DispatchMesh(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z) final;
 
+
+		void ExecuteIndirect(RHICommandLayout* layout, RHIBuffer* command_buffer, UInt32 count) final;
+		void ExecuteIndirect(RHICommandLayout* layout, RHIBuffer* command_buffer, RHIBuffer* count_buffer) final;
 
 		void DispatchRayTrace(const RHIRayTraceDesc& desc) final;
 

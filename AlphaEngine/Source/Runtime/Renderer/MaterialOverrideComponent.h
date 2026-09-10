@@ -2,11 +2,11 @@
 #include "Core/Common.h"
 #include "Definitions.h"
 
-namespace Alpha
+namespace Alpha::Renderer
 {
 	struct MaterialOverrideComponent
 	{
-		TArray<Renderer::MaterialData> materials{};
+		TArray<MaterialData> materials{};
 
 		// デバッグ用
 		TArray<TString> material_names{};

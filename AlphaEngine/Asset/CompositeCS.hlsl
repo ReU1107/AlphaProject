@@ -14,6 +14,20 @@ struct PassConstants
 
 ConstantBuffer<PassConstants> pass_info : register(b2);
 
+float3 ACESFilm(float3 x)
+{
+    const float a = 2.51f;
+    const float b = 0.03f;
+    const float c = 2.43f;
+    const float d = 0.59f;
+    const float e = 0.14f;
+
+    return saturate(
+        (x * (a * x + b)) /
+        (x * (c * x + d) + e)
+    );
+}
+
 [numthreads(8, 8, 1)]
 void main(uint3 dispatch_index : SV_DispatchThreadID)
 {
@@ -37,7 +51,14 @@ void main(uint3 dispatch_index : SV_DispatchThreadID)
     float3 transmittance = transmittance_tex.Sample(sam, uv).rgb;
     float3 scene_base = scene_base_tex.Sample(sam, uv).rgb;
     
-    
-    result[index] = float4(volumetric + transmittance * scene_base, 1.0f);
-    
+    float3 hdr_color = volumetric + transmittance * scene_base;
+    const float exposure_ev = 0.0f;
+
+    hdr_color *= exp2(exposure_ev);
+
+    hdr_color = max(hdr_color, 0.0f);
+
+    float3 ldr_color = ACESFilm(hdr_color);
+
+    result[index] = float4(ldr_color, 1.0f);
 }

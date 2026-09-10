@@ -8,9 +8,8 @@
 
 #include "RenderCore/Module.h"
 
-namespace Alpha
+namespace Alpha::Renderer
 {
-    using namespace Renderer;
 	RenderResourceManager::~RenderResourceManager() = default;
 
 	bool RenderResourceManager::Initialize(const Args& args)
@@ -465,6 +464,17 @@ namespace Alpha
     {
         auto& material_table = GetMaterialTableByIndex(index);
         return material_table.alloc.offset;
+    }
+
+    UInt32 RenderResourceManager::GetGPUTextureOffset(UInt64 index)
+    {
+        auto& texture = m_texture_palette.GetAt(index);
+        return texture.tex->GetSRVHandle().index;
+    }
+
+    const TextureResource& RenderResourceManager::GetTextureByIndex(UInt64 index) const
+    {
+        return m_texture_palette.GetAt(index);
     }
 
     RenderResourceManager::Buffers RenderResourceManager::GetBuffers() const

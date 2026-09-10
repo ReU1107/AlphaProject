@@ -5,6 +5,7 @@
 #include "RHI/RHISwapChain.h"
 #include "RHI/RHICommandBuffer.h"
 #include "RHI/RHICommandQueue.h"
+#include "RHI/RHICommandLayout.h"
 #include "RHI/RHITimeline.h"
 #include "RHI/RHISamplerState.h"
 #include "RHI/RHIDescriptorHeap.h"
@@ -64,6 +65,11 @@ namespace Alpha
 	TUnique<RHICommandQueue> RenderHardwareInterface::CreateCommandQueue(const RHICommandQueueDesc& desc)
 	{
 		return m_dynamic->CreateCommandQueue(desc);
+	}
+
+	TUnique<RHICommandLayout> RenderHardwareInterface::CreateCommandLayout(const RHICommandLayoutDesc& desc)
+	{
+		return m_dynamic->CreateCommandLayout(desc);
 	}
 
 	TUnique<RHITimeline> RenderHardwareInterface::CreateTimeline(const RHITimelineDesc& desc)

@@ -74,14 +74,14 @@ void RayGenerate()
     float3 radiance = 0.0;          // 深度値までの空間の色
     float3 transmittance = 1.0;     // 深度値までで残った透過度
     
-    LightData light = light_buffer[2];
+    LightData light = light_buffer[3];  // とりあえず固定値でしてるけど今後directional lightのindexか一番影響の高いライト番号を渡す
     
     float3 light_dir = -light.direction;
 
     float cossita = dot(direction, light_dir);
     float3 phase_r = RayleighPhase(cossita);
     float3 fog_color = float3(1.0f, 1.0f, 1.0f);
-    float3 phase_m = HGPhase(cossita, 0.8f); // gの部分は今後場所によって変わるように
+    float3 phase_m = HGPhase(cossita, 0.75f); // gの部分は今後場所によって変わるように
 
     for (uint i = 0; i < step_count; ++i)
     {
@@ -114,11 +114,11 @@ void RayGenerate()
 
         float density_r = exp(-max(height, 0.0f) / 8000.0f);
 
-        float density_m = 0.01f; // ここも特性に応じて変化
+        float density_m = 0.03f; // ここも特性に応じて変化
 
         
         float3 sigma_r = RAYLEIGH * density_r;
-        float3 sigma_m = fog_color * density_m; // 
+        float3 sigma_m = fog_color * density_m * 2.0f; // 
         float3 sigma_a = float3(0.0f, 0.0f, 0.0f); // 吸収係数(一旦なし)
         
         float3 sigma_t = sigma_r + sigma_m + sigma_a;

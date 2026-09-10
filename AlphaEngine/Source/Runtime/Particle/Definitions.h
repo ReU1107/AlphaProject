@@ -35,8 +35,10 @@ namespace Alpha
 
         UInt32 material_index;
         UInt32 flags;
+        UInt32 target_buffer_index;
         UInt32 padding;
     };
+
 
     class CommandList;
     class TransientBufferAllocator;

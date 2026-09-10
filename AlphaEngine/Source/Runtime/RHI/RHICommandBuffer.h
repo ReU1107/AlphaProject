@@ -33,6 +33,10 @@ namespace Alpha
 
 		virtual void ClearRenderTarget(RHIDescriptorHeap* rtv_heap, UInt32 rtv_index, const Rect2D& rect, const float* clear_color) = 0;
 		virtual void ClearDepthStencil(RHIDescriptorHeap* dsv_heap, UInt32 dsv_index, const Rect2D& rect, float depth, uint8_t stencil) = 0;
+		
+		virtual void ClearUnorderedAccess(RHIDescriptorHeap* uav_heap, UInt32 uav_index, RHITexture* texture, const float* clear_values) = 0;
+		virtual void ClearUnorderedAccess(RHIDescriptorHeap* uav_heap, UInt32 uav_index, RHIBuffer* buffer) = 0;
+
 		virtual void CopyTexture(RHITexture* src, RHITexture* dst) = 0;
 		virtual void CopyTextureRegion(RHIBuffer* src, UInt64 src_offset, RHITexture* dst) = 0;
 
@@ -75,6 +79,9 @@ namespace Alpha
 		virtual void DispatchMesh(UInt32 thread_group_x, UInt32 thread_group_y, UInt32 thread_group_z) = 0;
 
 		virtual void DispatchRayTrace(const RHIRayTraceDesc& desc) = 0;
+
+		virtual void ExecuteIndirect(RHICommandLayout* layout, RHIBuffer* command_buffer, UInt32 count) = 0;
+		virtual void ExecuteIndirect(RHICommandLayout* layout, RHIBuffer* command_buffer, RHIBuffer* count_buffer) = 0;
 
 		virtual void BuildBLAS(const RHIBuildBLASDesc& desc) = 0;
 		virtual void BuildTLAS(const RHIBuildTLASDesc& desc) = 0;

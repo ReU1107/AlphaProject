@@ -46,6 +46,8 @@ namespace Alpha
 
 		void SetFlags(ERHIPipelineLayoutFlags flags) { m_descriptor_tables.flags = flags; }
 
+		UInt32 GetHash() const;
+
 		void Build(RenderHardwareInterface* rhi);
 	};
 

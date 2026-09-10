@@ -7,8 +7,9 @@ struct ParticleData
     float3 velocity;
     float lifetime;
 
+    float3 size;
+    
     uint packed_color;
-    uint packed_size_rotation;
     uint random_seed;
 };
 
@@ -41,6 +42,7 @@ struct ParticleBufferIndices
 
     uint emit_command;
     uint particle_counter;
+    uint dispatch_arguments;
 };
 
 struct ParticleFrameContext

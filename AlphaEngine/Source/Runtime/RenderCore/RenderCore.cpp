@@ -5,6 +5,7 @@
 #include "CommandList.h"
 #include "CommandQueue.h"
 #include "Timeline.h"
+#include "CommandLayout.h"
 
 #include "DescriptorHeap.h"
 
@@ -27,10 +28,15 @@
 
 #include "CommandListPool.h"
 
+#include "ShaderCache.h"
+#include "PipelineCache.h"
+
 #include "TransientBufferAllocator.h"
 
 #include "Core/Math/Vector.h"
 #include "Core/Literal.h"
+#include "Core/Math/HashUtil.h"
+
 
 namespace Alpha
 {
@@ -39,7 +45,6 @@ namespace Alpha
 
 	bool RenderCore::Initialize(const Args& args)
 	{
-
 		m_rhi = std::make_unique<RenderHardwareInterface>();
 		RHI::Args rhi_args = {};
 		m_rhi->Initialize(rhi_args);
@@ -88,7 +93,7 @@ namespace Alpha
 		{
 			GPUDataTransfer::Args desc = {
 				.render_core = this,
-				.staging_buffer_size = 64_MB,
+				.staging_buffer_size = 512_MB,
 			};
 			m_gpu_data_transfer->Initialize(desc);
 		}
@@ -133,6 +138,21 @@ namespace Alpha
 			};
 			m_transient_allocator->Initialize(desc);
 		}
+
+		m_shader_cache = std::make_unique<ShaderCache>();
+		{
+			ShaderCache::Args desc = {
+			};
+			m_shader_cache->Initialize(desc);
+		}
+
+		m_pipeline_cache = std::make_unique<PipelineCache>();
+		{
+			PipelineCache::Args desc = {
+			};
+			m_pipeline_cache->Initialize(desc);
+		}
+
 
 		m_width = args.width;
 		m_height = args.height;		
@@ -387,19 +407,29 @@ namespace Alpha
 
 		switch (type)
 		{
-		case Alpha::ETexturePresetType::ROTexture2D:
+		case ETexturePresetType::ROTexture2D:
 			desc.dimension = ERHIResourceDimension::Tex2D;
 			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
 			break;
-		case Alpha::ETexturePresetType::RWTexture2D:
+		case ETexturePresetType::RWTexture2D:
 			desc.dimension = ERHIResourceDimension::Tex2D;
 			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
 			desc.bind_flags |= ERHIResourceBindFlags::UnorderedAccess;
 			break;
-		case Alpha::ETexturePresetType::RWTexture3D:
+		case ETexturePresetType::RWTexture3D:
 			desc.dimension = ERHIResourceDimension::Tex3D;
 			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
 			desc.bind_flags |= ERHIResourceBindFlags::UnorderedAccess;
+			break;
+		case ETexturePresetType::RenderTarget2D:
+			desc.dimension = ERHIResourceDimension::Tex2D;
+			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
+			desc.bind_flags |= ERHIResourceBindFlags::RenderTarget;
+			break;
+		case ETexturePresetType::DepthStencil2D:
+			desc.dimension = ERHIResourceDimension::Tex2D;
+			desc.bind_flags |= ERHIResourceBindFlags::ShaderResource;
+			desc.bind_flags |= ERHIResourceBindFlags::DepthStencil;
 			break;
 		default:
 			break;
@@ -435,8 +465,13 @@ namespace Alpha
 		m_gpu_data_transfer->AddTexture(texture, pixels);
 	}
 
-	TUnique<Shader> RenderCore::CreateShader(const std::wstring& file_path, ERHIShaderType shader_type, const std::wstring& entry_point)
+	Shader* RenderCore::CreateShader(StringView file_path, ERHIShaderType shader_type, StringView entry_point)
 	{
+		if (Shader* cached_shader = m_shader_cache->Find(file_path, shader_type, entry_point))
+		{
+			return cached_shader;
+		}
+
 		auto shader = std::make_unique<Shader>();
 
 		Shader::Args desc = {};
@@ -446,11 +481,16 @@ namespace Alpha
 		desc.type = shader_type;
 		shader->Initialize(desc);
 
-		return shader;
+		return m_shader_cache->Add(file_path, std::move(shader));
 	}
 
-	TUnique<Shader> RenderCore::CreateShaderLibrary(StringView file_path, std::span<const StringView> entry_points)
+	Shader* RenderCore::CreateShaderLibrary(StringView file_path, std::span<const StringView> entry_points)
 	{
+		if (Shader* cached_shader = m_shader_cache->Find(file_path, entry_points))
+		{
+			return cached_shader;
+		}
+
 		auto shader = std::make_unique<Shader>();
 
 		Shader::Args desc = {};
@@ -460,49 +500,162 @@ namespace Alpha
 		desc.type = ERHIShaderType::Library;
 		shader->Initialize(desc);
 
-		return shader;
+		return m_shader_cache->Add(file_path, std::move(shader));
 	}
 
-	TUnique<PipelineLayout> RenderCore::CreatePipelineLayout(std::function<void(PipelineLayout&)> config_func)
+	PipelineLayout* RenderCore::CreatePipelineLayout(std::function<void(PipelineLayout&)> config_func)
 	{
 		auto pipeline_layout = std::make_unique<PipelineLayout>();
 
 		if (config_func)
 			config_func(*pipeline_layout);
 
+		UInt64 handle_id = pipeline_layout->GetHash();
+
+
+		if (PipelineLayout* cached_pipeline_layout = m_pipeline_cache->FindLayout(handle_id))
+		{
+			return cached_pipeline_layout;
+		}
+
+
 		pipeline_layout->Build(m_rhi.get());
 
-		return pipeline_layout;
+		return m_pipeline_cache->Add(handle_id, std::move(pipeline_layout));
 	}
 
-	TUnique<GraphicsPipeline> RenderCore::CreateGraphicsPipeline(GraphicsPipelineArgs args)
+	GraphicsPipeline* RenderCore::CreateGraphicsPipeline(const GraphicsPipelineArgs& args)
 	{
+		UInt64 handle_id = 0;
+
+		HashCombine(handle_id, args.pipeline_layout);
+		HashCombine(handle_id, args.vertex_layout.GetHash());
+
+		HashCombine(handle_id, args.vertex_shader);
+		HashCombine(handle_id, args.geometry_shader);
+		HashCombine(handle_id, args.hull_shader);
+		HashCombine(handle_id, args.domain_shader);
+		HashCombine(handle_id, args.task_shader);
+		HashCombine(handle_id, args.mesh_shader);
+		HashCombine(handle_id, args.pixel_shader);
+
+		HashCombine(handle_id, args.render_target_count);
+
+		for (UInt32 i = 0; i < args.render_target_count; ++i)
+		{
+			HashCombine(handle_id, static_cast<UInt32>(args.render_targets[i]));
+
+			const auto& blend = args.blend_states[i];
+			HashCombine(handle_id, blend.blend_enable);
+			HashCombine(handle_id, static_cast<UInt32>(blend.src_blend));
+			HashCombine(handle_id, static_cast<UInt32>(blend.dest_blend));
+			HashCombine(handle_id, static_cast<UInt32>(blend.blend_op));
+			HashCombine(handle_id, static_cast<UInt32>(blend.src_blend_alpha));
+			HashCombine(handle_id, static_cast<UInt32>(blend.dest_blend_alpha));
+			HashCombine(handle_id, static_cast<UInt32>(blend.blend_op_alpha));
+			HashCombine(handle_id, blend.write_mask);
+		}
+
+		HashCombine(handle_id, static_cast<UInt32>(args.cull_mode));
+		HashCombine(handle_id, static_cast<UInt32>(args.primitive_topology));
+		HashCombine(handle_id, static_cast<UInt32>(args.depth_format));
+		HashCombine(handle_id, args.depth_enable);
+
+
+		if (GraphicsPipeline* cached_pipeline = m_pipeline_cache->FindGraphics(handle_id))
+		{
+			return cached_pipeline;
+		}
+
 		auto pipeline = std::make_unique<GraphicsPipeline>();
-		args.rhi = m_rhi.get();
 
-		pipeline->Initialize(args);
+		GraphicsPipelineArgs desc = args;
+		desc.rhi = m_rhi.get();
 
-		return pipeline;
+		pipeline->Initialize(desc);
+
+		return m_pipeline_cache->Add(handle_id, std::move(pipeline));
 	}
 
-	TUnique<ComputePipeline> RenderCore::CreateComputePipeline(ComputePipelineArgs args)
+	ComputePipeline* RenderCore::CreateComputePipeline(const ComputePipelineArgs& args)
 	{
+		UInt64 handle_id = 0;
+		HashCombine(handle_id, args.pipeline_layout);
+		HashCombine(handle_id, args.compute_shader);
+
+		if (ComputePipeline* cached_pipeline = m_pipeline_cache->FindCompute(handle_id))
+		{
+			return cached_pipeline;
+		}
+
 		auto pipeline = std::make_unique<ComputePipeline>();
-		args.rhi = m_rhi.get();
 
-		pipeline->Initialize(args);
+		ComputePipelineArgs desc = args;
+		desc.rhi = m_rhi.get();
 
-		return pipeline;
+		pipeline->Initialize(desc);
+
+		return m_pipeline_cache->Add(handle_id, std::move(pipeline));
 	}
 
-	TUnique<RayTracePipeline> RenderCore::CreateRayTracePipeline(RayTracePipelineArgs args)
+	RayTracePipeline* RenderCore::CreateRayTracePipeline(const RayTracePipelineArgs& args)
 	{
+		UInt64 handle_id = 0;
+
+		HashCombine(handle_id, args.pipeline_layout);
+		HashCombine(handle_id, args.max_payload_size);
+		HashCombine(handle_id, args.max_attribute_size);
+		HashCombine(handle_id, args.max_recursion_depth);
+
+		HashCombine(handle_id, static_cast<UInt64>(args.libraries.size()));
+		for (size_t i = 0; i < args.libraries.size(); ++i)
+		{
+			HashCombine(handle_id, args.libraries[i]);
+		}
+
+		HashCombine(handle_id, args.ray_gen_entry_name);
+
+		HashCombine(handle_id, static_cast<UInt64>(args.miss_entry_names.size()));
+		for (size_t i = 0; i < args.miss_entry_names.size(); ++i)
+		{
+			HashCombine(handle_id, args.miss_entry_names[i]);
+		}
+
+		// 4. ヒットグループ設定のハッシュ化
+		HashCombine(handle_id, static_cast<UInt64>(args.hit_groups.size()));
+		for (size_t i = 0; i < args.hit_groups.size(); ++i)
+		{
+			const auto& hg = args.hit_groups[i];
+			HashCombine(handle_id, hg.name);
+			HashCombine(handle_id, static_cast<UInt32>(hg.type));
+			HashCombine(handle_id, hg.any_hit_entry_name);
+			HashCombine(handle_id, hg.closest_hit_entry_name);
+			HashCombine(handle_id, hg.intersection_entry_name);
+		}
+
+		if (RayTracePipeline* cached_pipeline = m_pipeline_cache->FindRayTrace(handle_id))
+		{
+			return cached_pipeline;
+		}
+
 		auto pipeline = std::make_unique<RayTracePipeline>();
+
+		RayTracePipelineArgs desc = args;
+		desc.rhi = m_rhi.get();
+
+		pipeline->Initialize(desc);
+
+		return m_pipeline_cache->Add(handle_id, std::move(pipeline));
+	}
+
+	TUnique<CommandLayout> RenderCore::CreateCommandLayout(CommandLayoutArgs args)
+	{
+		auto command_layout = std::make_unique<CommandLayout>();
 		args.rhi = m_rhi.get();
 
-		pipeline->Initialize(args);
+		command_layout->Initialize(args);
 
-		return pipeline;
+		return command_layout;
 	}
 
 	UINT32 RenderCore::GetCurrentBackBufferIndex() const
