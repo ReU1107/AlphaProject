@@ -47,8 +47,6 @@ namespace Alpha
 
     void RenderSceneBuilder::Build(entt::registry& registry, RenderContext& ctx, Renderer::RenderScene& render_scene)
     {
-        render_scene.Reset(ctx.current_frame_index);
-
         m_instances.clear();
         m_lights.clear();
         m_volume_materials.clear();
@@ -187,15 +185,9 @@ namespace Alpha
             if (texture_index == 0xFFFFFFFF)
                 return;
 
-            auto& resource =
-                resource_manager
-                .GetTextureByIndex(
-                texture_index);
+            auto& resource =resource_manager.GetTextureByIndex(texture_index);
 
-            texture_index =
-                resource.tex
-                ->GetSRVHandle()
-                .index;
+            texture_index =resource.tex->GetSRVHandle().index;
         };
 
 

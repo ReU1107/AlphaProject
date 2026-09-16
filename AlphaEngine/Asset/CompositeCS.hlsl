@@ -2,7 +2,7 @@
 
 
 ConstantBuffer<SystemBufferIndices> buffer_indices : register(b0);
-ConstantBuffer<FrameRenderContext> frame : register(b1);
+ConstantBuffer<FrameRenderConstants> frame : register(b1);
 
 struct PassConstants
 {
@@ -60,5 +60,7 @@ void main(uint3 dispatch_index : SV_DispatchThreadID)
 
     float3 ldr_color = ACESFilm(hdr_color);
 
-    result[index] = float4(ldr_color, 1.0f);
+    //result[index] = float4(ldr_color, 1.0f);
+    result[index] = float4(scene_base, 1.0f);
+
 }

@@ -24,7 +24,7 @@ namespace Alpha::Renderer
 	class RenderResourceManager;
 }
 
-namespace Alpha
+namespace Alpha::Particle
 {
 
 	class ParticleSystem
@@ -34,30 +34,17 @@ namespace Alpha
 		TUnique<TransientBufferAllocator> m_emit_command_allocator{ nullptr };
 		TFixedArray<TUnique<PersistentBufferAllocator>, 2> m_particle_allocator{};
 		TUnique<Buffer> m_particle_counter{ nullptr };
-		TUnique<Buffer> m_command_buffer{ nullptr };
 
 		TArray<ParticleEmitCommand> m_emit_commands{};
 
-		TUnique<PipelineLayout> m_layout{ nullptr };
-		TUnique<CommandLayout> m_command_layout{ nullptr };
+		ComputePipeline* m_emit_pipeline{ nullptr };
 
-		TUnique<ComputePipeline> m_emit_pipeline{ nullptr };
-		TUnique<Shader> m_emit_cs{ nullptr };
+		ComputePipeline* m_update_pipeline{ nullptr };
 
-		TUnique<ComputePipeline> m_update_pipeline{ nullptr };
-		TUnique<Shader> m_update_cs{ nullptr };
+		ComputePipeline* m_reset_pipeline{ nullptr };
 
-		TUnique<ComputePipeline> m_reset_pipeline{ nullptr };
-		TUnique<Shader> m_reset_cs{ nullptr };
-
-		TUnique<ComputePipeline> m_prerender_pipeline{ nullptr };
-		TUnique<Shader> m_prerender_cs{ nullptr };
-
-
-		TUnique<GraphicsPipeline> m_sprite_pipeline{ nullptr };
-		TUnique<Shader> m_sprite_ms{ nullptr };
-		TUnique<Shader> m_sprite_ps{ nullptr };
-
+		UInt32 m_buffer_indices_offset{ 0 };
+		UInt32 m_update_constants_offset{ 0 };
 
 		UInt32 m_counter_index{ 0 };
 
@@ -71,8 +58,7 @@ namespace Alpha
 		{
 			RenderCore* render_core{ nullptr };
 			
-			Texture* render_target{ nullptr };
-			Texture* depth_target{ nullptr };
+			PipelineLayout* layout{ nullptr };
 
 			UInt32 max_particle_count{ 10000 };
 
@@ -83,10 +69,9 @@ namespace Alpha
 
 		void Update(entt::registry& registry, ParticleContext& ctx);
 
-		//Buffer* GetParticleBuffer() const { return m_particle_allocator[m_counter_index]->GetBuffer(); }
-		//Buffer* GetCommandBuffer() const { return m_command_buffer.get(); }
+		UInt32 GetBufferIndicesOffset() const { return m_buffer_indices_offset; }
+		UInt32 GetConstantsOffset() const { return m_update_constants_offset; }
 
-		//CommandLayout* GetCommandLayout() const { return m_command_layout.get(); }
 
 	};
 }

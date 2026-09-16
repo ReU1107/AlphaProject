@@ -7,6 +7,7 @@
 #include "RenderCore/GraphicsPipeline.h"
 #include "RenderCore/ComputePipeline.h"
 #include "RenderCore/RayTracePipeline.h"
+#include "RenderCore/Types.h"
 
 #include <variant>
 
@@ -279,6 +280,20 @@ namespace Alpha::Renderer
 		}
 	};
 
+	struct RGBufferDesc
+	{
+		UInt32 stride{ sizeof(UInt32) };
+		UInt64 size{ sizeof(UInt32) };
+		EBufferPresetType type{ EBufferPresetType::RWStructured };
+
+		bool operator==(const RGBufferDesc& other) const
+		{
+			return stride == other.stride &&
+				size == other.size &&
+				type == other.type;
+		}
+	};
+
 	struct RGTextureResource
 	{
 		String name{};
@@ -288,7 +303,33 @@ namespace Alpha::Renderer
 		ERHIResourceState current_state{ ERHIResourceState::Common };
 	};
 
+	struct RGBufferResource
+	{
+		String name{};
+		RGBufferDesc desc{};
+		Buffer* target{ nullptr };
+		bool imported{ false };
+		ERHIResourceState current_state{ ERHIResourceState::Common };
+	};
+
 	struct RGTextureHandle
+	{
+		static constexpr UInt32 InvalidIndex = UINT32_MAX;
+
+		UInt32 index{ InvalidIndex };
+
+		bool IsValid() const
+		{
+			return index != InvalidIndex;
+		}
+
+		explicit operator bool() const
+		{
+			return IsValid();
+		}
+	};
+
+	struct RGBufferHandle
 	{
 		static constexpr UInt32 InvalidIndex = UINT32_MAX;
 
@@ -321,6 +362,12 @@ namespace Alpha::Renderer
 	struct RGTextureUsage
 	{
 		RGTextureHandle handle{};    // このテクスチャを
+		ERHIResourceState state{};    // このステートで使用する
+	};
+
+	struct RGBufferUsage
+	{
+		RGBufferHandle handle{};    // このテクスチャを
 		ERHIResourceState state{};    // このステートで使用する
 	};
 

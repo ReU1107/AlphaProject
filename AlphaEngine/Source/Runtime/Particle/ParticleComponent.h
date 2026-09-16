@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "Core/Common.h"
 
-namespace Alpha
+namespace Alpha::Particle
 {
     struct ParticleComponent
     {

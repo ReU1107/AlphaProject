@@ -8,7 +8,7 @@
 
 #include "Core/Math/MathUtil.h"
 
-namespace Alpha
+namespace Alpha::Particle
 {
 	ParticleSystem::ParticleSystem() = default;;
 	ParticleSystem::~ParticleSystem() = default;;
@@ -24,83 +24,31 @@ namespace Alpha
 		m_particle_counter = args.render_core->CreateBuffer(sizeof(UInt32), sizeof(UInt64), EBufferPresetType::RWStructured);
 		m_particle_counter->SetName(L"ParticleCounter");
 		
-		m_command_layout = args.render_core->CreateCommandLayout(
+		auto emit_cs = args.render_core->CreateShader(L"Asset/ParticleEmitCS.hlsl", ERHIShaderType::Compute);
+		auto update_cs = args.render_core->CreateShader(L"Asset/ParticleUpdateCS.hlsl", ERHIShaderType::Compute);
+		auto reset_cs = args.render_core->CreateShader(L"Asset/ParticleResetCS.hlsl", ERHIShaderType::Compute);
+
+		m_emit_pipeline = args.render_core->CreateComputePipeline(
 			{
-				.arguments = {
-					{
-						.type = ERHIIndirectArgType::DispatchMesh,
-					},
-				},
+				.pipeline_layout = args.layout,
+				.compute_shader = emit_cs,
 			}
 		);
 
-		m_command_buffer = args.render_core->CreateBuffer(sizeof(DispatchMeshArgs), sizeof(DispatchMeshArgs), EBufferPresetType::RWStructured);
-		
-		m_emit_cs = RenderCore::Get().CreateShader(L"Asset/ParticleEmitCS.hlsl", ERHIShaderType::Compute);
-		m_update_cs = RenderCore::Get().CreateShader(L"Asset/ParticleUpdateCS.hlsl", ERHIShaderType::Compute);
-		m_reset_cs = RenderCore::Get().CreateShader(L"Asset/ParticleResetCS.hlsl", ERHIShaderType::Compute);
-		m_prerender_cs = RenderCore::Get().CreateShader(L"Asset/ParticlePrerenderCS.hlsl", ERHIShaderType::Compute);
-
-		m_layout = RenderCore::Get().CreatePipelineLayout(
-			[](PipelineLayout& layout)
+		m_update_pipeline = args.render_core->CreateComputePipeline(
 			{
-				layout.AddRootCBV(1, ERHIShaderFlags::All);
-				layout.AddRootCBV(1, ERHIShaderFlags::All);
-				layout.SetFlags(ERHIPipelineLayoutFlags::Bindless);
+				.pipeline_layout = args.layout,
+				.compute_shader = update_cs,
 			}
 		);
 
-
-		m_emit_pipeline = RenderCore::Get().CreateComputePipeline(
+		m_reset_pipeline = args.render_core->CreateComputePipeline(
 			{
-				.pipeline_layout = m_layout.get(),
-				.compute_shader = m_emit_cs.get(),
-			}
-			);
-
-		m_update_pipeline = RenderCore::Get().CreateComputePipeline(
-			{
-				.pipeline_layout = m_layout.get(),
-				.compute_shader = m_update_cs.get(),
-			}
-			);
-
-		m_reset_pipeline = RenderCore::Get().CreateComputePipeline(
-			{
-				.pipeline_layout = m_layout.get(),
-				.compute_shader = m_reset_cs.get(),
-			}
-			);
-
-		m_prerender_pipeline = RenderCore::Get().CreateComputePipeline(
-			{
-				.pipeline_layout = m_layout.get(),
-				.compute_shader = m_prerender_cs.get(),
-			}
-			);
-
-
-		m_sprite_ms = RenderCore::Get().CreateShader(L"Asset/ParticleSpriteMS.hlsl", ERHIShaderType::Mesh);
-		m_sprite_ps = RenderCore::Get().CreateShader(L"Asset/ParticleSpritePS.hlsl", ERHIShaderType::Pixel);
-
-
-		m_sprite_pipeline = RenderCore::Get().CreateGraphicsPipeline(
-			{
-				.pipeline_layout = m_layout.get(),
-				.mesh_shader = m_sprite_ms.get(),
-				.pixel_shader = m_sprite_ps.get(),
-				.render_target_count = 1,
-				.render_targets = {
-					args.render_target->GetFormat(),
-				},
-				.blend_states = {
-					DisabledBlend(),
-				},
-				.cull_mode = ERHICullMode::None,
-				.depth_format = args.depth_target->GetFormat(),
-				.depth_enable = true,
+				.pipeline_layout = args.layout,
+				.compute_shader = reset_cs,
 			}
 		);
+
 		m_max_particle_count = args.max_particle_count;
 
 
@@ -111,26 +59,6 @@ namespace Alpha
 	{
 	}
 
-	struct ParticleBufferIndices
-	{
-		UInt32 read_particle;
-		UInt32 write_particle;
-
-		UInt32 emit_command;
-		UInt32 particle_counter;
-		UInt32 dispatch_arguments;
-	};
-
-	struct ParticleFrameContext
-	{
-		UInt32 read_counter_index;
-		UInt32 write_counter_index;
-
-		UInt32 max_particle_count;
-		UInt32 emit_command_count;
-
-		float delta_time;
-	};
 
 	void ParticleSystem::Update(entt::registry& registry, ParticleContext& ctx)
 	{
@@ -143,18 +71,18 @@ namespace Alpha
 		auto read_allocator = m_particle_allocator[read_index].get();
 		auto write_allocator = m_particle_allocator[write_index].get();
 
-		ctx.command_list->SetPipelineLayout(m_layout.get());
-
 		ParticleBufferIndices buffer_indices = {};
 		buffer_indices.emit_command = m_emit_command_allocator->GetSRVIndex();
 		buffer_indices.particle_counter = m_particle_counter->GetUAVHandle().index;
 		buffer_indices.read_particle = read_allocator->GetSRVIndex();
 		buffer_indices.write_particle = write_allocator->GetUAVIndex();
-		buffer_indices.dispatch_arguments = m_command_buffer->GetUAVHandle().index;
+		buffer_indices.render_particle = write_allocator->GetSRVIndex();
 
 		{
 			auto offset = RenderCore::Get().GetTransientAllocator()->WriteData(&buffer_indices);
-			ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 0);
+			ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 2);
+
+			m_buffer_indices_offset = offset;
 		}
 
 		auto emitter_view = registry.view<ParticleEmitterComponent, TransformComponent>();
@@ -174,6 +102,16 @@ namespace Alpha
 				continue;
 
 			ParticleEmitCommand command = {};
+			command.delta_time = ctx.delta_time;
+			command.initial_velocity = emitter_com.initial_velocity;
+			command.emission_rate = emitter_com.emission_rate;
+
+			command.start_color = emitter_com.start_color;
+			command.end_color = emitter_com.end_color;
+
+			command.start_size = emitter_com.start_size;
+			command.end_size = emitter_com.end_size;
+
 			command.spawn_count = spawn_count;
 			command.world_position = transform.GetWorldMatrix()._4();
 			command.lifetime = emitter_com.lifetime;
@@ -184,7 +122,7 @@ namespace Alpha
 		m_emit_command_allocator->WriteData(m_emit_commands.data(), m_emit_commands.size());
 
 
-		ParticleFrameContext constants = {};
+		ParticleUpdateConstants constants = {};
 		constants.read_counter_index = read_index;
 		constants.write_counter_index = write_index;
 		constants.max_particle_count = m_max_particle_count;
@@ -192,12 +130,14 @@ namespace Alpha
 		constants.delta_time = ctx.delta_time;
 
 		// カウントリセット
-		ctx.command_list->SetComputePipeline(m_reset_pipeline.get());
+		ctx.command_list->SetComputePipeline(m_reset_pipeline);
 
 
 		{
 			auto offset = RenderCore::Get().GetTransientAllocator()->WriteData(&constants);
-			ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 1);
+			ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 3);
+
+			m_update_constants_offset = offset;
 		}
 
 		ctx.command_list->Transition(write_allocator->GetBuffer(), ERHIResourceState::UnorderedAccess);
@@ -209,7 +149,7 @@ namespace Alpha
 		ctx.command_list->UAVBarrier(m_particle_counter.get());
 
 		// 生存中のパーティクル更新
-		ctx.command_list->SetComputePipeline(m_update_pipeline.get());
+		ctx.command_list->SetComputePipeline(m_update_pipeline);
 
 		// 更新パス(パーティクル単位)
 		const UInt32 update_groups = RoundUp(constants.max_particle_count, 64);
@@ -222,7 +162,7 @@ namespace Alpha
 		// 生成パス
 		if (constants.emit_command_count > 0)
 		{
-			ctx.command_list->SetComputePipeline(m_emit_pipeline.get());
+			ctx.command_list->SetComputePipeline(m_emit_pipeline);
 
 			const UInt32 dispatch_x = RoundUp(m_emit_commands.size(), 64);
 
@@ -234,21 +174,6 @@ namespace Alpha
 
 		// 描画用、かつ次のフレームのreadになる
 		ctx.command_list->Transition(write_allocator->GetBuffer(), ERHIResourceState::NonPixelShaderResource);
-
-
-		// 描画準備
-		ctx.command_list->Transition(m_command_buffer.get(), ERHIResourceState::UnorderedAccess);
-
-		ctx.command_list->SetComputePipeline(m_prerender_pipeline.get());
-		ctx.command_list->Dispatch(1, 1, 1);
-
-		ctx.command_list->Transition(m_command_buffer.get(), ERHIResourceState::IndirectArgument);
-
-
-		ctx.command_list->SetGraphicsPipeline(m_sprite_pipeline.get());
-
-		ctx.command_list->SetGraphicsCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 0);
-
 
 	}
 }

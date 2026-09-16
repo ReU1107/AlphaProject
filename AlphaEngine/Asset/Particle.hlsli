@@ -42,10 +42,11 @@ struct ParticleBufferIndices
 
     uint emit_command;
     uint particle_counter;
-    uint dispatch_arguments;
+    
+    uint render_particle;
 };
 
-struct ParticleFrameContext
+struct ParticleFrameConstants
 {
     uint read_counter_index;
     uint write_counter_index;

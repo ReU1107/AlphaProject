@@ -135,17 +135,18 @@ struct SystemTextureIndices
     uint rt_result;
 };
 
-struct FrameRenderContext
+struct FrameRenderConstants
 {
     float4x4 view;
     float4x4 view_proj;
     float4x4 proj_view; // inv_view_proj
     float4 camera_pos;
     float4 frustum_planes;
+    
     float3 camera_up;
-    float3 camera_right;
-
     uint instance_count;
+    
+    float3 camera_right;
     uint light_count;
 
 };

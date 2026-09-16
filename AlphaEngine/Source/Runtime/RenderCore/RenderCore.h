@@ -141,7 +141,7 @@ namespace Alpha
 
 		RayTracePipeline* CreateRayTracePipeline(const RayTracePipelineArgs& args);
 
-		TUnique<CommandLayout> CreateCommandLayout(CommandLayoutArgs args);
+		CommandLayout* CreateCommandLayout(const CommandLayoutArgs& args);
 
 		ERHIResourceFormat GetBackBufferFormat() const { return m_back_buffer_format; }
 

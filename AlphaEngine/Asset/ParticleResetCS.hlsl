@@ -1,7 +1,7 @@
 ﻿#include "Particle.hlsli"
 
-ConstantBuffer<ParticleBufferIndices> buffer_indices : register(b0);
-ConstantBuffer<ParticleFrameContext> frame : register(b1);
+ConstantBuffer<ParticleBufferIndices> buffer_indices : register(b2);
+ConstantBuffer<ParticleFrameConstants> frame : register(b3);
 
 [numthreads(1, 1, 1)]
 void main()

@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "Core/Common.h"
 
-namespace Alpha
+namespace Alpha::Particle
 {
     struct ParticleEmitterComponent
     {
@@ -21,7 +21,7 @@ namespace Alpha
 
         float spawn_accumulator{ 0.0f };  
 
-        UInt32 source_model{ 0 };   // どの形状でサンプリングするか
+        UInt32 source_model{ 0 };   // どの形状でサンプリングするか まだ使ってない
 
     };
 }

@@ -4,6 +4,13 @@
 namespace Alpha
 {
 
+    class CommandList;
+    class TransientBufferAllocator;
+}
+
+namespace Alpha::Particle
+{
+
     struct ParticleData
     {
         float3 position;
@@ -12,8 +19,9 @@ namespace Alpha
         float3 velocity;
         float lifetime;
 
+        float3 size;
+
         UInt32 packed_color;
-        UInt32 packed_size_rotation;
         UInt32 random_seed;
     };
 
@@ -39,9 +47,28 @@ namespace Alpha
         UInt32 padding;
     };
 
+    struct ParticleBufferIndices
+    {
+        UInt32 read_particle;
+        UInt32 write_particle;
 
-    class CommandList;
-    class TransientBufferAllocator;
+        UInt32 emit_command;
+        UInt32 particle_counter;
+
+        UInt32 render_particle;
+    };
+
+    struct ParticleUpdateConstants
+    {
+        UInt32 read_counter_index;
+        UInt32 write_counter_index;
+
+        UInt32 max_particle_count;
+        UInt32 emit_command_count;
+
+        float delta_time;
+    };
+
 
     struct ParticleContext
     {

@@ -14,6 +14,7 @@ namespace Alpha
 		m_rtpso_cache.Initialize(100);
 		m_gpso_cache.Initialize(100);
 		m_cpso_cache.Initialize(100);
+		m_command_layout_cache.Initialize(100);
 	}
 
 }

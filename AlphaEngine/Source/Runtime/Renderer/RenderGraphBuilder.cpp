@@ -22,4 +22,14 @@ namespace Alpha::Renderer
 
 		return handle;
 	}
+
+	RGBufferHandle RenderGraphBuilder::ReadBuffer(RGBufferHandle handle, ERHIResourceState state)
+	{
+		return RGBufferHandle();
+	}
+
+	RGBufferHandle RenderGraphBuilder::WriteBuffer(RGBufferHandle handle, ERHIResourceState state)
+	{
+		return RGBufferHandle();
+	}
 }

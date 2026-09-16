@@ -11,6 +11,11 @@ namespace Alpha::Renderer
 
 }
 
+namespace Alpha::Particle
+{
+	class ParticleSystem;
+}
+
 namespace Alpha
 {
 
@@ -25,6 +30,8 @@ namespace Alpha
 		TUnique<Renderer::RenderGraph> m_graph{ nullptr };
 		PipelineLayout* m_pipeline_layout{ nullptr };
 		TUnique<RenderSceneBuilder> m_scene_builder{ nullptr };
+		TUnique<Particle::ParticleSystem> m_particle_system{ nullptr };
+		
 
 	public:
 		~RenderSystem();

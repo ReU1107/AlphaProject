@@ -7,7 +7,7 @@ struct ASPayload
 
 ConstantBuffer<SystemBufferIndices> buffer_indices : register(b0);
 
-ConstantBuffer<FrameRenderContext> frame : register(b1);
+ConstantBuffer<FrameRenderConstants> frame : register(b1);
 
 [numthreads(1, 1, 1)]
 void main(uint gid : SV_GroupID)

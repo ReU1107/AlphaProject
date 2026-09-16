@@ -1,15 +1,23 @@
 ﻿#include "ParticleRender.h"
 #include "RenderCore/Module.h"
+#include "Renderer/Module.h"
 
-namespace Alpha
+#include "ParticleSystem.h"
+
+using namespace Alpha::Renderer;
+
+namespace Alpha::Particle
 {
-	ParticleRender::ParticleRender() = default;
-	ParticleRender::~ParticleRender() = default;
 
-	bool ParticleRender::Initialize(const Args& args)
+	struct PrerenderPassConstants
 	{
+		UInt32 dispatch_arguments;
 
-		m_command_layout = args.render_core->CreateCommandLayout(
+	};
+
+	void AddParticleRenderPass(RenderCore* render_core, PipelineLayout* layout, ParticleSystem* system, RenderGraph* graph)
+	{
+		auto command_layout = render_core->CreateCommandLayout(
 			{
 				.arguments = {
 					{
@@ -17,45 +25,117 @@ namespace Alpha
 					},
 				},
 			}
-			);
+		);
 
-		m_command_buffer = args.render_core->CreateBuffer(sizeof(DispatchMeshArgs), sizeof(DispatchMeshArgs), EBufferPresetType::RWStructured);
+		auto prerender_cs = render_core->CreateShader(L"Asset/ParticlePrerenderCS.hlsl", ERHIShaderType::Compute);
 
-		m_prerender_cs = args.render_core->CreateShader(L"Asset/ParticlePrerenderCS.hlsl", ERHIShaderType::Compute);
+		auto particle_command = graph->CreateBuffer(L"ParticleRenderCommand",
+			{
+				sizeof(DispatchMeshArgs), sizeof(DispatchMeshArgs), EBufferPresetType::RWStructured
+			}
+		);
 
-		//m_layout = args.render_core->CreatePipelineLayout(
-		//	[](PipelineLayout& layout)
-		//	{
-		//	layout.AddRootCBV(1, ERHIShaderFlags::All);
-		//	layout.AddRootCBV(1, ERHIShaderFlags::All);
-		//	layout.SetFlags(ERHIPipelineLayoutFlags::Bindless);
-		//	}
-		//);
+		auto* pipeline = RenderCore::Get().CreateComputePipeline(
+			{
+				.pipeline_layout = layout,
+				.compute_shader = prerender_cs
+			}
+		);
 
-		//m_prerender_pipeline = args.render_core->CreateComputePipeline(
-		//	{
-		//		.pipeline_layout = m_layout.get(),
-		//		.compute_shader = m_prerender_cs.get(),
-		//	}
-		//);
+		graph->AddPass(L"ParticlePrerender",
+			[=](RenderGraphBuilder& builder)
+			{
+				builder.WriteBuffer(particle_command, ERHIResourceState::UnorderedAccess);
+				builder.UsePipeline(pipeline, ERHIPipelineType::Compute);
+			},
+			[=](RenderGraphContext& ctx)
+			{
+				auto* command_buffer = ctx.graph->GetBuffer(particle_command);
+				PrerenderPassConstants constants = {};
+				constants.dispatch_arguments = command_buffer->GetUAVHandle().index;
 
-		return true;
+				auto offset = RenderCore::Get().GetTransientAllocator()->WriteData(&constants);
+				ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 4);
+
+				;
+
+				ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), system->GetBufferIndicesOffset(), 2);
+				ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), system->GetConstantsOffset(), 3);
+
+
+				ctx.command_list->Dispatch(1, 1, 1);
+			}
+		);
+
+		auto sprite_ms = render_core->CreateShader(L"Asset/ParticleSpriteMS.hlsl", ERHIShaderType::Mesh);
+
+		auto sprite_ps = render_core->CreateShader(L"Asset/ParticleSpritePS.hlsl", ERHIShaderType::Pixel);
+
+		auto sprite_pipeline = render_core->CreateGraphicsPipeline(
+			{
+				.pipeline_layout = layout,
+				.task_shader = nullptr,
+				.mesh_shader = sprite_ms,
+				.pixel_shader = sprite_ps,
+
+				.render_target_count = 1,
+				.render_targets = {
+					ERHIResourceFormat::RGBAFloat,
+				},
+				.blend_states = {
+					DisabledBlend(),
+				},
+
+				.cull_mode = ERHICullMode::None,
+				.depth_format = ERHIResourceFormat::Depth32,
+				.depth_enable = true,
+			}
+		);
+
+
+		auto scene_color = graph->CreateTexture(L"SceneColor",
+			{
+				1920, 1080, 1,
+				ERHIResourceDimension::Tex2D,
+				ERHIResourceBindFlags::ShaderResource | ERHIResourceBindFlags::RenderTarget | ERHIResourceBindFlags::UnorderedAccess,
+				ERHIResourceFormat::RGBAFloat
+			}
+		);
+		auto depth = graph->CreateTexture(L"Depth",
+			{
+				1920, 1080, 1,
+				ERHIResourceDimension::Tex2D,
+				ERHIResourceBindFlags::ShaderResource | ERHIResourceBindFlags::DepthStencil,
+				ERHIResourceFormat::Depth32
+			}
+		);
+
+		graph->AddPass(L"ParticleSpriteRender",
+			[=](RenderGraphBuilder& builder)
+			{
+				builder.ReadBuffer(particle_command, ERHIResourceState::IndirectArgument);
+				builder.WriteTexture(scene_color, ERHIResourceState::RenderTarget);
+				builder.WriteTexture(depth, ERHIResourceState::DepthWrite);
+				builder.UsePipeline(sprite_pipeline, ERHIPipelineType::Graphics);
+			},
+			[=](RenderGraphContext& ctx)
+			{
+				auto* command_buffer = ctx.graph->GetBuffer(particle_command);
+				auto* color_texture = ctx.graph->GetTexture(scene_color);
+				auto* depth_texture = ctx.graph->GetTexture(depth);
+
+				auto* transient = render_core->GetTransientAllocator();
+
+				ctx.command_list->SetGraphicsCBV(transient->GetBuffer(), system->GetBufferIndicesOffset(), 2);
+
+				ctx.command_list->SetRenderTarget(color_texture, depth_texture);
+				ctx.command_list->SetViewport(Viewport(0, 0, 1920.0f, 1080.0f, 0.0f, 1.0f));
+				ctx.command_list->SetScissorRect(0, 0, 1920, 1080);
+
+				ctx.command_list->ExecuteIndirect(command_layout, command_buffer, 1);
+			}
+		);
+
 	}
 
-	void ParticleRender::Finalize()
-	{
-	}
-
-	void ParticleRender::Render(RenderContext& ctx)
-	{
-		ctx.command_list->Transition(m_command_buffer.get(), ERHIResourceState::UnorderedAccess);
-
-		ctx.command_list->SetComputePipeline(m_prerender_pipeline.get());
-		ctx.command_list->Dispatch(1, 1, 1);
-
-		ctx.command_list->Transition(m_command_buffer.get(), ERHIResourceState::IndirectArgument);
-
-
-
-	}
 }
