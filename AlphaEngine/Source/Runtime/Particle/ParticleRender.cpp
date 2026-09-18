@@ -57,8 +57,6 @@ namespace Alpha::Particle
 				auto offset = RenderCore::Get().GetTransientAllocator()->WriteData(&constants);
 				ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), offset, 4);
 
-				;
-
 				ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), system->GetBufferIndicesOffset(), 2);
 				ctx.command_list->SetComputeCBV(RenderCore::Get().GetTransientAllocator()->GetBuffer(), system->GetConstantsOffset(), 3);
 
@@ -83,12 +81,14 @@ namespace Alpha::Particle
 					ERHIResourceFormat::RGBAFloat,
 				},
 				.blend_states = {
-					DisabledBlend(),
+					DefaultAlphaBlend(),
 				},
 
 				.cull_mode = ERHICullMode::None,
 				.depth_format = ERHIResourceFormat::Depth32,
 				.depth_enable = true,
+				.depth_write_enable = false,
+				.depth_compare_op = ERHICompareOp::GreaterEqual,
 			}
 		);
 

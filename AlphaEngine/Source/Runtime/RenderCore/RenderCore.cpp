@@ -541,6 +541,9 @@ namespace Alpha
 
 		HashCombine(handle_id, args.render_target_count);
 
+		HashCombine(handle_id, args.alpha_to_coverage_enable);
+		HashCombine(handle_id, args.independent_blend_enable);
+
 		for (UInt32 i = 0; i < args.render_target_count; ++i)
 		{
 			HashCombine(handle_id, static_cast<UInt32>(args.render_targets[i]));
@@ -560,6 +563,12 @@ namespace Alpha
 		HashCombine(handle_id, static_cast<UInt32>(args.primitive_topology));
 		HashCombine(handle_id, static_cast<UInt32>(args.depth_format));
 		HashCombine(handle_id, args.depth_enable);
+
+		HashCombine(handle_id, args.depth_write_enable);
+		HashCombine(handle_id, static_cast<UInt32>(args.depth_compare_op));
+
+
+		HashCombine(handle_id, static_cast<UInt32>(args.fill_mode));
 
 
 		if (GraphicsPipeline* cached_pipeline = m_pipeline_cache->FindGraphics(handle_id))

@@ -7,5 +7,11 @@
 
 float4 main(in VertexOut input) : SV_TARGET
 {
-    return float4(input.color.rgb, 1.0f);
+    float2 center_uv = input.uv - 0.5;
+
+    float dist = length(center_uv);
+
+    float alpha = saturate(1.0 - (dist / 0.5));
+    
+    return float4(input.color.rgb, alpha);
 }

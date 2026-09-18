@@ -1184,9 +1184,6 @@
     <ClInclude Include="Source\Runtime\Particle\Module.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Particle\ParticleComponent.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Particle\ParticleEmitterComponent.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -1203,5 +1200,7 @@
     <None Include="Asset\Lighting.hlsli" />
     <None Include="Asset\Particle.hlsli" />
     <None Include="Asset\ExecuteIndirect.hlsli" />
+    <None Include="Asset\Sample.hlsli" />
+    <None Include="Asset\Utility.hlsli" />
   </ItemGroup>
 </Project>

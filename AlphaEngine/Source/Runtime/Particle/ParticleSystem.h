@@ -47,6 +47,8 @@ namespace Alpha::Particle
 		UInt32 m_update_constants_offset{ 0 };
 
 		UInt32 m_counter_index{ 0 };
+		float m_time{ 0.0f };
+		UInt32 m_simulation_step{ 0 };
 
 		UInt32 m_max_particle_count{ 10000 };
 

@@ -3,6 +3,7 @@
 #include "ParticleEmitterComponent.h"
 
 #include "RenderCore/Module.h"
+#include "Renderer/MeshComponent.h"
 
 #include "Spatial/TransformComponent.h"
 
@@ -87,48 +88,107 @@ namespace Alpha::Particle
 
 		auto emitter_view = registry.view<ParticleEmitterComponent, TransformComponent>();
 
+		constexpr UInt32 invalid_index = 0xFFFFFFFF;
+
 		// このフレームで生成するエミッター情報だけを詰める
-		for (auto [entity, emitter_com, transform] : emitter_view.each())
+		for (auto [entity, emitter, transform] : emitter_view.each())
 		{
-			emitter_com.spawn_accumulator += ctx.delta_time * emitter_com.emission_rate;
-
-			// 整数分だけ発生させる
-			UInt32 spawn_count = static_cast<UInt32>(emitter_com.spawn_accumulator);
-
-			// 小数点以下だけを残す
-			emitter_com.spawn_accumulator -= spawn_count;
-
-			if (spawn_count <= 0)
+			if (!emitter.emitting)
 				continue;
 
-			ParticleEmitCommand command = {};
-			command.delta_time = ctx.delta_time;
-			command.initial_velocity = emitter_com.initial_velocity;
-			command.emission_rate = emitter_com.emission_rate;
+			emitter.spawn_accumulator += ctx.delta_time * emitter.emission_rate;
 
-			command.start_color = emitter_com.start_color;
-			command.end_color = emitter_com.end_color;
+			const UInt32 spawn_count = static_cast<UInt32>(emitter.spawn_accumulator);
 
-			command.start_size = emitter_com.start_size;
-			command.end_size = emitter_com.end_size;
+			emitter.spawn_accumulator -= spawn_count;
 
+			if (spawn_count == 0)
+				continue;
+
+			ParticleEmitCommand command{};
+			command.emitter_world = transform.GetWorldMatrix();
+			command.shape_params = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+			command.initial_velocity = emitter.initial_velocity;
+			command.velocity_random = emitter.velocity_random;
+			command.random_seed = emitter.random_seed;
+
+			command.start_color = emitter.start_color;
+			command.end_color = emitter.end_color;
+			command.start_size = emitter.start_size;
+			command.end_size = emitter.end_size;
+			command.lifetime = emitter.lifetime;
 			command.spawn_count = spawn_count;
-			command.world_position = transform.GetWorldMatrix()._4();
-			command.lifetime = emitter_com.lifetime;
+
+			command.source_shape = static_cast<UInt32>(emitter.source_shape);
+			command.distribution = static_cast<UInt32>(emitter.distribution);
+			command.source_instance_index = invalid_index;
+			command.material_index = invalid_index;
+			command.flags = 0;
+
+			switch (emitter.source_shape)
+			{
+			case SourceShape::Point:
+				break;
+
+			case SourceShape::Box:
+				command.shape_params = float4(emitter.box_half_size, 0.0f);
+				break;
+
+			case SourceShape::Sphere:
+			case SourceShape::Hemisphere:
+			case SourceShape::Circle:
+				command.shape_params = float4(emitter.radius, 0.0f, 0.0f, 0.0f);
+				break;
+
+			case SourceShape::Cone:
+			case SourceShape::Cylinder:
+				command.shape_params = float4(emitter.radius, emitter.height, 0.0f, 0.0f);
+				break;
+
+			case SourceShape::Rectangle:
+				// xy = 各辺の長さの半分
+				command.shape_params = float4(emitter.rectangle_half_size, 0.0f, 0.0f);
+				break;
+
+			case SourceShape::Line:
+				command.shape_params = float4(emitter.line_length, 0.0f, 0.0f, 0.0f);
+				break;
+
+			case SourceShape::Mesh:
+			{
+				const auto* mesh = registry.try_get<Renderer::MeshComponent>(entity);
+
+				// このフレームの生成元インスタンスがない場合は生成しない。
+				if (!mesh || mesh->render_instance_index == invalid_index)
+					continue;
+
+				command.source_instance_index = mesh->render_instance_index;
+				break;
+			}
+
+			case SourceShape::Spline:
+				// 制御点バッファなどの参照方法を決めてから対応する。
+				continue;
+
+			default:
+				continue;
+			}
 
 			m_emit_commands.push_back(command);
 		}
 
 		m_emit_command_allocator->WriteData(m_emit_commands.data(), m_emit_commands.size());
 
-
+		m_time += ctx.delta_time;
 		ParticleUpdateConstants constants = {};
 		constants.read_counter_index = read_index;
 		constants.write_counter_index = write_index;
 		constants.max_particle_count = m_max_particle_count;
 		constants.emit_command_count = m_emit_commands.size();
+		constants.time = m_time;
 		constants.delta_time = ctx.delta_time;
-
+		constants.simulation_step = m_simulation_step++;
 		// カウントリセット
 		ctx.command_list->SetComputePipeline(m_reset_pipeline);
 

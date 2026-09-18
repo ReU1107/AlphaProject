@@ -96,6 +96,7 @@ namespace Alpha::Renderer
 
 		UInt32 attribute_flags{};	// このモデルが持つ頂点属性のフラグ
 		UInt32 vertex_stride{};	// 頂点属性のバイト数
+		UInt32 index_count{};
 	};
 
 	// ラスタライズ用
@@ -108,6 +109,8 @@ namespace Alpha::Renderer
 		UInt32 mesh_offset{};
 		UINT32 vertex_element_offset{};
 		UInt32 override_material_element_offset{ 0xFFFFFFFF };	// 使わない場合は0xFFFFFFFF
+
+		UInt32 visible{ 1 };
 	};
 
 	// レイトレ用

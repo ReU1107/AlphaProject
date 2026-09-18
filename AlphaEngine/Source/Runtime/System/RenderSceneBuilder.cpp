@@ -97,6 +97,12 @@ namespace Alpha
 
         for (auto [entity, mesh_com, transform] : view.each())
         {
+            mesh_com.render_instance_index = 0xFFFFFFFF;
+
+            if (!mesh_com.enabled)
+                continue;
+
+
             const UInt32 current_instance_id = static_cast<UInt32>(m_instances.size());
 
             InstanceData instance{};
@@ -104,6 +110,7 @@ namespace Alpha
             instance.world_matrix = transform.GetWorldMatrix();
             instance.mesh_offset = resource_manager.GetGPUMeshOffset(mesh_com.mesh_index);
 
+            instance.visible = mesh_com.visible ? 1u : 0u;
 
             if (auto* material_com = registry.try_get<MaterialOverrideComponent>(entity))
             {
@@ -171,6 +178,8 @@ namespace Alpha
 
 
             m_instances.push_back(instance);
+            mesh_com.render_instance_index = current_instance_id;
+
         }
 
         return vertex_count;

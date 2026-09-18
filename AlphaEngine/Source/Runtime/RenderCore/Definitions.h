@@ -18,8 +18,8 @@ namespace Alpha
 	struct GraphicsPipelineArgs
 	{
 		RenderHardwareInterface* rhi{ nullptr };
-		VertexLayout vertex_layout;
-		PipelineLayout* pipeline_layout;
+		VertexLayout vertex_layout{};
+		PipelineLayout* pipeline_layout{ nullptr };
 
 		Shader* vertex_shader{ nullptr };
 		Shader* geometry_shader{ nullptr };
@@ -39,6 +39,15 @@ namespace Alpha
 		ERHIPrimitiveTopology primitive_topology{ ERHIPrimitiveTopology::TriangleList };
 		ERHIResourceFormat depth_format{ ERHIResourceFormat::Depth24Stencil8 };
 		bool depth_enable{ false };
+
+		bool depth_write_enable{ true };
+		ERHICompareOp depth_compare_op{ ERHICompareOp::GreaterEqual };
+
+		ERHIFillMode fill_mode{ ERHIFillMode::Solid };
+		RHIRasterizerStateDesc rasterizer_state{};
+
+		bool alpha_to_coverage_enable{ false };
+		bool independent_blend_enable{ false };
 	};
 
 	static RHIBlendStateDesc DefaultAlphaBlend()

@@ -327,7 +327,6 @@
     <ClInclude Include="Source\Runtime\D3D12\D3D12RayTracePipeline.h" />
     <ClInclude Include="Source\Runtime\Particle\Definitions.h" />
     <ClInclude Include="Source\Runtime\Particle\Module.h" />
-    <ClInclude Include="Source\Runtime\Particle\ParticleComponent.h" />
     <ClInclude Include="Source\Runtime\Particle\ParticleEmitterComponent.h" />
     <ClInclude Include="Source\Runtime\Particle\ParticleRender.h" />
     <ClInclude Include="Source\Runtime\Particle\ParticleSystem.h" />
@@ -550,7 +549,9 @@
     <None Include="Asset\Lighting.hlsli" />
     <None Include="Asset\Particle.hlsli" />
     <None Include="Asset\Resource.hlsli" />
+    <None Include="Asset\Utility.hlsli" />
     <None Include="packages.config" />
+    <None Include="Asset\Sample.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

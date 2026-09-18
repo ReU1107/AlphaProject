@@ -238,6 +238,9 @@ namespace Alpha
 		Bool alpha_to_coverage_enable{ false };
 		Bool independent_blend_enable{ false };
 		Bool depth_enable{ false };
+
+		Bool depth_write_enable{ true };
+		ERHICompareOp depth_compare_op{ ERHICompareOp::GreaterEqual };
 	};
 
 	struct RHIComputePipelineDesc

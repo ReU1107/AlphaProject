@@ -5,20 +5,17 @@ struct [raypayload] RayPayload
     float3 color : write(miss, closesthit) : read(caller);
 };
 
-ConstantBuffer<SystemBufferIndices> buffer_indices : register(b0);
-
-
 
 [shader("closesthit")]
 void MyClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr)
 {
-    StructuredBuffer<InstanceData> instance_buffer  = ResourceDescriptorHeap[buffer_indices.instance];
-    StructuredBuffer<MeshData> mesh_buffer          = ResourceDescriptorHeap[buffer_indices.mesh];
-    StructuredBuffer<uint> index_buffer             = ResourceDescriptorHeap[buffer_indices.index];
-    StructuredBuffer<Submesh> submesh_buffer        = ResourceDescriptorHeap[buffer_indices.submesh];
-    ByteAddressBuffer attribute_buffer              = ResourceDescriptorHeap[buffer_indices.attribute];
-    StructuredBuffer<MaterialData> material_buffer  = ResourceDescriptorHeap[buffer_indices.material];
-    StructuredBuffer<uint> material_table_buffer    = ResourceDescriptorHeap[buffer_indices.material_table];
+    StructuredBuffer<InstanceData> instance_buffer  = ResourceDescriptorHeap[render_buffers.instance];
+    StructuredBuffer<MeshData> mesh_buffer          = ResourceDescriptorHeap[render_buffers.mesh];
+    StructuredBuffer<uint> index_buffer             = ResourceDescriptorHeap[render_buffers.index];
+    StructuredBuffer<Submesh> submesh_buffer        = ResourceDescriptorHeap[render_buffers.submesh];
+    ByteAddressBuffer attribute_buffer              = ResourceDescriptorHeap[render_buffers.attribute];
+    StructuredBuffer<MaterialData> material_buffer  = ResourceDescriptorHeap[render_buffers.material];
+    StructuredBuffer<uint> material_table_buffer    = ResourceDescriptorHeap[render_buffers.material_table];
     
     // この三角形が属するインスタンス
     uint instance_id = InstanceID();

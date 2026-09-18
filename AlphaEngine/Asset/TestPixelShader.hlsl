@@ -12,17 +12,14 @@ struct VertexOut
 };
 
 
-ConstantBuffer<SystemBufferIndices> buffer_indices : register(b0);
-
-
 float4 main(VertexOut input) : SV_TARGET
 {
  
-    StructuredBuffer<MaterialData> material_buffer = ResourceDescriptorHeap[buffer_indices.material];
+    StructuredBuffer<MaterialData> material_buffer = ResourceDescriptorHeap[render_buffers.material];
     
-    StructuredBuffer<uint> material_table_buffer = ResourceDescriptorHeap[buffer_indices.material_table];
+    StructuredBuffer<uint> material_table_buffer = ResourceDescriptorHeap[render_buffers.material_table];
     
-    StructuredBuffer<MaterialData> override_material_buffer = ResourceDescriptorHeap[buffer_indices.override_material];
+    StructuredBuffer<MaterialData> override_material_buffer = ResourceDescriptorHeap[render_buffers.override_material];
     uint material_index = material_table_buffer[input.MaterialTableID + input.MaterialID];
     
     MaterialData material = material_buffer[material_index];
