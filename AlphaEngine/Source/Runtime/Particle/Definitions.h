@@ -4,26 +4,40 @@
 namespace Alpha
 {
 
+    class CommandList;
+    class TransientBufferAllocator;
+}
+
+namespace Alpha::Particle
+{
+
     struct ParticleData
     {
         float3 position;
-        float age;
+        float age;          
 
         float3 velocity;
         float lifetime;
 
-        UInt32 packed_color;
-        UInt32 packed_size_rotation;
-        UInt32 random_seed;
+        UInt32 packed_start_color;
+        UInt32 packed_end_color;
+
+        float start_size;
+        float end_size;
+
     };
 
     struct ParticleEmitCommand
     {
-        float3 world_position;
-        float delta_time;
+        Matrix4x4 emitter_world;
+
+        float4 shape_params;
 
         float3 initial_velocity;
-        float emission_rate;
+        UInt32 spawn_count;
+
+        float3 velocity_random;
+        UInt32 random_seed;
 
         float4 start_color;
         float4 end_color;
@@ -31,17 +45,37 @@ namespace Alpha
         float start_size;
         float end_size;
         float lifetime;
-        UInt32 spawn_count;
+        UInt32 source_shape;
 
-        UInt32 material_index;
-        UInt32 flags;
-        UInt32 target_buffer_index;
-        UInt32 padding;
+        UInt32 distribution;
+        UInt32 source_instance_index{ 0xFFFFFFFF };
+        UInt32 material_index{ 0xFFFFFFFF };
+        UInt32 flags{ 0 };
     };
 
+    struct ParticleBufferIndices
+    {
+        UInt32 read_particle;
+        UInt32 write_particle;
 
-    class CommandList;
-    class TransientBufferAllocator;
+        UInt32 emit_command;
+        UInt32 particle_counter;
+
+        UInt32 render_particle;
+    };
+
+    struct ParticleUpdateConstants
+    {
+        UInt32 read_counter_index;
+        UInt32 write_counter_index;
+
+        UInt32 max_particle_count;
+        UInt32 emit_command_count;
+
+        float time;               // シミュレーションの経過秒
+        float delta_time;         // 今回の更新時間
+        UInt32 simulation_step;   // シミュレーションの更新回数
+    };
 
     struct ParticleContext
     {

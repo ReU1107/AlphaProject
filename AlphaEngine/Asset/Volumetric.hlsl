@@ -7,9 +7,6 @@ struct [raypayload] RayPayload
     float visibility : write(miss, closesthit) : read(caller);
 };
 
-ConstantBuffer<SystemBufferIndices> buffer_indices : register(b0);
-ConstantBuffer<FrameRenderContext> frame : register(b1);
-
 struct PassConstants
 {
     uint volume;
@@ -37,8 +34,8 @@ float InterleavedGradientNoise(float2 pixel_coord)
 void RayGenerate()
 {   
     
-    RaytracingAccelerationStructure tlas = ResourceDescriptorHeap[buffer_indices.rt_structure];
-    StructuredBuffer<LightData> light_buffer = ResourceDescriptorHeap[buffer_indices.light];
+    RaytracingAccelerationStructure tlas = ResourceDescriptorHeap[render_buffers.rt_structure];
+    StructuredBuffer<LightData> light_buffer = ResourceDescriptorHeap[render_buffers.light];
 
     Texture3D<float4> volume_tex = ResourceDescriptorHeap[pass_info.volume];
     Texture2D<float> depth_tex = ResourceDescriptorHeap[pass_info.depth];
@@ -53,15 +50,15 @@ void RayGenerate()
     
     float2 ndc_pos = uv * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f);
 
-    float4 far_clip_pos = mul(frame.proj_view, float4(ndc_pos, 0.0f, 1.0f));
+    float4 far_clip_pos = mul(render_frame.proj_view, float4(ndc_pos, 0.0f, 1.0f));
     far_clip_pos.xyz /= far_clip_pos.w;
     
-    float3 origin = frame.camera_pos.xyz;
+    float3 origin = render_frame.camera_pos.xyz;
     float3 direction = normalize(far_clip_pos.xyz - origin);
     
     float depth = depth_tex.SampleLevel(sam, uv, 0).r;
     
-    float4 geometry_world_pos = mul(frame.proj_view, float4(ndc_pos, depth, 1.0f));
+    float4 geometry_world_pos = mul(render_frame.proj_view, float4(ndc_pos, depth, 1.0f));
     geometry_world_pos.xyz /= geometry_world_pos.w;
     
     // カメラから遮蔽物（不透明オブジェクト）までの距離（最大距離）
@@ -105,7 +102,7 @@ void RayGenerate()
     
         TraceRay(tlas, 0, 0xFF, 0, 0, 0, ray, payload);
         
-        float3 uvw = WorldPositionToFroxelUVW(position, frame.view, frame.view_proj, 0.1f, 1000.0f);
+        float3 uvw = WorldPositionToFroxelUVW(position, render_frame.view, render_frame.view_proj, 0.1f, 1000.0f);
         
         float3 volume_radiance = volume_tex.SampleLevel(sam, uvw, 0).xyz;
 
@@ -179,7 +176,7 @@ void Miss(inout RayPayload payload)
 //[shader("closesthit")]
 //void VolumeHit(inout RayPayload payload, in VolumeAABBAttributes attr)
 //{
-//   // StructuredBuffer<VolumeData> volume_buffer = ResourceDescriptorHeap[buffer_indices.volume];
+//   // StructuredBuffer<VolumeData> volume_buffer = ResourceDescriptorHeap[render_buffers.volume];
 
 //    // 3dテクスチャの形状は今後ね....
     
@@ -226,7 +223,7 @@ void Miss(inout RayPayload payload)
 
 //    float3 inv_ray_dir = 1.0f / ray_direction;
 
-//    StructuredBuffer<VolumeData> volume_buffer = ResourceDescriptorHeap[buffer_indices.volume];
+//    StructuredBuffer<VolumeData> volume_buffer = ResourceDescriptorHeap[render_buffers.volume];
 
 //    uint index = InstanceID();
     

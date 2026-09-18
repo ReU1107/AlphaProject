@@ -1,9 +1,5 @@
 ﻿#include "Resource.hlsli"
 
-
-ConstantBuffer<SystemBufferIndices> buffer_indices : register(b0);
-ConstantBuffer<FrameRenderContext> frame : register(b1);
-
 struct PassConstants
 {
     uint result_index;
@@ -16,7 +12,7 @@ void main(uint3 dispatch_index : SV_DispatchThreadID)
 {
     RWTexture3D<float4> result = ResourceDescriptorHeap[pass_info.result_index];
     
-    StructuredBuffer<LightData> light_buffer = ResourceDescriptorHeap[buffer_indices.light];
+    StructuredBuffer<LightData> light_buffer = ResourceDescriptorHeap[render_buffers.light];
 
     uint3 thread_dimension;
     result.GetDimensions(thread_dimension.x, thread_dimension.y, thread_dimension.z);
@@ -30,19 +26,19 @@ void main(uint3 dispatch_index : SV_DispatchThreadID)
     float4 ndc_pos = float4(clip_space_pos, 0.0f, 1.0f);
     
     // 一番遠い
-    float4 far_pos = mul(frame.proj_view, ndc_pos);
+    float4 far_pos = mul(render_frame.proj_view, ndc_pos);
     far_pos /= far_pos.w; // w除算
     
-    float3 view_vector = far_pos.xyz - frame.camera_pos.xyz;
+    float3 view_vector = far_pos.xyz - render_frame.camera_pos.xyz;
     
     float linear_depth = near_z * pow(far_z / near_z, uvw.z);
     float depth_ratio = linear_depth / far_z;
 
-    float3 world_pos = frame.camera_pos.xyz + view_vector * depth_ratio;
+    float3 world_pos = render_frame.camera_pos.xyz + view_vector * depth_ratio;
     
     float3 radiance = float3(0, 0, 0);
 
-    for (uint i = 0; i < frame.light_count; ++i)
+    for (uint i = 0; i < render_frame.light_count; ++i)
     {
         LightData light = light_buffer[i];
         

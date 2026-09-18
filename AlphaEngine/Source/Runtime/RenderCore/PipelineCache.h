@@ -6,6 +6,7 @@
 #include "RayTracePipeline.h"
 #include "GraphicsPipeline.h"
 #include "ComputePipeline.h"
+#include "CommandLayout.h"
 
 namespace Alpha
 {
@@ -13,6 +14,7 @@ namespace Alpha
 	class ComputePipeline;
 	class RayTracePipeline;
 	class PipelineLayout;
+	class CommandLayout;
 
     class PipelineCache
     {
@@ -22,6 +24,9 @@ namespace Alpha
         TSlotPalette<TUnique<GraphicsPipeline>> m_gpso_cache{};
         TSlotPalette<TUnique<ComputePipeline>> m_cpso_cache{};
         TSlotPalette<TUnique<RayTracePipeline>> m_rtpso_cache{};
+
+        TSlotPalette<TUnique<CommandLayout>> m_command_layout_cache{};
+
 
     public:
         ~PipelineCache();
@@ -37,11 +42,13 @@ namespace Alpha
         GraphicsPipeline* FindGraphics(UInt64 handle_id) { return FindInternal(m_gpso_cache, handle_id); }
         ComputePipeline* FindCompute(UInt64 handle_id) { return FindInternal(m_cpso_cache, handle_id); }
         RayTracePipeline* FindRayTrace(UInt64 handle_id) { return FindInternal(m_rtpso_cache, handle_id); }
+        CommandLayout* FindCommandLayout(UInt64 handle_id) { return FindInternal(m_command_layout_cache, handle_id); }
 
         PipelineLayout* Add(UInt64 handle_id, TUnique<PipelineLayout>&& layout) { return AddInternal(m_layout_cache, handle_id, std::move(layout)); }
         GraphicsPipeline* Add(UInt64 handle_id, TUnique<GraphicsPipeline>&& pipeline) { return AddInternal(m_gpso_cache, handle_id, std::move(pipeline)); }
         ComputePipeline* Add(UInt64 handle_id, TUnique<ComputePipeline>&& pipeline) { return AddInternal(m_cpso_cache, handle_id, std::move(pipeline)); }
         RayTracePipeline* Add(UInt64 handle_id, TUnique<RayTracePipeline>&& pipeline) { return AddInternal(m_rtpso_cache, handle_id, std::move(pipeline)); }
+        CommandLayout* Add(UInt64 handle_id, TUnique<CommandLayout>&& layout) { return AddInternal(m_command_layout_cache, handle_id, std::move(layout)); }
 
     private:
         template<typename Type>

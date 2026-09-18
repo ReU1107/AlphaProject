@@ -88,6 +88,25 @@ namespace
 		return D3D12_BLEND_OP_ADD;
 	}
 
+	inline D3D12_COMPARISON_FUNC GetD3D12ComparisonFunc(Alpha::ERHICompareOp op)
+	{
+		switch (op)
+		{
+		case Alpha::ERHICompareOp::Never		: return D3D12_COMPARISON_FUNC_NEVER;
+		case Alpha::ERHICompareOp::Less			: return D3D12_COMPARISON_FUNC_LESS;
+		case Alpha::ERHICompareOp::Equal		: return D3D12_COMPARISON_FUNC_EQUAL;
+		case Alpha::ERHICompareOp::LessEqual	: return D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		case Alpha::ERHICompareOp::Greater		: return D3D12_COMPARISON_FUNC_GREATER;
+		case Alpha::ERHICompareOp::NotEqual		: return D3D12_COMPARISON_FUNC_NOT_EQUAL;
+		case Alpha::ERHICompareOp::GreaterEqual	: return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+		case Alpha::ERHICompareOp::Always		: return D3D12_COMPARISON_FUNC_ALWAYS;
+		default:
+			break;
+		}
+
+		return D3D12_COMPARISON_FUNC_NEVER;
+	}
+
 	static D3D12_RENDER_TARGET_BLEND_DESC GetBlendDesc(Alpha::RHIBlendStateDesc d)
 	{
 		D3D12_RENDER_TARGET_BLEND_DESC desc =
@@ -147,84 +166,73 @@ namespace Alpha
 
 		auto pipeline_layout = static_cast<D3D12PipelineLayout*>(desc.layout);
 
-		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE, ID3D12RootSignature*> root_signature;
+		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE, ID3D12RootSignature*> root_signature{};
 		root_signature.data = pipeline_layout->GetNativeHandle();
-
 		AddSubobject(stream_data, root_signature);
 
-		// Pixel Shader (共通)
 		if (desc.pixel_shader)
 		{
 			auto ps = static_cast<D3D12Shader*>(desc.pixel_shader);
-
-			PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PS, D3D12_SHADER_BYTECODE> ps_sub;
+			PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PS, D3D12_SHADER_BYTECODE> ps_sub{};
 			ps_sub.data = { ps->GetBytecodePointer(), ps->GetBytecodeLength() };
-
 			AddSubobject(stream_data, ps_sub);
 		}
 
 		D3D12_INPUT_ELEMENT_DESC input_elements[D3D12_IA_VERTEX_INPUT_STRUCTURE_ELEMENT_COUNT] = {};
-		std::vector<std::string> semantic_names = {};
+		std::vector<std::string> semantic_names;
 
 		if (desc.mesh_shader)
 		{
-			// Mesh Shader
 			auto ms = static_cast<D3D12Shader*>(desc.mesh_shader);
-			PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_MS, D3D12_SHADER_BYTECODE> ms_sub;
+			PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_MS, D3D12_SHADER_BYTECODE> ms_sub{};
 			ms_sub.data = { ms->GetBytecodePointer(), ms->GetBytecodeLength() };
 			AddSubobject(stream_data, ms_sub);
 
-			// Amplification Shader (Task Shader)
 			if (desc.task_shader)
 			{
 				auto ts = static_cast<D3D12Shader*>(desc.task_shader);
-				PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_AS, D3D12_SHADER_BYTECODE> as_sub;
+				PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_AS, D3D12_SHADER_BYTECODE> as_sub{};
 				as_sub.data = { ts->GetBytecodePointer(), ts->GetBytecodeLength() };
 				AddSubobject(stream_data, as_sub);
 			}
 		}
 		else
 		{
-			// Vertex Shader
 			if (desc.vertex_shader)
 			{
 				auto vs = static_cast<D3D12Shader*>(desc.vertex_shader);
-				PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VS, D3D12_SHADER_BYTECODE> vs_sub;
+				PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VS, D3D12_SHADER_BYTECODE> vs_sub{};
 				vs_sub.data = { vs->GetBytecodePointer(), vs->GetBytecodeLength() };
 				AddSubobject(stream_data, vs_sub);
 			}
 
-			// Hull Shader
 			if (desc.hull_shader)
 			{
 				auto hs = static_cast<D3D12Shader*>(desc.hull_shader);
-				PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_HS, D3D12_SHADER_BYTECODE> hs_sub;
+				PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_HS, D3D12_SHADER_BYTECODE> hs_sub{};
 				hs_sub.data = { hs->GetBytecodePointer(), hs->GetBytecodeLength() };
 				AddSubobject(stream_data, hs_sub);
 			}
 
-			// Domain Shader
 			if (desc.domain_shader)
 			{
 				auto ds = static_cast<D3D12Shader*>(desc.domain_shader);
-				PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DS, D3D12_SHADER_BYTECODE> ds_sub;
+				PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DS, D3D12_SHADER_BYTECODE> ds_sub{};
 				ds_sub.data = { ds->GetBytecodePointer(), ds->GetBytecodeLength() };
 				AddSubobject(stream_data, ds_sub);
 			}
 
-			// Geometry Shader
 			if (desc.geometry_shader)
 			{
 				auto gs = static_cast<D3D12Shader*>(desc.geometry_shader);
-				PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_GS, D3D12_SHADER_BYTECODE> gs_sub;
+				PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_GS, D3D12_SHADER_BYTECODE> gs_sub{};
 				gs_sub.data = { gs->GetBytecodePointer(), gs->GetBytecodeLength() };
 				AddSubobject(stream_data, gs_sub);
 			}
 
-			// Input Layout
 			semantic_names.resize(desc.vertex_layout.element_count);
 
-			for (UInt32 i = 0; i < desc.vertex_layout.element_count; i++)
+			for (UInt32 i = 0; i < desc.vertex_layout.element_count; ++i)
 			{
 				const auto& src = desc.vertex_layout.elements[i];
 				auto& dst = input_elements[i];
@@ -238,57 +246,76 @@ namespace Alpha
 				dst.InstanceDataStepRate = 0;
 			}
 
-			PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_INPUT_LAYOUT, D3D12_INPUT_LAYOUT_DESC> il_sub;
+			PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_INPUT_LAYOUT, D3D12_INPUT_LAYOUT_DESC> il_sub{};
 			il_sub.data = { input_elements, desc.vertex_layout.element_count };
 			AddSubobject(stream_data, il_sub);
-
-
 		}
 
-		// Primitive Topology
-		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PRIMITIVE_TOPOLOGY, D3D12_PRIMITIVE_TOPOLOGY_TYPE> topo_sub;
+		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PRIMITIVE_TOPOLOGY, D3D12_PRIMITIVE_TOPOLOGY_TYPE> topo_sub{};
 		topo_sub.data = GetD3D12PrimitiveTopologyType(desc.primitive_topology);
 		AddSubobject(stream_data, topo_sub);
 
-
 		// ラスタライザー
-		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER, D3D12_RASTERIZER_DESC> rs_sub;
+		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER, D3D12_RASTERIZER_DESC> rs_sub{};
 		rs_sub.data = GetDefaultRasterizerDesc();
 		rs_sub.data.FillMode = GetD3D12FillMode(desc.fill_mode);
 		rs_sub.data.CullMode = GetD3D12CullMode(desc.cull_mode);
-		rs_sub.data.FrontCounterClockwise = desc.rasterizer_state.front_counter_clockwise ? true : false;
+		rs_sub.data.FrontCounterClockwise = desc.rasterizer_state.front_counter_clockwise ? TRUE : FALSE;
 		rs_sub.data.DepthBias = desc.rasterizer_state.depth_bias;
 		rs_sub.data.DepthBiasClamp = desc.rasterizer_state.depth_bias_clamp;
 		rs_sub.data.SlopeScaledDepthBias = desc.rasterizer_state.slope_scaled_depth_bias;
-		rs_sub.data.DepthClipEnable = desc.rasterizer_state.depth_clip_enable ? true : false;
-		rs_sub.data.MultisampleEnable = desc.rasterizer_state.multisample_enable ? true : false;
-		rs_sub.data.AntialiasedLineEnable = desc.rasterizer_state.antialiased_line_enable ? true : false;
+		rs_sub.data.DepthClipEnable = desc.rasterizer_state.depth_clip_enable ? TRUE : FALSE;
+		rs_sub.data.MultisampleEnable = desc.rasterizer_state.multisample_enable ? TRUE : FALSE;
+		rs_sub.data.AntialiasedLineEnable = desc.rasterizer_state.antialiased_line_enable ? TRUE : FALSE;
 		rs_sub.data.ForcedSampleCount = desc.rasterizer_state.forced_sample_count;
 		rs_sub.data.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 		AddSubobject(stream_data, rs_sub);
 
 		// デプスステンシルフォーマット
-		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL_FORMAT, DXGI_FORMAT> dsv_fmt_sub;
+		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL_FORMAT, DXGI_FORMAT> dsv_fmt_sub{};
 		dsv_fmt_sub.data = ConvertDXGIFormat(desc.depth_format);
 		AddSubobject(stream_data, dsv_fmt_sub);
 
 		// デプスステンシルステート
-		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL, D3D12_DEPTH_STENCIL_DESC> ds_sub;
-		ds_sub.data.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-		ds_sub.data.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
-		ds_sub.data.DepthEnable = desc.depth_enable;
-		ds_sub.data.StencilEnable = false;
+		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL, D3D12_DEPTH_STENCIL_DESC> ds_sub{};
+
+		ds_sub.data.DepthEnable = desc.depth_enable ? TRUE : FALSE;
+		ds_sub.data.DepthWriteMask = desc.depth_write_enable ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+		ds_sub.data.DepthFunc = GetD3D12ComparisonFunc(desc.depth_compare_op);
+
+		ds_sub.data.StencilEnable = FALSE;
+		ds_sub.data.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
+		ds_sub.data.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+		ds_sub.data.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+		ds_sub.data.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+		ds_sub.data.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+		ds_sub.data.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		ds_sub.data.BackFace = ds_sub.data.FrontFace;
 		AddSubobject(stream_data, ds_sub);
 
-		// ブレンドステート & RTVフォーマット
-		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_BLEND, D3D12_BLEND_DESC> blend_sub = {};
-		blend_sub.data.AlphaToCoverageEnable = desc.alpha_to_coverage_enable;
-		blend_sub.data.IndependentBlendEnable = desc.independent_blend_enable;
+		// ブレンドステートとRTVフォーマット
+		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_BLEND, D3D12_BLEND_DESC> blend_sub{};
+		blend_sub.data.AlphaToCoverageEnable = desc.alpha_to_coverage_enable ? TRUE : FALSE;
+		blend_sub.data.IndependentBlendEnable = desc.independent_blend_enable ? TRUE : FALSE;
 
-		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RENDER_TARGET_FORMATS, D3D12_RT_FORMAT_ARRAY> rtv_fmts_sub = {};
+		D3D12_RENDER_TARGET_BLEND_DESC default_rt_blend{};
+		default_rt_blend.BlendEnable = FALSE;
+		default_rt_blend.LogicOpEnable = FALSE;
+		default_rt_blend.SrcBlend = D3D12_BLEND_ONE;
+		default_rt_blend.DestBlend = D3D12_BLEND_ZERO;
+		default_rt_blend.BlendOp = D3D12_BLEND_OP_ADD;
+		default_rt_blend.SrcBlendAlpha = D3D12_BLEND_ONE;
+		default_rt_blend.DestBlendAlpha = D3D12_BLEND_ZERO;
+		default_rt_blend.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		default_rt_blend.LogicOp = D3D12_LOGIC_OP_NOOP;
+		default_rt_blend.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+		for (auto& target_blend : blend_sub.data.RenderTarget)
+			target_blend = default_rt_blend;
+
+		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RENDER_TARGET_FORMATS, D3D12_RT_FORMAT_ARRAY> rtv_fmts_sub{};
 		rtv_fmts_sub.data.NumRenderTargets = desc.render_target_count;
 
-		for (UInt32 i = 0; i < desc.render_target_count; i++)
+		for (UInt32 i = 0; i < desc.render_target_count; ++i)
 		{
 			rtv_fmts_sub.data.RTFormats[i] = ConvertDXGIFormat(desc.render_targets[i]);
 			blend_sub.data.RenderTarget[i] = GetBlendDesc(desc.blend_states[i]);
@@ -296,19 +323,16 @@ namespace Alpha
 		AddSubobject(stream_data, rtv_fmts_sub);
 		AddSubobject(stream_data, blend_sub);
 
-		// マルチサンプル設定
-		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_DESC, DXGI_SAMPLE_DESC> sample_sub;
+		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_DESC, DXGI_SAMPLE_DESC> sample_sub{};
 		sample_sub.data.Count = 1;
 		sample_sub.data.Quality = 0;
 		AddSubobject(stream_data, sample_sub);
 
-		// サンプルマスク
-		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_MASK, UINT> mask_sub;
+		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_MASK, UINT> mask_sub{};
 		mask_sub.data = UINT_MAX;
 		AddSubobject(stream_data, mask_sub);
 
-		// ノードマスク
-		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_NODE_MASK, UINT> node_sub;
+		PipelineStateSubobject<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_NODE_MASK, UINT> node_sub{};
 		node_sub.data = 0;
 		AddSubobject(stream_data, node_sub);
 

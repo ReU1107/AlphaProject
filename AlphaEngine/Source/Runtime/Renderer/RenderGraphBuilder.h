@@ -27,6 +27,10 @@ namespace Alpha::Renderer
 
         RGTextureHandle WriteTexture(RGTextureHandle handle, ERHIResourceState state);
 
+        RGBufferHandle ReadBuffer(RGBufferHandle handle, ERHIResourceState state);
+
+        RGBufferHandle WriteBuffer(RGBufferHandle handle, ERHIResourceState state);
+
 
     };
 

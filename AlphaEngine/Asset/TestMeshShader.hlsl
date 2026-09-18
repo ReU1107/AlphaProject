@@ -17,10 +17,6 @@ struct VertexOut
 
 #include "Resource.hlsli"
 
-ConstantBuffer<SystemBufferIndices> buffer_indices : register(b0);
-ConstantBuffer<FrameRenderContext> frame : register(b1);
-
-
 float3 GetRandomColor(uint id)
 {
     uint h = id * 2747636419u;
@@ -38,22 +34,23 @@ void main(
     out indices uint3 triangles[MAX_PRIMITIVES]
 )
 {
-    StructuredBuffer<InstanceData> instance_buffer = ResourceDescriptorHeap[buffer_indices.instance];
+    StructuredBuffer<InstanceData> instance_buffer = ResourceDescriptorHeap[render_buffers.instance];
 
-    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[buffer_indices.current_position_srv];
-    ByteAddressBuffer attribute_buffer = ResourceDescriptorHeap[buffer_indices.attribute];
+    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[render_buffers.current_position_srv];
+    ByteAddressBuffer attribute_buffer = ResourceDescriptorHeap[render_buffers.attribute];
     
-    StructuredBuffer<MeshData> mesh_buffer = ResourceDescriptorHeap[buffer_indices.mesh];
+    StructuredBuffer<MeshData> mesh_buffer = ResourceDescriptorHeap[render_buffers.mesh];
     
-    StructuredBuffer<Meshlet> meshlet_buffer = ResourceDescriptorHeap[buffer_indices.meshlet];
+    StructuredBuffer<Meshlet> meshlet_buffer = ResourceDescriptorHeap[render_buffers.meshlet];
     
-    StructuredBuffer<uint> vertex_indices_buffer = ResourceDescriptorHeap[buffer_indices.vertex_indices];
-    StructuredBuffer<uint> triangle_indices_buffer = ResourceDescriptorHeap[buffer_indices.triangle_indices];
+    StructuredBuffer<uint> vertex_indices_buffer = ResourceDescriptorHeap[render_buffers.vertex_indices];
+    StructuredBuffer<uint> triangle_indices_buffer = ResourceDescriptorHeap[render_buffers.triangle_indices];
    
     uint instance_id = payload.instance_id;
     uint local_mesh_id = gid;
     
     InstanceData instance = instance_buffer[instance_id];
+
     
     MeshData mesh = mesh_buffer[instance.mesh_index];
 
@@ -65,7 +62,7 @@ void main(
     
     
     
-    float4x4 mat = mul(frame.view_proj, instance.world_matrix);
+    float4x4 mat = mul(render_frame.view_proj, instance.world_matrix);
     
     if (gtid < meshlet.vertex_count)
     {

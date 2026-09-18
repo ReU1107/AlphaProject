@@ -31,6 +31,7 @@ namespace Alpha::Renderer
 	{
 		m_render_core = args.render_core;
 		m_texture_palette.Initialize(100);
+		m_buffer_palette.Initialize(100);
 		return true;
 	}
 
@@ -69,7 +70,89 @@ namespace Alpha::Renderer
 
 	RGTextureHandle RenderGraph::ImportTexture(StringView name, Texture* texture)
 	{
-		return RGTextureHandle();
+		UInt64 handle_id = 0;
+		HashCombine(handle_id, name);
+
+		UInt32 palette_index = 0;
+
+		if (m_texture_palette.TryGetIndex(handle_id, &palette_index))
+		{
+			return RGTextureHandle(palette_index);
+		}
+
+		RGTextureResource& resource = m_texture_palette.Allocate(handle_id, palette_index);
+		resource.name = name;
+		resource.imported = true;
+		resource.target = texture;
+
+		return RGTextureHandle(palette_index);
+	}
+
+	RGBufferHandle RenderGraph::CreateBuffer(StringView name, const RGBufferDesc& desc)
+	{
+		UInt64 handle_id = 0;
+		HashCombine(handle_id, name);
+
+		UInt32 palette_index = 0;
+
+		if (m_buffer_palette.TryGetIndex(handle_id, &palette_index))
+		{
+			const RGBufferResource& resource = m_buffer_palette.GetAt(palette_index);
+
+			return RGBufferHandle(palette_index);
+		}
+
+		RGBufferResource& resource = m_buffer_palette.Allocate(handle_id, palette_index);
+
+		resource.name = name;
+		resource.desc = desc;
+		resource.imported = false;
+
+		auto buffer = m_render_core->CreateBuffer(
+			desc.stride,
+			desc.size,
+			desc.type);
+
+		buffer->SetName(name);
+
+		resource.target = buffer.get();
+		m_buffers.push_back(std::move(buffer));
+
+		return RGBufferHandle(palette_index);
+	}
+
+	RGBufferHandle RenderGraph::ImportBuffer(StringView name, Buffer* buffer)
+	{
+		UInt64 handle_id = 0;
+		HashCombine(handle_id, name);
+
+		UInt32 palette_index = 0;
+
+		if (m_buffer_palette.TryGetIndex(handle_id, &palette_index))
+		{
+			return RGBufferHandle(palette_index);
+		}
+
+		RGBufferResource& resource = m_buffer_palette.Allocate(handle_id, palette_index);
+		resource.name = name;
+		resource.imported = true;
+		resource.target = buffer;
+
+		return RGBufferHandle(palette_index);
+	}
+
+	void RenderGraph::UpdateImportedTexture(RGTextureHandle handle, Texture* texture)
+	{
+		// 本来はここでチェックとか行う必要があるけど
+
+		m_texture_palette.GetAt(handle.index).target = texture;
+
+
+	}
+
+	void RenderGraph::UpdateImportedBuffer(RGBufferHandle handle, Buffer* buffer)
+	{
+		m_buffer_palette.GetAt(handle.index).target = buffer;
 	}
 
 	void RenderGraph::AddPass(StringView name, PassSetupFunc&& setup, PassExecuteFunc&& execute)
@@ -80,6 +163,7 @@ namespace Alpha::Renderer
 
 		setup(builder);
 
+		pass.name = name;
 		pass.execute = execute;
 
 		m_passes.push_back(pass);
@@ -105,6 +189,11 @@ namespace Alpha::Renderer
 		}
 
 		return nullptr;
+	}
+
+	Buffer* RenderGraph::GetBuffer(RGBufferHandle handle) const
+	{
+		return m_buffer_palette.GetAt(handle.index).target;
 	}
 
 	void RenderGraph::Execute(RenderContext& ctx)

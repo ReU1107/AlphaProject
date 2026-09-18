@@ -541,6 +541,9 @@ namespace Alpha
 
 		HashCombine(handle_id, args.render_target_count);
 
+		HashCombine(handle_id, args.alpha_to_coverage_enable);
+		HashCombine(handle_id, args.independent_blend_enable);
+
 		for (UInt32 i = 0; i < args.render_target_count; ++i)
 		{
 			HashCombine(handle_id, static_cast<UInt32>(args.render_targets[i]));
@@ -560,6 +563,12 @@ namespace Alpha
 		HashCombine(handle_id, static_cast<UInt32>(args.primitive_topology));
 		HashCombine(handle_id, static_cast<UInt32>(args.depth_format));
 		HashCombine(handle_id, args.depth_enable);
+
+		HashCombine(handle_id, args.depth_write_enable);
+		HashCombine(handle_id, static_cast<UInt32>(args.depth_compare_op));
+
+
+		HashCombine(handle_id, static_cast<UInt32>(args.fill_mode));
 
 
 		if (GraphicsPipeline* cached_pipeline = m_pipeline_cache->FindGraphics(handle_id))
@@ -621,7 +630,6 @@ namespace Alpha
 			HashCombine(handle_id, args.miss_entry_names[i]);
 		}
 
-		// 4. ヒットグループ設定のハッシュ化
 		HashCombine(handle_id, static_cast<UInt64>(args.hit_groups.size()));
 		for (size_t i = 0; i < args.hit_groups.size(); ++i)
 		{
@@ -648,14 +656,39 @@ namespace Alpha
 		return m_pipeline_cache->Add(handle_id, std::move(pipeline));
 	}
 
-	TUnique<CommandLayout> RenderCore::CreateCommandLayout(CommandLayoutArgs args)
+	CommandLayout* RenderCore::CreateCommandLayout(const CommandLayoutArgs& args)
 	{
+		UInt64 handle_id = 0;
+
+		HashCombine(handle_id, args.pipeline_layout);
+
+		HashCombine(handle_id, static_cast<UInt64>(args.arguments.size()));
+		for (size_t i = 0; i < args.arguments.size(); ++i)
+		{
+			const auto& arg = args.arguments[i];
+
+			HashCombine(handle_id, static_cast<UInt32>(arg.type));
+			HashCombine(handle_id, arg.root_parameter_index);
+			HashCombine(handle_id, arg.dest_runtime_constant_offset);
+			HashCombine(handle_id, arg.num_32bit_values_to_set);
+			HashCombine(handle_id, arg.slot_index);
+		}
+
+
+		if (CommandLayout* cached_pipeline_layout = m_pipeline_cache->FindCommandLayout(handle_id))
+		{
+			return cached_pipeline_layout;
+		}
+
 		auto command_layout = std::make_unique<CommandLayout>();
-		args.rhi = m_rhi.get();
 
-		command_layout->Initialize(args);
+		CommandLayoutArgs desc = args;
+		desc.rhi = m_rhi.get();
 
-		return command_layout;
+		command_layout->Initialize(desc);
+
+		return m_pipeline_cache->Add(handle_id, std::move(command_layout));
+
 	}
 
 	UINT32 RenderCore::GetCurrentBackBufferIndex() const

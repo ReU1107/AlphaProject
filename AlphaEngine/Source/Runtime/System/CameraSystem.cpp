@@ -23,7 +23,6 @@ namespace Alpha
             static float cam_yaw = 0.0f; // 左右回転（ヨー）
             static float cam_pitch = 0.0f; // 上下回転（ピッチ）
 
-            // キー入力で角度（数値）を直接操作する
             if (GetKeyState(VK_RIGHT) & 0x8000) { cam_yaw += rotation_speed * dt; }
             if (GetKeyState(VK_LEFT) & 0x8000) { cam_yaw -= rotation_speed * dt; }
             if (GetKeyState(VK_UP) & 0x8000) { cam_pitch -= rotation_speed * dt; }

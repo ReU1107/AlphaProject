@@ -100,6 +100,18 @@ namespace Alpha
 		TriangleStrip = 5,
 	};
 
+	enum class ERHICompareOp
+	{
+		Never,
+		Less,
+		Equal,
+		LessEqual,
+		Greater,
+		NotEqual,
+		GreaterEqual,
+		Always,
+	};
+
 	enum class ERHIResourceDimension
 	{
 		Unknown,	// テクスチャタイプが初期化されていないか、不明です。

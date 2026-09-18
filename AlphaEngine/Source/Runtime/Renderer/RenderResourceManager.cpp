@@ -217,6 +217,7 @@ namespace Alpha::Renderer
 
             mesh.data.vertex_stride = handle->GetVertexAttributeStride();
             mesh.data.attribute_flags = handle->GetVertexAttributeFlags().GetValue();
+            mesh.data.index_count = handle->GetIndices().size();
 
             Allocation alloc{};
             m_mesh_allocator->AllocateByNum(1, &alloc);

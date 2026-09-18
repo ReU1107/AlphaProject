@@ -17,11 +17,15 @@
 
 #include "RenderSceneBuilder.h"
 
+#include "Particle/ParticleSystem.h"
+#include "Particle/ParticleRender.h"
+
 
 #include <imgui/imgui.h>
 namespace Alpha
 {
 	using namespace Renderer;
+	using namespace Particle;
 	RenderSystem::~RenderSystem() = default;
 
 	static TUnique<Texture> test = nullptr;
@@ -31,12 +35,18 @@ namespace Alpha
 		m_pipeline_layout = RenderCore::Get().CreatePipelineLayout(
 			[](PipelineLayout& layout)
 			{
-				layout.AddRootCBV(1, ERHIShaderFlags::All);
-				layout.AddRootCBV(1, ERHIShaderFlags::All);
-				layout.AddRootCBV(1, ERHIShaderFlags::All);
+				layout.AddRootCBV(10, ERHIShaderFlags::All);
 				layout.SetFlags(ERHIPipelineLayoutFlags::Bindless);
 			}
 		);
+
+		ParticleSystem::Args ps_args = {
+			.render_core = RenderCore::GetPtr(),
+			.layout = m_pipeline_layout,
+			.max_particle_count = 10000,
+		};
+		m_particle_system = std::make_unique<ParticleSystem>();
+		m_particle_system->Initialize(ps_args);
 
 		m_scene = std::make_unique<RenderScene>();
 		m_scene->Initialize({ args.render_core });
@@ -52,6 +62,7 @@ namespace Alpha
 		AddFroxelLightingPass(args.render_core, m_pipeline_layout, m_graph.get());
 		AddVolumetricPass(args.render_core, m_pipeline_layout, m_graph.get());
 		AddOpaqueShadingPass(args.render_core, m_pipeline_layout, m_graph.get());
+		AddParticleRenderPass(args.render_core, m_pipeline_layout, m_particle_system.get(), m_graph.get());
 		AddCompositePass(args.render_core, m_pipeline_layout, m_graph.get());
 
 		GUISystem::Args gui_args = {
@@ -59,6 +70,7 @@ namespace Alpha
 			.graph = m_graph.get(),
 		};
 		GUISystem::Startup(gui_args);
+
 
 		//DebugRenderer::Args debug_args = {
 		//	.render_core = RenderCore::GetPtr(),
@@ -75,6 +87,7 @@ namespace Alpha
 
 	void RenderSystem::Render(entt::registry& registry, Renderer::RenderContext& ctx)
 	{
+		m_scene->Reset(ctx.current_frame_index);
 
 		ctx.command_list->SetPipelineLayout(m_pipeline_layout);
 
@@ -127,6 +140,16 @@ namespace Alpha
 		}
 		ctx.instance_count = constants.instance_count;
 
+		// ここで
+		ParticleContext pctx = {};
+		pctx.command_list = ctx.command_list;
+		pctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
+		pctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
+		pctx.delta_time = 1.0f / 60;
+
+		m_particle_system->Update(registry, pctx);
+
+		
 
 		m_graph->Execute(ctx);
 

@@ -1,4 +1,7 @@
-﻿
+﻿#ifndef ALPHA_RESOURCE_HLSLI
+#define ALPHA_RESOURCE_HLSLI
+
+
 struct MaterialProperties
 {
     float3 base_color;          // 基本色
@@ -64,6 +67,7 @@ struct MeshData
     
     uint attribute_flags;           // 頂点属性フラグ
     uint vertex_stride;             // 頂点属性ストライド
+    uint index_count;               // 頂点
 };
 
 struct InstanceData
@@ -73,6 +77,8 @@ struct InstanceData
     uint mesh_index;            //
     uint vertex_element_offset; // 実際に描画に使用される頂点バッファオフセット
     uint override_material_table_offset; // overrideのマテリアルテーブルのインデックス
+    
+    uint visible;
 };
 
 struct LightData
@@ -101,7 +107,7 @@ struct VolumeData
     float scattering;
 };
 
-struct SystemBufferIndices
+struct RenderBufferIndices
 {
     // Static
     uint position;              // このpositionはあくまでも読み込み時の状態の
@@ -130,22 +136,18 @@ struct SystemBufferIndices
     uint rt_structure;
 };
 
-struct SystemTextureIndices
-{
-    uint rt_result;
-};
-
-struct FrameRenderContext
+struct FrameRenderConstants
 {
     float4x4 view;
     float4x4 view_proj;
     float4x4 proj_view; // inv_view_proj
     float4 camera_pos;
     float4 frustum_planes;
+    
     float3 camera_up;
-    float3 camera_right;
-
     uint instance_count;
+    
+    float3 camera_right;
     uint light_count;
 
 };
@@ -183,3 +185,10 @@ struct FrameRenderContext
 #define SAMPLER_PRESET_LINEAR_WRAP  2
 #define SAMPLER_PRESET_ANISO_WRAP   3
 #define SAMPLER_PRESET_SHADOW       4
+
+
+ConstantBuffer<RenderBufferIndices> render_buffers : register(b0);
+ConstantBuffer<FrameRenderConstants> render_frame : register(b1);
+
+
+#endif

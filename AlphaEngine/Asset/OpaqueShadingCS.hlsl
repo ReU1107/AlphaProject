@@ -1,9 +1,6 @@
 ﻿#include "Resource.hlsli"
 
 
-ConstantBuffer<SystemBufferIndices> buffer_indices : register(b0);
-ConstantBuffer<FrameRenderContext> frame : register(b1);
-
 struct PassConstants
 {
     uint result_index;

@@ -26,7 +26,7 @@ namespace Alpha::Renderer
 			{
 				1920, 1080, 1,
 				ERHIResourceDimension::Tex2D,
-				ERHIResourceBindFlags::ShaderResource | ERHIResourceBindFlags::UnorderedAccess,
+				ERHIResourceBindFlags::ShaderResource | ERHIResourceBindFlags::RenderTarget | ERHIResourceBindFlags::UnorderedAccess,
 				ERHIResourceFormat::RGBAFloat
 			}
 		);

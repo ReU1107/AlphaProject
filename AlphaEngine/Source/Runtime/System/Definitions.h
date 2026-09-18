@@ -22,10 +22,12 @@ namespace Alpha
 		float4x4 inv_view_proj{ float4x4::Identity };
 		float4 camera_pos;
 		float4 frustum_planes;
+		
 		float3 camera_up;
+		UInt32 instance_count;
+
 		float3 camera_right;
 
-		UInt32 instance_count;
 		UInt32 light_count;
 	};
 
