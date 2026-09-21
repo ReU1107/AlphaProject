@@ -56,7 +56,11 @@ void main(uint3 id : SV_DispatchThreadID)
         switch (emit_command.source_shape)
         {
             case PARTICLE_SHAPE_BOX:
-                if (emit_command.distribution == PARTICLE_DISTRIBUTION_VOLUME)
+                if (emit_command.distribution == PARTICLE_DISTRIBUTION_VERTEX)
+                    local_position = SampleBoxVertex(emit_command.shape_params.xyz, seed);
+                else if (emit_command.distribution == PARTICLE_DISTRIBUTION_EDGE)
+                    local_position = SampleBoxEdge(emit_command.shape_params.xyz, seed);
+                else if (emit_command.distribution == PARTICLE_DISTRIBUTION_VOLUME)
                     local_position = SampleBoxVolume(emit_command.shape_params.xyz, seed);
                 else
                     local_position = SampleBoxSurface(emit_command.shape_params.xyz, seed);
@@ -70,38 +74,59 @@ void main(uint3 id : SV_DispatchThreadID)
                 break;
 
             case PARTICLE_SHAPE_HEMISPHERE:
-                // 半球は球体の Z もしくは Y の符号を強制反転（ここではZを正のドーム状に制限）
                 if (emit_command.distribution == PARTICLE_DISTRIBUTION_VOLUME)
-                    local_position = SampleSphereVolume(emit_command.shape_params.x, seed);
+                    local_position = SampleHemisphereVolume(emit_command.shape_params.x, seed);
                 else
-                    local_position = SampleSphereSurface(emit_command.shape_params.x, seed);
-                local_position.z = abs(local_position.z);
+                    local_position = SampleHemisphereSurface(emit_command.shape_params.x, seed);
                 break;
 
             case PARTICLE_SHAPE_CONE:
-                // shape_params.x = angle(rad), shape_params.y = height
-                local_position = SampleConeVolume(emit_command.shape_params.x, emit_command.shape_params.y, seed);
+                if (emit_command.distribution == PARTICLE_DISTRIBUTION_VOLUME)
+                    local_position = SampleConeVolume(emit_command.shape_params.x, emit_command.shape_params.y, seed);
+                else
+                    local_position = SampleConeSurface(emit_command.shape_params.x, emit_command.shape_params.y, seed);
                 break;
 
             case PARTICLE_SHAPE_CYLINDER:
-                if (emit_command.distribution == PARTICLE_DISTRIBUTION_VOLUME)
+                if (emit_command.distribution == PARTICLE_DISTRIBUTION_EDGE)
+                    local_position = SampleCylinderEdge(emit_command.shape_params.x, emit_command.shape_params.y, seed);
+                else if (emit_command.distribution == PARTICLE_DISTRIBUTION_VOLUME)
                     local_position = SampleCylinderVolume(emit_command.shape_params.x, emit_command.shape_params.y, seed);
                 else
                     local_position = SampleCylinderSurface(emit_command.shape_params.x, emit_command.shape_params.y, seed);
                 break;
 
             case PARTICLE_SHAPE_POINT:
-                local_position = float3(0, 0, 0);
+                local_position = float3(0.0f, 0.0f, 0.0f);
                 break;
 
             case PARTICLE_SHAPE_CIRCLE:
-                local_position = float3(SampleDisk(emit_command.shape_params.x, seed), 0.0f);
+                if (emit_command.distribution == PARTICLE_DISTRIBUTION_EDGE)
+                    local_position = SampleCircleEdge(emit_command.shape_params.x, seed);
+                else
+                    local_position = SampleCircleSurface(emit_command.shape_params.x, seed);
+                break;
+
+            case PARTICLE_SHAPE_RECTANGLE:
+                if (emit_command.distribution == PARTICLE_DISTRIBUTION_VERTEX)
+                    local_position = SampleRectangleVertex(emit_command.shape_params.xy, seed);
+                else if (emit_command.distribution == PARTICLE_DISTRIBUTION_EDGE)
+                    local_position = SampleRectangleEdge(emit_command.shape_params.xy, seed);
+                else
+                    local_position = SampleRectangleSurface(emit_command.shape_params.xy, seed);
+                break;
+
+            case PARTICLE_SHAPE_LINE:
+                if (emit_command.distribution == PARTICLE_DISTRIBUTION_VERTEX)
+                    local_position = SampleLineVertex(emit_command.shape_params.x, seed);
+                else
+                    local_position = SampleLineEdge(emit_command.shape_params.x, seed);
                 break;
 
             case PARTICLE_SHAPE_MESH:
                 instance = instance_buffer[emit_command.source_instance_index];
                 mesh = mesh_buffer[instance.mesh_index];
-            
+    
                 if (emit_command.distribution == PARTICLE_DISTRIBUTION_VERTEX)
                     local_position = SampleMeshVertex(position_buffer, index_buffer, instance.vertex_element_offset, mesh.index_element_offset, mesh.index_count, seed);
                 else
@@ -109,7 +134,7 @@ void main(uint3 id : SV_DispatchThreadID)
                 break;
 
             default:
-                local_position = float3(0, 0, 0);
+                local_position = float3(0.0f, 0.0f, 0.0f);
                 break;
         }
 

@@ -167,6 +167,7 @@
     <ClCompile Include="Source\Core\Window\WindowSystem.cpp" />
     <ClCompile Include="Source\Editor\Viewport.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimationComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Particle\ParticleEmitterComponent.cpp" />
     <ClCompile Include="Source\Runtime\Particle\ParticleRender.cpp" />
     <ClCompile Include="Source\Runtime\Particle\ParticleSystem.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\CommandLayout.cpp" />

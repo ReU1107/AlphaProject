@@ -59,6 +59,7 @@ namespace Alpha
 
 					transform.SetWorldMatrix(MatrixMultiply(transform.GetLocalMatrix(), parent_transform.GetWorldMatrix()));
 
+					return false;
 				}
 
 				transform.SetWorldMatrix(transform.GetLocalMatrix());

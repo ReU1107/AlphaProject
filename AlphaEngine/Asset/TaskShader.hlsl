@@ -18,5 +18,9 @@ void main(uint gid : SV_GroupID)
     InstanceData instance = instance_buffer[gid];
     MeshData mesh = mesh_buffer[instance.mesh_index];
 
-    DispatchMesh(mesh.meshlet_count, 1, 1, payload);
+    const bool draw_instance = (instance.visible != 0u);
+
+    uint mesh_group_count = draw_instance ? mesh.meshlet_count : 0u;
+
+    DispatchMesh(mesh_group_count, 1, 1, payload);
 }
