@@ -107,7 +107,7 @@ namespace Alpha::Particle
 
 			ParticleEmitCommand command{};
 			command.emitter_world = transform.GetWorldMatrix();
-			command.shape_params = float4(0.0f, 0.0f, 0.0f, 0.0f);
+			command.shape_params = emitter.shape_params;
 
 			command.initial_velocity = emitter.initial_velocity;
 			command.velocity_random = emitter.velocity_random;
@@ -126,36 +126,8 @@ namespace Alpha::Particle
 			command.material_index = invalid_index;
 			command.flags = 0;
 
-			switch (emitter.source_shape)
-			{
-			case SourceShape::Point:
-				break;
 
-			case SourceShape::Box:
-				command.shape_params = float4(emitter.box_half_size, 0.0f);
-				break;
-
-			case SourceShape::Sphere:
-			case SourceShape::Hemisphere:
-			case SourceShape::Circle:
-				command.shape_params = float4(emitter.radius, 0.0f, 0.0f, 0.0f);
-				break;
-
-			case SourceShape::Cone:
-			case SourceShape::Cylinder:
-				command.shape_params = float4(emitter.radius, emitter.height, 0.0f, 0.0f);
-				break;
-
-			case SourceShape::Rectangle:
-				// xy = 各辺の長さの半分
-				command.shape_params = float4(emitter.rectangle_half_size, 0.0f, 0.0f);
-				break;
-
-			case SourceShape::Line:
-				command.shape_params = float4(emitter.line_length, 0.0f, 0.0f, 0.0f);
-				break;
-
-			case SourceShape::Mesh:
+			if (emitter.source_shape == SourceShape::Mesh)
 			{
 				const auto* mesh = registry.try_get<Renderer::MeshComponent>(entity);
 
@@ -164,15 +136,6 @@ namespace Alpha::Particle
 					continue;
 
 				command.source_instance_index = mesh->render_instance_index;
-				break;
-			}
-
-			case SourceShape::Spline:
-				// 制御点バッファなどの参照方法を決めてから対応する。
-				continue;
-
-			default:
-				continue;
 			}
 
 			m_emit_commands.push_back(command);

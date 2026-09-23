@@ -4,7 +4,6 @@
 
 namespace Alpha
 {
-    // --- 整数型 (Fixed-width integers) ---
     using UInt8 = uint8_t;
     using UInt16 = uint16_t;
     using UInt32 = uint32_t;
@@ -15,7 +14,9 @@ namespace Alpha
     using Int32 = int32_t;
     using Int64 = int64_t;
 
-    // --- 浮動小数点型 (Floating-point types) ---
+    // hlsl用
+    using uint = UInt32;
+
     // 浮動小数点はdouble使うことないと思うし
     using Float = float;
 

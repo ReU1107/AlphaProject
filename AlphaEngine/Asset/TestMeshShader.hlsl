@@ -50,11 +50,12 @@ void main(
     uint local_mesh_id = gid;
     
     InstanceData instance = instance_buffer[instance_id];
-
     
     MeshData mesh = mesh_buffer[instance.mesh_index];
 
+    
     Meshlet meshlet = meshlet_buffer[mesh.meshlet_element_offset + local_mesh_id];
+
     
     SetMeshOutputCounts(meshlet.vertex_count, meshlet.triangle_count);
 

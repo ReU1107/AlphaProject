@@ -114,7 +114,7 @@ namespace Alpha
 
 			{
 				auto sphere = std::make_shared<ModelHandle>();
-				sphere->SetName(BuildInCube);
+				sphere->SetName(BuildInSphere);
 				TArray<Vector3> positions;
 				TArray<Vector3> normals;
 				TArray<Vector2> texcoords;

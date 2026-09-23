@@ -43,7 +43,7 @@ namespace Alpha
 		ParticleSystem::Args ps_args = {
 			.render_core = RenderCore::GetPtr(),
 			.layout = m_pipeline_layout,
-			.max_particle_count = 10000,
+			.max_particle_count = 100000,
 		};
 		m_particle_system = std::make_unique<ParticleSystem>();
 		m_particle_system->Initialize(ps_args);

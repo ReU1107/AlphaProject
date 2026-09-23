@@ -1,4 +1,7 @@
 ﻿#include "Particle.hlsli"
+#include "Sample.hlsli"
+
+static const float3 Gravity = float3(0.0f, -9.8f, 0.0f);
 
 [numthreads(64, 1, 1)]
 void main(uint3 id : SV_DispatchThreadID)
@@ -14,19 +17,25 @@ void main(uint3 id : SV_DispatchThreadID)
     if (particle_index >= alive_count)
         return;
     
+    const float delta_time = particle_constants.delta_time;
+    
     // 現存するパーティクルの更新
     ParticleData particle = read_particle_buffer[particle_index];
 
-    particle.lifetime -= particle_constants.delta_time;
-    
-    if (particle.lifetime <= 0.0f)
+    particle.age += delta_time;
+
+    if (particle.age >= particle.lifetime)
+    {
         return;
+    }
 
-    // particleの属性を見ながら更新
 
-    // 更新しても生存しているならもう一度書き込む
-    particle.position += particle.velocity * particle_constants.delta_time;
-    particle.age += particle_constants.delta_time;
+    particle.velocity *= exp(-particle.drag * delta_time);
+
+   // particle.velocity += Gravity * delta_time;
+
+    particle.position += particle.velocity * delta_time;
+    
     
     uint write_index;
     InterlockedAdd(particle_counter[particle_constants.write_counter_index], 1, write_index);
