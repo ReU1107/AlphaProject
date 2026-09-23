@@ -50,7 +50,7 @@ void RayGenerate()
     
     float2 ndc_pos = uv * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f);
 
-    float4 far_clip_pos = mul(render_frame.proj_view, float4(ndc_pos, 0.0f, 1.0f));
+    float4 far_clip_pos = mul(render_frame.inv_view_proj, float4(ndc_pos, 0.0f, 1.0f));
     far_clip_pos.xyz /= far_clip_pos.w;
     
     float3 origin = render_frame.camera_pos.xyz;
@@ -58,7 +58,7 @@ void RayGenerate()
     
     float depth = depth_tex.SampleLevel(sam, uv, 0).r;
     
-    float4 geometry_world_pos = mul(render_frame.proj_view, float4(ndc_pos, depth, 1.0f));
+    float4 geometry_world_pos = mul(render_frame.inv_view_proj, float4(ndc_pos, depth, 1.0f));
     geometry_world_pos.xyz /= geometry_world_pos.w;
     
     // カメラから遮蔽物（不透明オブジェクト）までの距離（最大距離）
@@ -71,7 +71,7 @@ void RayGenerate()
     float3 radiance = 0.0;          // 深度値までの空間の色
     float3 transmittance = 1.0;     // 深度値までで残った透過度
     
-    LightData light = light_buffer[3];  // とりあえず固定値でしてるけど今後directional lightのindexか一番影響の高いライト番号を渡す
+    LightData light = light_buffer[0];  // とりあえず固定値でしてるけど今後directional lightのindexか一番影響の高いライト番号を渡す
     
     float3 light_dir = -light.direction;
 
@@ -118,13 +118,16 @@ void RayGenerate()
         float3 sigma_m = fog_color * density_m * 2.0f; // 
         float3 sigma_a = float3(0.0f, 0.0f, 0.0f); // 吸収係数(一旦なし)
         
-        float3 sigma_t = sigma_r + sigma_m + sigma_a;
-
-        radiance += transmittance * volume_radiance * IsotropicPhase() * step_size * sigma_t;
+        float3 sigma_s = sigma_r + sigma_m;
+        float3 sigma_t = sigma_s + sigma_a;
+        
+        // 等方性として処理
+        radiance += transmittance * volume_radiance * IsotropicPhase() * step_size * sigma_s;
         
         float3 scattering = sigma_r * phase_r + sigma_m * phase_m;
         float3 dominant = light.color * light.intensity * payload.visibility;
         
+        // メインライト(DirectionalLight)だけ
         radiance += transmittance * dominant * scattering * step_size;
         
         
@@ -137,6 +140,9 @@ void RayGenerate()
     radiance_tex[index] = float4(radiance, 1.0f);
     transmittance_tex[index] = float4(transmittance, 1.0f);
 
+    //radiance_tex[index] = float4(1.0f, 0.0f, 0.0f, 1.0f);
+    //transmittance_tex[index] = float4(0.0f, 1.0f, 0.0f, 1.0f);
+    
 }
 
 

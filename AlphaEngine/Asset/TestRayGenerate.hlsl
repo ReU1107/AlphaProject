@@ -22,7 +22,7 @@ void MyRayGen()
     
     float2 clipSpacePos = uv * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f);
 
-    float4 targetWorldPos = mul(render_frame.proj_view, float4(clipSpacePos, 0.0f, 1.0f));
+    float4 targetWorldPos = mul(render_frame.inv_view_proj, float4(clipSpacePos, 0.0f, 1.0f));
     targetWorldPos.xyz /= targetWorldPos.w; 
     float3 origin = render_frame.camera_pos.xyz;
     float3 direction = normalize(targetWorldPos.xyz - origin);

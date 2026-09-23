@@ -140,10 +140,9 @@ void main(uint3 id : SV_DispatchThreadID)
 
         particle.position = mul(emit_command.emitter_world, float4(local_position, 1.0f)).xyz;
 
-
-        float3 rand_offset = (Random3(seed) - 0.5f) * 2.0f;
-        particle.velocity = emit_command.initial_velocity + (rand_offset * emit_command.velocity_random);
-        
+        float3 emission_direction = normalize(local_position);
+        particle.velocity = emit_command.initial_velocity + (emission_direction);
+        particle.drag = 0;
         particle.lifetime = emit_command.lifetime;
         particle.start_size = emit_command.start_size;
         particle.end_size = emit_command.end_size;

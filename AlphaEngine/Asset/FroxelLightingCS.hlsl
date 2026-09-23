@@ -17,6 +17,9 @@ void main(uint3 dispatch_index : SV_DispatchThreadID)
     uint3 thread_dimension;
     result.GetDimensions(thread_dimension.x, thread_dimension.y, thread_dimension.z);
 
+    if (any(dispatch_index >= thread_dimension))
+        return;
+    
     float3 uvw = ((float3) dispatch_index + 0.5f) / thread_dimension;
     
     float near_z = 0.1f;
@@ -26,7 +29,7 @@ void main(uint3 dispatch_index : SV_DispatchThreadID)
     float4 ndc_pos = float4(clip_space_pos, 0.0f, 1.0f);
     
     // 一番遠い
-    float4 far_pos = mul(render_frame.proj_view, ndc_pos);
+    float4 far_pos = mul(render_frame.inv_view_proj, ndc_pos);
     far_pos /= far_pos.w; // w除算
     
     float3 view_vector = far_pos.xyz - render_frame.camera_pos.xyz;

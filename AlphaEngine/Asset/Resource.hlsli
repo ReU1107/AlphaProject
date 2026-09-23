@@ -140,7 +140,7 @@ struct FrameRenderConstants
 {
     float4x4 view;
     float4x4 view_proj;
-    float4x4 proj_view; // inv_view_proj
+    float4x4 inv_view_proj; // inv_view_proj
     float4 camera_pos;
     float4 frustum_planes;
     

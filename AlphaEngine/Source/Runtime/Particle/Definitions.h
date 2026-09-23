@@ -14,13 +14,21 @@ namespace Alpha::Particle
     struct ParticleData
     {
         float3 position;
-        float age;          
+        float age;
 
         float3 velocity;
         float lifetime;
 
-        UInt32 packed_start_color;
-        UInt32 packed_end_color;
+        float4 rotation;
+
+        float3 angular_velocity;
+        float inverse_mass;
+
+        float3 acceleration;
+        float drag;
+
+        uint packed_start_color;
+        uint packed_end_color;
 
         float start_size;
         float end_size;
@@ -29,7 +37,7 @@ namespace Alpha::Particle
 
     struct ParticleEmitCommand
     {
-        Matrix4x4 emitter_world;
+        float4x4 emitter_world;
 
         float4 shape_params;
 

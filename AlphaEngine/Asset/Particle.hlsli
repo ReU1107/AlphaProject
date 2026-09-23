@@ -9,6 +9,14 @@ struct ParticleData
     float3 velocity;
     float lifetime;
 
+    float4 rotation;
+
+    float3 angular_velocity;
+    float inverse_mass;
+
+    float3 acceleration;
+    float drag;
+    
     uint packed_start_color;
     uint packed_end_color;
 
@@ -71,11 +79,11 @@ struct ParticleFrameConstants
 ConstantBuffer<ParticleBufferIndices> particle_buffers : register(b2);
 ConstantBuffer<ParticleFrameConstants> particle_constants : register(b3);
 
-// --- 0D / 1D ---
+// 0D / 1D
 static const uint PARTICLE_SHAPE_POINT                      = 0;
 static const uint PARTICLE_SHAPE_LINE                       = 1;
 
-// --- 2D ---
+// 2D
 static const uint PARTICLE_SHAPE_TRIANGLE                   = 2;
 static const uint PARTICLE_SHAPE_RECTANGLE                  = 3;
 static const uint PARTICLE_SHAPE_CIRCLE                     = 4;
@@ -85,7 +93,7 @@ static const uint PARTICLE_SHAPE_ARC                        = 7; // 円弧
 static const uint PARTICLE_SHAPE_SECTOR                     = 8; // 扇形
 static const uint PARTICLE_SHAPE_REGULAR_POLYGON            = 9; // 正多角形
 
-// --- 3D ---
+// 3D
 static const uint PARTICLE_SHAPE_BOX                        = 10;
 static const uint PARTICLE_SHAPE_ROUNDED_BOX                = 11;
 static const uint PARTICLE_SHAPE_SPHERE                     = 12;
@@ -105,7 +113,6 @@ static const uint PARTICLE_SHAPE_CONE_FRUSTUM               = 25; // 円錐台
 static const uint PARTICLE_SHAPE_PYRAMID_FRUSTUM            = 26; // 四角錐台
 static const uint PARTICLE_SHAPE_REGULAR_PYRAMID_FRUSTUM    = 27; // 正多角錐台
 
-// --- Special ---
 static const uint PARTICLE_SHAPE_MESH = 28;
 static const uint PARTICLE_SHAPE_SPLINE = 29;
 
@@ -115,6 +122,15 @@ static const uint PARTICLE_DISTRIBUTION_VERTEX = 1;
 static const uint PARTICLE_DISTRIBUTION_EDGE = 2;
 static const uint PARTICLE_DISTRIBUTION_SURFACE = 3;
 static const uint PARTICLE_DISTRIBUTION_VOLUME = 4;
+
+
+
+// 死亡する条件(まだ使ってない)
+static const uint PARTICLE_DEATH_BY_LIFETIME = 1;
+static const uint PARTICLE_DEATH_ON_COLLISION = 2;
+
+
+
 
 
 #endif

@@ -11,7 +11,9 @@ float4 main(in VertexOut input) : SV_TARGET
 
     float dist = length(center_uv);
 
-    float alpha = saturate(1.0 - (dist / 0.5));
+    float circle_alpha = saturate(1.0 - (dist / 0.5));
+    
+    float alpha = circle_alpha * input.color.a;
     
     return float4(input.color.rgb, alpha);
 }

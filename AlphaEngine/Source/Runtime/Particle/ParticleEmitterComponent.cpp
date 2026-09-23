@@ -29,42 +29,42 @@ namespace Alpha::Particle
     {
         source_shape = SourceShape::Triangle;
         distribution = EmitDistribution::Vertex;
-        shape_params = float4(size, size, 0.0f, 0.0f);
+        shape_params = float4(size, 0.0f, 0.0f);
     }
 
     void ParticleEmitterComponent::SetShapeTriangleEdge(const float2& size)
     {
         source_shape = SourceShape::Triangle;
         distribution = EmitDistribution::Edge;
-        shape_params = float4(size, size, 0.0f, 0.0f);
+        shape_params = float4(size, 0.0f, 0.0f);
     }
 
     void ParticleEmitterComponent::SetShapeTriangleSurface(const float2& size)
     {
         source_shape = SourceShape::Triangle;
         distribution = EmitDistribution::Surface;
-        shape_params = float4(size, size, 0.0f, 0.0f);
+        shape_params = float4(size, 0.0f, 0.0f);
     }
 
     void ParticleEmitterComponent::SetShapeRectangleVertex(const float2& size)
     {
         source_shape = SourceShape::Rectangle;
         distribution = EmitDistribution::Vertex;
-        shape_params = float4(size, size, 0.0f, 0.0f);
+        shape_params = float4(size * 0.5f, 0.0f, 0.0f);
     }
 
     void ParticleEmitterComponent::SetShapeRectangleEdge(const float2& size)
     {
         source_shape = SourceShape::Rectangle;
         distribution = EmitDistribution::Edge;
-        shape_params = float4(size, size, 0.0f, 0.0f);
+        shape_params = float4(size * 0.5f, 0.0f, 0.0f);
     }
 
     void ParticleEmitterComponent::SetShapeRectangleSurface(const float2& size)
     {
         source_shape = SourceShape::Rectangle;
         distribution = EmitDistribution::Surface;
-        shape_params = float4(size, size, 0.0f, 0.0f);
+        shape_params = float4(size * 0.5f, 0.0f, 0.0f);
     }
 
     void ParticleEmitterComponent::SetShapeCircleEdge(float radius)
@@ -162,28 +162,28 @@ namespace Alpha::Particle
     {
         source_shape = SourceShape::Box;
         distribution = EmitDistribution::Vertex;
-        shape_params = float4(size, 0.0f);
+        shape_params = float4(size * 0.5f, 0.0f);
     }
 
     void ParticleEmitterComponent::SetShapeBoxEdge(const float3& size)
     {
         source_shape = SourceShape::Box;
         distribution = EmitDistribution::Edge;
-        shape_params = float4(size, 0.0f);
+        shape_params = float4(size * 0.5f, 0.0f);
     }
 
     void ParticleEmitterComponent::SetShapeBoxSurface(const float3& size)
     {
         source_shape = SourceShape::Box;
         distribution = EmitDistribution::Surface;
-        shape_params = float4(size, 0.0f);
+        shape_params = float4(size * 0.5f, 0.0f);
     }
 
     void ParticleEmitterComponent::SetShapeBoxVolume(const float3& size)
     {
         source_shape = SourceShape::Box;
         distribution = EmitDistribution::Volume;
-        shape_params = float4(size, 0.0f);
+        shape_params = float4(size * 0.5f, 0.0f);
     }
 
     void ParticleEmitterComponent::SetShapeRoundedBoxSurface(const float3& size, float corner_radius)
