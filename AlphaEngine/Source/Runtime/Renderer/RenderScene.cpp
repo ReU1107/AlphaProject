@@ -37,6 +37,9 @@ namespace Alpha::Renderer
 		m_light_allocator = CreateTransientAllocator(args.render_core, sizeof(LightData), 4_MB, EBufferPresetType::UploadStructured, L"Light");
 		m_procedural_primitive_allocator = CreateTransientAllocator(args.render_core, sizeof(AxisAlignedBoundingBox), 4_MB, EBufferPresetType::UploadStructured, L"ProceduralPrimitive");
 		m_volume_allocator = CreateTransientAllocator(args.render_core, sizeof(VolumeMaterial), 4_MB, EBufferPresetType::UploadStructured, L"VolumeMaterial");
+		
+		
+		m_matrix_palette_allocator = CreateTransientAllocator(args.render_core, sizeof(Matrix4x4), 12_MB, EBufferPresetType::UploadStructured, L"MatrixPalette");
 
 		return true;
 	}
@@ -63,6 +66,8 @@ namespace Alpha::Renderer
 		m_volume_allocator->Reset(frame_index);
 
 		m_instance_tlas_allocator->Reset(frame_index);
+
+		m_matrix_palette_allocator->Reset(frame_index);
 
 		m_instance_count = 0;
 		m_light_count = 0;
@@ -103,6 +108,7 @@ namespace Alpha::Renderer
 			.vertex_to_instance = m_vert_to_inst_allocator->GetSRVIndex(),
 			.current_position_srv = m_dynamic_vertex_allocator->GetSRVIndex(),
 			.current_position_uav = m_dynamic_vertex_allocator->GetUAVIndex(),
+			.matrix_palette = m_matrix_palette_allocator->GetSRVIndex(),
 			.override_material = m_override_material_allocator->GetSRVIndex(),
 			.light = m_light_allocator->GetSRVIndex(),
 			.volume = m_volume_allocator->GetSRVIndex(),
@@ -143,6 +149,11 @@ namespace Alpha::Renderer
 	TransientBufferAllocator* RenderScene::GetVertToInstanceAllocator()
 	{
 		return m_vert_to_inst_allocator.get();
+	}
+
+	TransientBufferAllocator* RenderScene::GetMatrixPaletteAllocator()
+	{
+		return m_matrix_palette_allocator.get();
 	}
 
 }

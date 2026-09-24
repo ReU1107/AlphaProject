@@ -1,7 +1,7 @@
 ﻿#include "VMDLoader.h"
 #include "VMDParser.h"
 #include "Asset/MotionHandle.h"
-#include "Animation/AnimationResource.h"
+#include "Animation/Module.h"
 
 namespace Alpha
 {

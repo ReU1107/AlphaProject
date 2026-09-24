@@ -1,7 +1,7 @@
 ﻿#include "SkeletalClipInstance.h"
-#include "Snapshot.h"
-#include "Animation/Resource/Clip.h"
-#include "Animation/Resource/Track.h"
+#include "Definitions.h"
+#include "Clip.h"
+#include "Track.h"
 
 namespace Alpha::Animation
 {

@@ -5,6 +5,8 @@
 #include "RenderCore/Module.h"
 #include "Renderer/Module.h"
 
+#include "Animation/Module.h"
+
 #include "Renderer/Pass/VertexComputePass.h"
 
 #include "Spatial/TransformComponent.h"
@@ -16,6 +18,7 @@
 namespace Alpha
 {
 	using namespace Renderer;
+    using namespace Animation;
 
     RenderSceneBuilder::~RenderSceneBuilder() = default;
 
@@ -121,6 +124,19 @@ namespace Alpha
 				UInt64 material_byte_offset = render_scene.GetOverrideMaterialAllocator()->WriteData(gpu_materials.data(), gpu_materials.size());
 
                 instance.override_material_element_offset = material_byte_offset / sizeof(MaterialData);
+            }
+
+            if (auto* anim_com = registry.try_get<AnimationComponent>(entity))
+            {
+                const auto& palette = anim_com->m_pose->GetMatrixPallet();
+
+                if (!palette.empty())
+                {
+                    const UInt64 palette_byte_offset = render_scene.GetMatrixPaletteAllocator()->WriteData(palette.data(), palette.size());
+
+                    instance.matrix_palette_offset = palette_byte_offset / sizeof(Matrix4x4);
+                }
+
             }
 
             const auto& mesh = resource_manager.GetMeshByIndex(mesh_com.mesh_index);

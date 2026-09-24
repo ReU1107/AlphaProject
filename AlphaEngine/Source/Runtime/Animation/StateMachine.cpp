@@ -1,6 +1,6 @@
 ﻿#include "StateMachine.h"
 #include "StateTransition.h"
-#include "Snapshot.h"
+#include "Definitions.h"
 
 #include "Core/Math/MathUtil.h"
 
@@ -32,6 +32,14 @@ namespace Alpha::Animation
 		ptr->SetIndex(m_sub_states.size() - 1);
 
 		return ptr;
+	}
+
+	void StateMachine::OnEnter()
+	{
+	}
+
+	void StateMachine::OnExit()
+	{
 	}
 
 	void StateMachine::OnUpdate(ParameterContext& ctx, float delta_time)

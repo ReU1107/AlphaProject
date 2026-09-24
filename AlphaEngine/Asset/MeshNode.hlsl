@@ -6,8 +6,6 @@ struct TaskData
 };
 
 
-ConstantBuffer<HeapIndices> heap_indices : register(b0);
-
 // 頂点シェーダーからピクセルシェーダーへ渡すデータ
 struct VertexOutput
 {
@@ -38,17 +36,17 @@ void MeshNode(
     // 前段の EntryNode から流れてきたデータを取り出す
     TaskData data = input.Get();
     
-    StructuredBuffer<InstanceData> instance_buffer = ResourceDescriptorHeap[heap_indices.instance];
+    StructuredBuffer<InstanceData> instance_buffer = ResourceDescriptorHeap[render_buffers.instance];
 
-    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[heap_indices.position];
-    ByteAddressBuffer attribute_buffer = ResourceDescriptorHeap[heap_indices.attribute];
+    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[render_buffers.position];
+    ByteAddressBuffer attribute_buffer = ResourceDescriptorHeap[render_buffers.attribute];
     
-    StructuredBuffer<MeshData> mesh_buffer = ResourceDescriptorHeap[heap_indices.mesh];
+    StructuredBuffer<MeshData> mesh_buffer = ResourceDescriptorHeap[render_buffers.mesh];
     
-    StructuredBuffer<Meshlet> meshlet_buffer = ResourceDescriptorHeap[heap_indices.meshlet];
+    StructuredBuffer<Meshlet> meshlet_buffer = ResourceDescriptorHeap[render_buffers.meshlet];
     
-    StructuredBuffer<uint> vertex_indices_buffer = ResourceDescriptorHeap[heap_indices.vertex_indices];
-    StructuredBuffer<uint> triangle_indices_buffer = ResourceDescriptorHeap[heap_indices.triangle_indices];
+    StructuredBuffer<uint> vertex_indices_buffer = ResourceDescriptorHeap[render_buffers.vertex_indices];
+    StructuredBuffer<uint> triangle_indices_buffer = ResourceDescriptorHeap[render_buffers.triangle_indices];
    
     uint instance_id = data.instance_index;
     uint mesh_let_index = thread_index;
@@ -57,13 +55,13 @@ void MeshNode(
     
     MeshData mesh = mesh_buffer[instance.mesh_index];
 
-    Meshlet meshlet = meshlet_buffer[mesh.meshlet_offset + mesh_let_index];
+    Meshlet meshlet = meshlet_buffer[mesh.meshlet_element_offset + mesh_let_index];
     
     SetMeshOutputCounts(meshlet.vertex_count, meshlet.triangle_count);
 
-    uint vertex_index_offset = meshlet.vertex_offset;
+    uint vertex_index_offset = meshlet.vertex_element_offset;
           
-    float4x4 mat = mul(heap_indices.view_proj, instance.world_matrix);
+    float4x4 mat = mul(render_frame.view_proj, instance.world_matrix);
     
     if (mesh_let_index < meshlet.vertex_count)
     {
@@ -71,10 +69,10 @@ void MeshNode(
         uint vertex_index = vertex_indices_buffer[vertex_index_offset + mesh_let_index];
                 
         // 位置は元々の頂点番号で引く
-        float3 position = position_buffer[mesh.vertex_position_offset + vertex_index];
+        float3 position = position_buffer[mesh.vertex_position_element_offset + vertex_index];
 
         // 頂点属性が入っているであろう先頭アドレスからこの頂点index分オフセット
-        uint base_offset = mesh.vertex_attribute_offset + (vertex_index * mesh.vertex_stride);
+        uint base_offset = mesh.vertex_attribute_byte_offset + (vertex_index * mesh.vertex_stride);
 
         uint normal_offset = 0;
         uint bone_offset = normal_offset + ((mesh.attribute_flags & VERTEX_ATTR_NORMALS) ? 12 : 0);
@@ -102,14 +100,14 @@ void MeshNode(
         outputs[mesh_let_index].color = float4(uv, 0.0f, 1.0f);
         outputs[mesh_let_index].texcoord = uv;
         outputs[mesh_let_index].normal = normal;
-        outputs[mesh_let_index].material_table_id = instance.material_table_index;
+        outputs[mesh_let_index].material_table_id = instance.override_material_table_offset;
         outputs[mesh_let_index].material_id = meshlet.material_index;
     }
 
     if (mesh_let_index < meshlet.triangle_count)
     {
         // パックされたUInt32データを1つ取得
-        uint packedTriangle = triangle_indices_buffer[meshlet.triangle_offset + mesh_let_index];
+        uint packedTriangle = triangle_indices_buffer[meshlet.triangle_element_offset + mesh_let_index];
         
         // ビットシフトとマスク演算で、1つのUInt32から3つのローカル頂点IDを切り出す
         uint idx0 = (packedTriangle >> 0) & 0xFFu;

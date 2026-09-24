@@ -1,38 +1,10 @@
 ﻿#pragma once
 #include "Core/Object.h"
 #include "Core/Common.h"
+#include "Definitions.h"
 
 namespace Alpha::Animation
 {
-	enum class EConstraintMode
-	{
-		None,	// 制限なし
-		Hinge,	// ヒンジ制約:1軸制限（膝・肘用)
-		Cone,	// 円錐制約:肩、股関節用
-	};
-
-	struct Constraint 
-	{
-		EConstraintMode mode{ EConstraintMode::None };
-
-		// 制約軸
-		Vector3 rotation_axis{ Vector3::ZAxis };
-
-		float min_angle{ -PI };
-		float max_angle{ PI };
-		float cone_angle{ PI };
-	};
-
-	struct IKLink
-	{
-		uint32_t index{ 0 };
-		uint32_t next_index{ 0 };
-		float length{ 0.0f };
-		Vector3 dir{ Vector3::XAxis };
-
-		Constraint constraint{};
-	};
-
 	class Skeleton;
 
 	class IKChain : public Object

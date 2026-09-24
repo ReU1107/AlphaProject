@@ -31,6 +31,10 @@ namespace Alpha::Animation
 
 		void SetParent(State* state) { m_parent = state; }
 
+		void SetPlayRate(float play_rate) { m_play_rate = play_rate; }
+
+		void SetLooping(bool is_looping) { m_is_looping = is_looping; }
+
 		void SetIndex(uint32_t index) { m_index = index; }
 
 		uint32_t GetIndex() const { return m_index; }

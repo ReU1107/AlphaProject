@@ -1,7 +1,7 @@
 ﻿#include "SkeletonPose.h"
-#include "Animation/Resource/Skeleton.h"
-#include "Animation/Resource/Joint.h"
-#include "Snapshot.h"
+#include "Skeleton.h"
+#include "Joint.h"
+#include "Definitions.h"
 
 #include "Core/Math/MathF.h"
 #include <ranges>

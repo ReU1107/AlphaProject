@@ -5,16 +5,6 @@
 namespace Alpha
 {
 
-
-
-	struct SystemTextureIndices
-	{
-		UInt32 result{};
-		UInt32 visibility{};
-		UInt32 normal{};
-		UInt32 depth{};
-	};
-
 	struct FrameRenderContext
 	{
 		float4x4 view{ float4x4::Identity };

@@ -1,46 +1,30 @@
 ﻿#pragma once
 #include "Core/Common.h"
-#include "Core/Object.h"
-#include "Context/Snapshot.h"
-#include "Context/ParameterContext.h"
+#include "Definitions.h"
 
-namespace Alpha
+namespace Alpha::Animation
 {
-	namespace Animation
-	{
-		class StateMachine;
+	class StateMachine;
+	class SkeletonPose;
 
-	}
-
-	class AnimationComponent : public Object
+	struct AnimationComponent
 	{
-	private:
-		TUnique<Animation::StateMachine> m_root_machine{ nullptr };
-		Animation::Snapshot m_current_pose{};
-		Animation::ParameterContext m_parameter_context{};
+		TUnique<StateMachine> m_state_machine{ nullptr };
+		TUnique<SkeletonPose> m_pose{ nullptr };
+		Snapshot m_current_pose{};
+		ParameterContext m_parameter_context{};
 		bool m_is_paused{ false };
-
 	public:
 		AnimationComponent();
 		~AnimationComponent();
-
 		// 上位層が呼ぶ関数
 		void SetParameter(StringView name, float value);
-		// 状態（時間・遷移）を進める
-		void Update(float dt);     
-		// 現在の状態から値を算出する
-		void Evaluate();
 
 		bool Play();
 		void Pause();
 
-		Animation::StateMachine* GetRootMachine() const { return m_root_machine.get(); }
+		const Snapshot& GetCurrentPose() const { return m_current_pose; }
 
-		const Animation::Snapshot& GetCurrentPose() const { return m_current_pose; }
-
-		void Show();
-
-		void Accept(IVisitor* visitor) override;
 	};
 
 }

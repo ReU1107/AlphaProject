@@ -1,18 +1,10 @@
 ﻿#pragma once
 #include "Core/Common.h"
-#include "Keyframe.h"
+#include "Definitions.h"
 
 namespace Alpha::Animation
 {
-	struct AdjacentKeyframes
-	{
-		Keyframe lhs{};			// 
-		Keyframe rhs{};			// 
-		float s{ 0.0f };		// 2つのキーフレーム間の割合 s : (1 -s)
-		bool is_empty{ false };		// そもそもキーフレームが存在しない
-		bool is_single{ false };	// キーフレームが一つしかないため補間不要(lhsのみ使用してください)
 
-	};
 
 	class Curve
 	{

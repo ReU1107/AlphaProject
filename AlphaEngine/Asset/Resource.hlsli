@@ -78,6 +78,8 @@ struct InstanceData
     uint vertex_element_offset; // 実際に描画に使用される頂点バッファオフセット
     uint override_material_table_offset; // overrideのマテリアルテーブルのインデックス
     
+    uint matrix_palette_offset;
+    
     uint visible;
 };
 
@@ -127,6 +129,8 @@ struct RenderBufferIndices
     uint vertex_to_instance;
     uint current_position_srv;  // 描画時に使用するのはこっち
     uint current_position_uav;  // csから書き込む時用
+    
+    uint matrix_palette;
     
     uint override_material;
     

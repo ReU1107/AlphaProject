@@ -1,5 +1,5 @@
 ﻿#include "SkeletonHandle.h"
-#include "Animation/Resource/Skeleton.h"
+#include "Animation/Skeleton.h"
 
 namespace Alpha
 {

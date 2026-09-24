@@ -46,7 +46,7 @@ using Microsoft::WRL::ComPtr;
 using namespace Alpha;
 using namespace Alpha::Renderer;
 using namespace Alpha::Particle;
-
+using namespace Alpha::Animation;
 
 inline void BuildParticleShapeTestScene(
     Scene& scene,
@@ -146,42 +146,6 @@ inline void BuildParticleShapeTestScene(
         float particle_size;
     };
 
-    // =========================================================================
-    // 既存15パターン + 不足12パターン
-    //
-    // Row 0:
-    //   Box Surface
-    //   Sphere Surface
-    //   Hemisphere Surface
-    //   Cylinder Surface
-    //   Mesh Surface
-    //   Box Vertex
-    //   Box Edge
-    //   Hemisphere Edge
-    //   Cone Edge
-    //
-    // Row 1:
-    //   Box Volume
-    //   Sphere Volume
-    //   Hemisphere Volume
-    //   Cylinder Volume
-    //   Cone Volume
-    //   Cone Surface
-    //   Cylinder Edge
-    //   Circle Edge
-    //   Rectangle Vertex
-    //
-    // Row 2:
-    //   Point
-    //   Circle Surface
-    //   Mesh Sphere Vertex
-    //   Mesh Sphere Vertex (scale variation)
-    //   Mesh Cube Vertex
-    //   Rectangle Edge
-    //   Rectangle Surface
-    //   Line Vertex
-    //   Line Edge
-    // =========================================================================
 
     const Preset presets[] =
     {
@@ -757,10 +721,6 @@ inline void BuildParticleShapeTestScene(
         }
     };
 
-    // =========================================================================
-    // Emitter 共通設定
-    // =========================================================================
-
     auto configure_emitter = [&](
         Emitter& emitter,
         Shape shape,
@@ -990,9 +950,6 @@ inline void BuildParticleShapeTestScene(
         light.SetIntensity(3.0f);
     }
 
-    // =========================================================================
-    // Camera
-    // =========================================================================
 
     {
         SceneObject& object =
@@ -1010,6 +967,55 @@ inline void BuildParticleShapeTestScene(
 
         object.AddComponent<CameraComponent>();
     }
+}
+
+AnimationBlueprint MakeLocomotionBlueprint(
+    TShared<Clip> walk_clip,
+    TShared<Clip> run_clip,
+    TShared<Clip> dash_clip)
+{
+    AnimationBlueprint blueprint;
+    auto& root = blueprint.GetRootMachine();
+    root.name = L"Locomotion";
+    root.play_rate = 1.0f;
+
+    const auto walk_index = root.AddState(L"Walk");
+    const auto run_index = root.AddState(L"Run");
+    const auto dash_index = root.AddState(L"Dash");
+    root.entry_state_index = walk_index;
+
+    auto walk = root.GetState(walk_index);
+    auto run = root.GetState(run_index);
+    auto dash = root.GetState(dash_index);
+    walk->play_rate = 1.0f;
+    run->play_rate = 1.0f;
+    dash->play_rate = 1.0f;
+
+    walk->graph.AddLeafNode(std::move(walk_clip));
+    run->graph.AddLeafNode(std::move(run_clip));
+    dash->graph.AddLeafNode(std::move(dash_clip));
+
+    auto add_speed_transition = [&](UInt32 source, UInt32 destination,
+        ECompareType comparison, float threshold)
+    {
+        Condition condition{};
+        condition.parameter_name = L"Speed";
+        condition.threshold = threshold;
+        condition.compare_type = comparison;
+
+        TransitionDefinition transition;
+        transition.dest_index = destination;
+        transition.duration = 0.2f;
+        transition.condition_type = EConditionType::All;
+        transition.conditions.push_back(condition);
+        root.GetChild(source)->transitions.push_back(std::move(transition));
+    };
+
+    add_speed_transition(walk_index, run_index, ECompareType::Greater, 2.0f);
+    add_speed_transition(run_index, walk_index, ECompareType::Less, 2.0f);
+    add_speed_transition(run_index, dash_index, ECompareType::Greater, 3.0f);
+    add_speed_transition(dash_index, run_index, ECompareType::Less, 3.0f);
+    return blueprint;
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
@@ -1036,6 +1042,23 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     auto model2 = AssetManager::Get().Load<ModelHandle>(L"C:/Users/owner/Desktop/Asset/パチュリーVer2.00/Model/パチュリーVer2.00_Type-C(フル_ポニテC_ミニスカ_ブーツC_パンプス)_サーモン.pmx");
     auto model3 = AssetManager::Get().GetSphere();
     auto model4 = AssetManager::Get().GetCube();
+
+    auto walk = AssetManager::Get().Load<MotionHandle>(L"C:/Users/owner/Desktop/Asset/全親での移動モーション/歩きモーション/01_普通歩き【-33】.vmd");
+    //auto walk = AssetManager::Get().Load(L"C:/Users/owner/Documents/Skinned/Project1/Assets/ハッピーシンセサイザ配布用モーション/GUMI.vmd");
+    auto run = AssetManager::Get().Load<MotionHandle>(L"C:/Users/owner/Desktop/Asset/移動モーション_sm38179018/2_ランニング.vmd");
+    auto dash = AssetManager::Get().Load<MotionHandle>(L"C:/Users/owner/Desktop/Asset/移動モーション_sm38179018/3_ダッシュ.vmd");
+
+    auto skeleton = model1->GetSkeleton();
+
+
+    walk->GetSkeletalClip()->Bind(skeleton);
+    run->GetSkeletalClip()->Bind(skeleton);
+    dash->GetSkeletalClip()->Bind(skeleton);
+
+    auto blueprint = MakeLocomotionBlueprint(walk->GetSkeletalClip(), run->GetSkeletalClip(), dash->GetSkeletalClip());
+
+
+    
 
  //   auto texture1 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/church_bricks_03_4k.blend/textures/church_bricks_03_diff_4k.jpg");
 	//texture1->SetName(L"church_bricks_03_diff_4k");
@@ -1086,12 +1109,23 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         cube_index);
     auto& registry = scene.GetRegistry();
 
+    auto& anim = scene.FindObject(L"18_Akari_Vertex")->AddComponent<AnimationComponent>();
+    anim.m_state_machine = blueprint.Instantiate();
+    anim.m_pose = std::make_unique<SkeletonPose>();
+    anim.m_pose->SetSkeleton(skeleton);
+    anim.m_current_pose.bone_transforms.resize(512);
+
+    anim.Play();
+
     using namespace std::chrono;
 
     // 60FPSの1フレームあたりの時間（約16.66ms）
     const duration<double, std::milli> target_frame_time(1000.0 / 60.0);
 
     CameraSystem cm_sys;
+    AnimationSystem anim_sys;
+
+    static float speed = 2.0f;
 
     while (WindowSystem::Get().ProcessMessages() && !WindowSystem::Get().ShouldClose())
     {
@@ -1100,6 +1134,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         scene.Update(1.0f / 60);
 
         cm_sys.Update(registry);
+
+        anim_sys.Update(registry, 1.0f / 60);
 
         RenderCore::Get().BeginFrame();
         GUISystem::Get().BeginFrame();
@@ -1122,7 +1158,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         ImGui::Begin("Inspector");
         static float pos[3] = { 0.0f, 0.0f, 0.0f };
         ImGui::DragFloat3("Position", pos, 0.1f);
+
+        ImGui::SliderFloat("Speed", &speed, 0.1f, 5.0f);
+        anim.SetParameter(L"Speed", speed);
         ImGui::End();
+
+
+
 
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));

@@ -1,10 +1,10 @@
-﻿#include "Snapshot.h"
+﻿#include "Definitions.h"
 #include "Core/Math/MathF.h"
 
 namespace Alpha::Animation
 {
-	void Snapshot::Blend(const Snapshot& lhs, const Snapshot& rhs, float alpha)
-	{
+    void Snapshot::Blend(const Snapshot& lhs, const Snapshot& rhs, float alpha)
+    {
         // Transform 補間
         for (size_t i = 0; i < lhs.bone_transforms.size(); ++i)
         {
@@ -16,5 +16,5 @@ namespace Alpha::Animation
             bone_transforms[i].scale = VectorLerp(lhs_tf.scale, rhs_tf.scale, alpha);
         }
 
-	}
+    }
 }

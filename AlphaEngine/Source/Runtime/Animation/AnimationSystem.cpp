@@ -1,9 +1,11 @@
 ﻿#include "AnimationSystem.h"
-//#include "Asset/SkeletonHandle.h"
+#include "AnimationComponent.h"
+#include "StateMachine.h"
+#include "SkeletonPose.h"
 
-namespace Alpha
+namespace Alpha::Animation
 {
-	//using namespace Animation;
+	
 
 	bool AnimationSystem::Initialize(const Args& args)
 	{
@@ -31,7 +33,17 @@ namespace Alpha
 
 	void AnimationSystem::Update(entt::registry& registry, float delta_time)
 	{
-		//std::vector<AnimationComponent*> components{};
+
+		auto view = registry.view<AnimationComponent>();
+
+
+		for (auto [entity, animation] : view.each())
+		{
+			animation.m_state_machine->OnUpdate(animation.m_parameter_context, delta_time);
+
+			animation.m_state_machine->OnEvaluate(&animation.m_current_pose);
+			animation.m_pose->ApplyPose(animation.m_current_pose);
+		}
 
 		//for (auto component : components)
 		//{

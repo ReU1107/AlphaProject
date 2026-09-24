@@ -3,14 +3,17 @@
 #include "Core/Container/SlotPalette.h"
 #include <entt/entt.hpp>
 
-namespace Alpha
+namespace Alpha::Animation
 {
 	class SkeletonHandle;
+	class AnimationBlueprint;
 
 	class AnimationSystem
 	{
 	private:
 		//TSlotPalette<Animation::SkeletonResource> m_skeleton_palette{};
+
+
 
 
 	public:

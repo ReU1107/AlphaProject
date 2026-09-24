@@ -5,7 +5,7 @@
 #include "Asset/MaterialTableHandle.h"
 #include "Asset/TextureHandle.h"
 #include "Asset/AssetManager.h"
-#include "Animation/AnimationResource.h"
+#include "Animation/Module.h"
 #include "PMXParser.h"
 
 namespace Alpha
