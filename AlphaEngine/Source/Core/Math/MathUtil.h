@@ -57,6 +57,10 @@ namespace Alpha
 	// 引数の値が2の累乗であるか
 	bool IsPowerOfTwo(const UInt32 value);
 
+	inline float BytesToMB(UInt64 bytes)
+	{
+		return static_cast<float>(bytes) / (1024.0f * 1024.0f);
+	}
 
 	template<typename T, typename U>
 	inline T Max(const T lhs, const T rhs, const U rt, const U rf)

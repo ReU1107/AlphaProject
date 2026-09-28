@@ -29,6 +29,8 @@ namespace Alpha
             return true;
         }
 
+        UInt64 GetTotalSize() const { return m_total_size; }
+
         Allocation Allocate(UInt64 size, UInt64 alignment)
         {
             for (auto it = m_free_blocks.begin(); it != m_free_blocks.end(); ++it)

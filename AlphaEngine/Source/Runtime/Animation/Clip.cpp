@@ -4,7 +4,7 @@
 #include "Curve.h"
 #include "Skeleton.h"
 
-#include "Animation/Context/SkeletalClipInstance.h"
+#include "SkeletalClipInstance.h"
 
 #include <algorithm>
 

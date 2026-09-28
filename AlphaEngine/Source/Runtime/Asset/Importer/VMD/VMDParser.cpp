@@ -1,5 +1,5 @@
 ﻿#include "VMDParser.h"
-#include "Animation/AnimationResource.h"
+#include "Animation/Module.h"
 
 namespace Alpha
 {

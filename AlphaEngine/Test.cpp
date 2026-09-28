@@ -40,982 +40,417 @@
 #include <thread>
 #include <chrono>
 
+#include <limits>
+#include <stdexcept>
+
+#include "ThirdParty/ufbx/ufbx.h"
+
 #pragma comment(lib, "dxguid.lib")
 
 using Microsoft::WRL::ComPtr;
 using namespace Alpha;
 using namespace Alpha::Renderer;
 using namespace Alpha::Particle;
+using namespace Alpha::Animation;
 
 
-inline void BuildParticleShapeTestScene(
-    Scene& scene,
-    UInt32 akari_index,
-    UInt32 patchouli_index,
-    UInt32 sphere_index,
-    UInt32 cube_index)
+TShared<ModelHandle> ConvertModel(ufbx_mesh* mesh)
 {
-    using Emitter = ::Alpha::Particle::ParticleEmitterComponent;
-    using Shape = ::Alpha::Particle::SourceShape;
-    using Distribution = ::Alpha::Particle::EmitDistribution;
-    using Mesh = ::Alpha::Renderer::MeshComponent;
+    if (!mesh || mesh->num_triangles == 0)
+        return nullptr;
 
-    constexpr UInt32 invalid_index = 0xFFFFFFFFu;
+    if (!mesh->vertex_normal.exists)
+        throw std::runtime_error("FBX mesh has no normals.");
 
-    // 形状の分布を確認するときは false。
-    constexpr bool move_particles = false;
-
-    // false でも MeshComponent を付け、RenderScene と頂点更新に参加させる。
-    // true にすると同じ位置に生成元の球・立方体も表示する。
-    constexpr bool show_source_meshes = false;
-
-    // キャラクターは元のマテリアルで表示する。false なら粒子だけで形を確認する。
-    // 非表示でもメッシュのインスタンス登録と頂点更新は行う。
-    constexpr bool show_character_meshes = false;
-
-    constexpr float character_scale = 0.7f;
-    constexpr float character_emission_rate = 300.0f;
-
-    auto& resources = RenderResourceManager::Get();
-    auto& assets = AssetManager::Get();
-
-    // MaterialOverride の入力には CPU 側のテクスチャパレット index を使う。
-    const UInt32 white_texture = resources.RegisterTexture(assets.GetWhiteTexture());
-    const UInt32 normal_texture = resources.RegisterTexture(assets.GetNormalTexture());
-    const UInt32 black_texture = resources.RegisterTexture(assets.GetBlackTexture());
-
-    auto create_solid_mesh = [&](
-        const wchar_t* name,
-        const Vector3& position,
-        const Vector3& scale,
-        const Color3& color)
+    struct Vertex
     {
-        SceneObject& object = scene.CreateObject(name);
-        object.AddComponent<Mesh>().mesh_index = cube_index;
+        float px;
+        float py;
+        float pz;
 
-        auto& transform = object.GetComponent<TransformComponent>();
+        float nx;
+        float ny;
+        float nz;
+
+        float u;
+        float v;
+    };
+
+    auto model = std::make_shared<ModelHandle>();
+
+    TArray<Vertex> vertices;
+    TArray<UInt32> indices;
+    TArray<SubMeshHandle> submeshes;
+
+    TArray<uint32_t> triangle_indices(
+        mesh->max_face_triangles * 3);
+
+    auto material_table =
+        std::make_shared<MaterialTableHandle>();
+
+    auto default_material =
+        AssetManager::Get().GetDefaultMaterial();
+
+    for (const ufbx_mesh_part& part : mesh->material_parts)
+    {
+        if (part.num_triangles == 0)
+            continue;
+
+        if (submeshes.size() >= 64)
+            throw std::runtime_error("Too many material slots.");
+
+        SubMeshHandle submesh{};
+
+        submesh.material_index =
+            static_cast<UInt32>(submeshes.size());
+
+        // 現時点では1頂点 = 1 indexなので
+        // vertices.size()がそのままindex offsetになる。
+        submesh.index_element_offset =
+            static_cast<UInt32>(vertices.size());
+
+        for (uint32_t face_index : part.face_indices)
+        {
+            const ufbx_face face =
+                mesh->faces[face_index];
+
+            if (face.num_indices < 3)
+                continue;
+
+            const uint32_t triangle_count =
+                ufbx_triangulate_face(
+                triangle_indices.data(),
+                triangle_indices.size(),
+                mesh,
+                face);
+
+            for (size_t i = 0; i < size_t(triangle_count) * 3; ++i)
+            {
+                const uint32_t corner_index =
+                    triangle_indices[i];
+
+                const ufbx_vec3 position =
+                    ufbx_get_vertex_vec3(
+                    &mesh->vertex_position,
+                    corner_index);
+
+                const ufbx_vec3 normal =
+                    ufbx_get_vertex_vec3(
+                    &mesh->vertex_normal,
+                    corner_index);
+
+                ufbx_vec2 uv{};
+
+                if (mesh->vertex_uv.exists)
+                {
+                    uv = ufbx_get_vertex_vec2(
+                        &mesh->vertex_uv,
+                        corner_index);
+                }
+
+                vertices.push_back(
+                    {
+                        static_cast<float>(position.x),
+                        static_cast<float>(position.y),
+                        static_cast<float>(position.z),
+
+                        static_cast<float>(normal.x),
+                        static_cast<float>(normal.y),
+                        static_cast<float>(normal.z),
+
+                        static_cast<float>(uv.x),
+                        static_cast<float>(uv.y),
+                    });
+            }
+        }
+
+        submesh.index_count =
+            static_cast<UInt32>(vertices.size()) -
+            submesh.index_element_offset;
+
+        submeshes.push_back(submesh);
+        material_table->AddMaterial(default_material);
+    }
+
+    if (vertices.empty())
+        return nullptr;
+
+    indices.resize(vertices.size());
+
+    ufbx_vertex_stream stream{};
+    stream.data = vertices.data();
+    stream.vertex_count = vertices.size();
+    stream.vertex_size = sizeof(Vertex);
+
+    ufbx_error error{};
+
+    const size_t vertex_count =
+        ufbx_generate_indices(
+        &stream,
+        1,
+        indices.data(),
+        indices.size(),
+        nullptr,
+        &error);
+
+    if (error.type != UFBX_ERROR_NONE)
+    {
+        throw std::runtime_error(
+            "ufbx_generate_indices() failed.");
+    }
+
+    vertices.resize(vertex_count);
+
+    TArray<Vector3> positions;
+    TArray<Vector3> normals;
+    TArray<Vector2> texcoords;
+
+    positions.reserve(vertex_count);
+    normals.reserve(vertex_count);
+    texcoords.reserve(vertex_count);
+
+    for (const Vertex& vertex : vertices)
+    {
+        positions.emplace_back(
+            vertex.px,
+            vertex.py,
+            vertex.pz);
+
+        normals.emplace_back(
+            vertex.nx,
+            vertex.ny,
+            vertex.nz);
+
+        texcoords.emplace_back(
+            vertex.u,
+            vertex.v);
+    }
+
+    model->SetBaseVeretices(
+        std::move(positions),
+        std::move(normals),
+        std::move(texcoords));
+
+    model->SetIndices(std::move(indices));
+    model->SetSubMeshes(std::move(submeshes));
+    model->SetMaterialTable(material_table);
+
+    model->BuildVertexAttributeBuffer();
+
+    return model;
+}
+
+Matrix4x4 ConvertMatrix(const ufbx_matrix& m)
+{
+    // ufbx の行列を、Alpha の行ベクトル方式へ転置して格納。
+    // 平行移動は第4行。
+    return Matrix4x4(
+        static_cast<float>(m.m00),
+        static_cast<float>(m.m10),
+        static_cast<float>(m.m20),
+        0.0f,
+
+        static_cast<float>(m.m01),
+        static_cast<float>(m.m11),
+        static_cast<float>(m.m21),
+        0.0f,
+
+        static_cast<float>(m.m02),
+        static_cast<float>(m.m12),
+        static_cast<float>(m.m22),
+        0.0f,
+
+        static_cast<float>(m.m03),
+        static_cast<float>(m.m13),
+        static_cast<float>(m.m23),
+        1.0f);
+}
+
+void TestLoader(
+    Scene& scene,
+    const char* file_path,
+    const String& asset_prefix)
+{
+    ufbx_load_opts opts{};
+
+    opts.target_axes.right = UFBX_COORDINATE_AXIS_POSITIVE_X;
+    opts.target_axes.up = UFBX_COORDINATE_AXIS_POSITIVE_Y;
+    opts.target_axes.front = UFBX_COORDINATE_AXIS_POSITIVE_Z;
+
+    opts.target_unit_meters = 1.0f;
+
+    opts.generate_missing_normals = true;
+    opts.load_external_files = true;
+    opts.ignore_missing_external_files = true;
+
+    ufbx_error error{};
+
+    // 途中で例外が発生しても解放する。
+    std::unique_ptr<ufbx_scene, decltype(&ufbx_free_scene)> fbx_scene(
+        ufbx_load_file(file_path, &opts, &error),
+        &ufbx_free_scene);
+
+    if (!fbx_scene)
+    {
+        char message[2048]{};
+        ufbx_format_error(message, sizeof(message), &error);
+        throw std::runtime_error(message);
+    }
+
+    TMap<ufbx_mesh*, TShared<ModelHandle>> models;
+    TMap<ufbx_mesh*, UInt32> mesh_indices;
+
+    UInt32 model_number = 0;
+
+    UInt64 total_positions = 0;
+    UInt64 total_indices = 0;
+
+    UInt64 total_fbx_vertices = 0;
+    UInt64 total_generated_vertices = 0;
+
+    for (ufbx_mesh* mesh : fbx_scene->meshes)
+    {
+        auto model = ConvertModel(mesh);
+        if (!model)
+            continue;
+
+        // 同名の FBX mesh があっても識別できる名前にする。
+        const String name =
+            asset_prefix +
+            L"/Mesh/" +
+            std::to_wstring(model_number++);
+
+        model->SetName(name);
+
+        // AssetManager は生成済みモデルを保持するだけ。
+        AssetManager::Get().RegisterAsset(name, model);
+
+        const UInt32 mesh_index =
+            RenderResourceManager::Get().RegisterMesh(model);
+
+        models.emplace(mesh, model);
+        mesh_indices.emplace(mesh, mesh_index);
+
+        ALPHA_LOG_INFO(
+            L"Mesh {}: vertices={}, indices={}",
+            model->GetName().c_str(),
+            model->GetPositions().size(),
+            model->GetIndices().size());
+
+        total_fbx_vertices += mesh->num_vertices;
+        total_generated_vertices += model->GetPositions().size();
+        total_indices += model->GetIndices().size();
+
+
+    }
+    ALPHA_LOG_INFO(
+        L"FBX vertices: {}",
+        total_fbx_vertices);
+
+    ALPHA_LOG_INFO(
+        L"Generated vertices: {}",
+        total_generated_vertices);
+
+    ALPHA_LOG_INFO(
+        L"Generated indices: {}",
+        total_indices);
+    UInt32 object_number = 0;
+
+    // 2. Node ごとにオブジェクトを生成。
+    // 同じ mesh を参照する Node は同じ GPU mesh を使う。
+    for (ufbx_node* node : fbx_scene->nodes)
+    {
+        if (!node->mesh)
+            continue;
+
+        const auto found = mesh_indices.find(node->mesh);
+        if (found == mesh_indices.end())
+            continue;
+
+        const String name =
+            asset_prefix +
+            L"/Object/" +
+            std::to_wstring(object_number++);
+
+        SceneObject& object = scene.CreateObject(name);
+
+        auto& transform =
+            object.GetComponent<TransformComponent>();
+
+        Vector3 scale = Vector3::One;
+        Quaternion rotation = Quaternion::Identity;
+        Vector3 position = Vector3::Zero;
+        MatrixDecompose(ConvertMatrix(node->geometry_to_world), &scale, &rotation, &position);
+
         transform.SetLocalPosition(position);
+        transform.SetLocalRotation(rotation);
         transform.SetLocalScale(scale);
 
-        auto& material = object.AddComponent<MaterialOverrideComponent>();
-        material.materials = resources.GetDefaultMaterials(cube_index);
-
-        for (UInt32 i = 0; i < static_cast<UInt32>(material.materials.size()); ++i)
-        {
-            auto& data = material.materials[i];
-
-            data.base_color_tex_idx = white_texture;
-            data.normal_tex_idx = normal_texture;
-            data.metallic_roughness_tex_idx = white_texture;
-            data.emissive_tex_idx = black_texture;
-
-            material.SetBaseColor(i, color);
-            material.SetRoughness(i, 0.9f);
-            material.SetMetallic(i, 0.0f);
-        }
-    };
-
-    create_solid_mesh(
-        L"ShapeTest_Ground",
-        Vector3(0.0f, -0.35f, 1.0f),
-        Vector3(72.0f, 0.6f, 14.0f),
-        Color3(0.055f, 0.065f, 0.085f));
-
-    create_solid_mesh(
-        L"ShapeTest_Backdrop",
-        Vector3(0.0f, 8.5f, 5.0f),
-        Vector3(71.0f, 19.0f, 0.3f),
-        Color3(0.012f, 0.018f, 0.028f));
-
-    struct Preset
-    {
-        const wchar_t* emitter_name;
-        const wchar_t* pedestal_name;
-
-        Shape shape;
-        Distribution distribution;
-
-        UInt32 column;
-        UInt32 row;
-
-        UInt32 source_mesh;
-
-        Vector3 scale;
-
-        float emission_rate;
-        float particle_size;
-    };
-
-    // =========================================================================
-    // 既存15パターン + 不足12パターン
-    //
-    // Row 0:
-    //   Box Surface
-    //   Sphere Surface
-    //   Hemisphere Surface
-    //   Cylinder Surface
-    //   Mesh Surface
-    //   Box Vertex
-    //   Box Edge
-    //   Hemisphere Edge
-    //   Cone Edge
-    //
-    // Row 1:
-    //   Box Volume
-    //   Sphere Volume
-    //   Hemisphere Volume
-    //   Cylinder Volume
-    //   Cone Volume
-    //   Cone Surface
-    //   Cylinder Edge
-    //   Circle Edge
-    //   Rectangle Vertex
-    //
-    // Row 2:
-    //   Point
-    //   Circle Surface
-    //   Mesh Sphere Vertex
-    //   Mesh Sphere Vertex (scale variation)
-    //   Mesh Cube Vertex
-    //   Rectangle Edge
-    //   Rectangle Surface
-    //   Line Vertex
-    //   Line Edge
-    // =========================================================================
-
-    const Preset presets[] =
-    {
-        // =====================================================================
-        // Row 0
-        // =====================================================================
-
-        {
-            L"01_Box_Surface",
-            L"01_Pedestal",
-            Shape::Box,
-            Distribution::Surface,
-            0, 0,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            300.0f,
-            0.045f
-        },
-        {
-            L"02_Sphere_Surface",
-            L"02_Pedestal",
-            Shape::Sphere,
-            Distribution::Surface,
-            1, 0,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            300.0f,
-            0.045f
-        },
-        {
-            L"03_Hemisphere_Surface",
-            L"03_Pedestal",
-            Shape::Hemisphere,
-            Distribution::Surface,
-            2, 0,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            300.0f,
-            0.045f
-        },
-        {
-            L"04_Cylinder_Surface",
-            L"04_Pedestal",
-            Shape::Cylinder,
-            Distribution::Surface,
-            3, 0,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            300.0f,
-            0.045f
-        },
-        {
-            L"05_MeshSphere_Surface",
-            L"05_Pedestal",
-            Shape::Mesh,
-            Distribution::Surface,
-            4, 0,
-            sphere_index,
-            Vector3(1.4f, 1.4f, 1.4f),
-            300.0f,
-            0.045f
-        },
-
-        // 追加
-        {
-            L"20_Box_Vertex",
-            L"20_Pedestal",
-            Shape::Box,
-            Distribution::Vertex,
-            5, 0,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            30.0f,
-            0.075f
-        },
-        {
-            L"21_Box_Edge",
-            L"21_Pedestal",
-            Shape::Box,
-            Distribution::Edge,
-            6, 0,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            200.0f,
-            0.050f
-        },
-        {
-            L"22_Hemisphere_Edge",
-            L"22_Pedestal",
-            Shape::Hemisphere,
-            Distribution::Edge,
-            7, 0,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            200.0f,
-            0.050f
-        },
-        {
-            L"23_Cone_Edge",
-            L"23_Pedestal",
-            Shape::Cone,
-            Distribution::Edge,
-            8, 0,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            200.0f,
-            0.050f
-        },
-
-        // =====================================================================
-        // Row 1
-        // =====================================================================
-
-        {
-            L"06_Box_Volume",
-            L"06_Pedestal",
-            Shape::Box,
-            Distribution::Volume,
-            0, 1,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            300.0f,
-            0.045f
-        },
-        {
-            L"07_Sphere_Volume",
-            L"07_Pedestal",
-            Shape::Sphere,
-            Distribution::Volume,
-            1, 1,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            300.0f,
-            0.045f
-        },
-        {
-            L"08_Hemisphere_Volume",
-            L"08_Pedestal",
-            Shape::Hemisphere,
-            Distribution::Volume,
-            2, 1,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            300.0f,
-            0.045f
-        },
-        {
-            L"09_Cylinder_Volume",
-            L"09_Pedestal",
-            Shape::Cylinder,
-            Distribution::Volume,
-            3, 1,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            300.0f,
-            0.045f
-        },
-        {
-            L"10_Cone_Volume",
-            L"10_Pedestal",
-            Shape::Cone,
-            Distribution::Volume,
-            4, 1,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            300.0f,
-            0.045f
-        },
-
-        // 追加
-        {
-            L"24_Cone_Surface",
-            L"24_Pedestal",
-            Shape::Cone,
-            Distribution::Surface,
-            5, 1,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            300.0f,
-            0.045f
-        },
-        {
-            L"25_Cylinder_Edge",
-            L"25_Pedestal",
-            Shape::Cylinder,
-            Distribution::Edge,
-            6, 1,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            200.0f,
-            0.050f
-        },
-        {
-            L"26_Circle_Edge",
-            L"26_Pedestal",
-            Shape::Circle,
-            Distribution::Edge,
-            7, 1,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            200.0f,
-            0.050f
-        },
-        {
-            L"27_Rectangle_Vertex",
-            L"27_Pedestal",
-            Shape::Rectangle,
-            Distribution::Vertex,
-            8, 1,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            30.0f,
-            0.075f
-        },
-
-        // =====================================================================
-        // Row 2
-        // =====================================================================
-
-        {
-            L"11_Point_Center",
-            L"11_Pedestal",
-            Shape::Point,
-            Distribution::Center,
-            0, 2,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            8.0f,
-            0.10f
-        },
-        {
-            L"12_Circle_Surface",
-            L"12_Pedestal",
-            Shape::Circle,
-            Distribution::Surface,
-            1, 2,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            200.0f,
-            0.045f
-        },
-        {
-            L"13_MeshSphereA_Vertex",
-            L"13_Pedestal",
-            Shape::Mesh,
-            Distribution::Vertex,
-            2, 2,
-            sphere_index,
-            Vector3(1.4f, 1.4f, 1.4f),
-            300.0f,
-            0.055f
-        },
-        {
-            L"14_MeshSphereB_Vertex",
-            L"14_Pedestal",
-            Shape::Mesh,
-            Distribution::Vertex,
-            3, 2,
-            sphere_index,
-            Vector3(0.9f, 1.7f, 1.2f),
-            300.0f,
-            0.055f
-        },
-        {
-            L"15_MeshCube_Vertex",
-            L"15_Pedestal",
-            Shape::Mesh,
-            Distribution::Vertex,
-            4, 2,
-            cube_index,
-            Vector3(1.6f, 1.6f, 1.6f),
-            40.0f,
-            0.085f
-        },
-
-        // 追加
-        {
-            L"28_Rectangle_Edge",
-            L"28_Pedestal",
-            Shape::Rectangle,
-            Distribution::Edge,
-            5, 2,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            200.0f,
-            0.050f
-        },
-        {
-            L"29_Rectangle_Surface",
-            L"29_Pedestal",
-            Shape::Rectangle,
-            Distribution::Surface,
-            6, 2,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            250.0f,
-            0.045f
-        },
-        {
-            L"30_Line_Vertex",
-            L"30_Pedestal",
-            Shape::Line,
-            Distribution::Vertex,
-            7, 2,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            20.0f,
-            0.075f
-        },
-        {
-            L"31_Line_Edge",
-            L"31_Pedestal",
-            Shape::Line,
-            Distribution::Edge,
-            8, 2,
-            invalid_index,
-            Vector3(1.0f, 1.0f, 1.0f),
-            150.0f,
-            0.050f
-        },
-    };
-
-    const float4 row_colors[] =
-    {
-        float4(1.0f, 0.48f, 0.08f, 1.0f),
-        float4(0.08f, 0.65f, 1.0f, 1.0f),
-        float4(0.30f, 1.0f, 0.45f, 1.0f),
-    };
-
-    const Color3 pedestal_colors[] =
-    {
-        Color3(0.18f, 0.065f, 0.015f),
-        Color3(0.015f, 0.075f, 0.18f),
-        Color3(0.025f, 0.14f, 0.045f),
-    };
-
-    // =========================================================================
-    // Shape
-    //
-    // 以前の
-    //
-    //   source_shape = ...
-    //   distribution = ...
-    //
-    // ではなく、Mesh 以外は SetShapeXXX() を通す。
-    // =========================================================================
-
-    auto configure_shape = [&](
-        Emitter& emitter,
-        Shape shape,
-        Distribution distribution)
-    {
-        switch (shape)
-        {
-        case Shape::Point:
-        {
-            emitter.SetShapePoint();
-            break;
-        }
-
-        case Shape::Box:
-        {
-            // 以前の box_half_size = (1.2, 1.0, 0.9) 相当。
-            // SetShapeBoxXXX() は全幅 size を受け取る。
-            const float3 size(2.4f, 2.0f, 1.8f);
-
-            switch (distribution)
-            {
-            case Distribution::Vertex:
-                emitter.SetShapeBoxVertex(size);
-                break;
-
-            case Distribution::Edge:
-                emitter.SetShapeBoxEdge(size);
-                break;
-
-            case Distribution::Surface:
-                emitter.SetShapeBoxSurface(size);
-                break;
-
-            case Distribution::Volume:
-                emitter.SetShapeBoxVolume(size);
-                break;
-
-            default:
-                break;
-            }
-
-            break;
-        }
-
-        case Shape::Sphere:
-        {
-            constexpr float radius = 1.25f;
-
-            switch (distribution)
-            {
-            case Distribution::Surface:
-                emitter.SetShapeSphereSurface(radius);
-                break;
-
-            case Distribution::Volume:
-                emitter.SetShapeSphereVolume(radius);
-                break;
-
-            default:
-                break;
-            }
-
-            break;
-        }
-
-        case Shape::Hemisphere:
-        {
-            constexpr float radius = 1.25f;
-
-            switch (distribution)
-            {
-            case Distribution::Edge:
-                //emitter.SetShapeHemisphereEdge(radius);
-                break;
-
-            case Distribution::Surface:
-                emitter.SetShapeHemisphereSurface(radius);
-                break;
-
-            case Distribution::Volume:
-                emitter.SetShapeHemisphereVolume(radius);
-                break;
-
-            default:
-                break;
-            }
-
-            break;
-        }
-
-        case Shape::Cone:
-        {
-            constexpr float radius = 1.25f;
-            constexpr float height = 2.5f;
-
-            // radius=1.25 / height=2.5 と同じ形になる全開き角。
-            constexpr float angle_degrees = 53.130102f;
-
-            switch (distribution)
-            {
-            case Distribution::Edge:
-                //emitter.SetShapeConeEdge(radius, height);
-                break;
-
-            case Distribution::Surface:
-                emitter.SetShapeConeSurface(radius, height);
-                break;
-
-            case Distribution::Volume:
-                emitter.SetShapeConeVolume(radius, height);
-                break;
-
-            default:
-                break;
-            }
-
-            break;
-        }
-
-        case Shape::Cylinder:
-        {
-            constexpr float radius = 1.25f;
-            constexpr float height = 2.5f;
-
-            switch (distribution)
-            {
-            case Distribution::Edge:
-                emitter.SetShapeCylinderEdge(radius, height);
-                break;
-
-            case Distribution::Surface:
-                emitter.SetShapeCylinderSurface(radius, height);
-                break;
-
-            case Distribution::Volume:
-                emitter.SetShapeCylinderVolume(radius, height);
-                break;
-
-            default:
-                break;
-            }
-
-            break;
-        }
-
-        case Shape::Circle:
-        {
-            constexpr float radius = 1.25f;
-
-            switch (distribution)
-            {
-            case Distribution::Edge:
-                emitter.SetShapeCircleEdge(radius);
-                break;
-
-            case Distribution::Surface:
-                emitter.SetShapeCircleSurface(radius);
-                break;
-
-            default:
-                break;
-            }
-
-            break;
-        }
-
-        case Shape::Rectangle:
-        {
-            // 以前の rectangle_half_size = (1.4, 0.8) 相当。
-            // setter は全幅 size。
-            const float2 size(2.8f, 1.6f);
-
-            switch (distribution)
-            {
-            case Distribution::Vertex:
-                emitter.SetShapeRectangleVertex(size);
-                break;
-
-            case Distribution::Edge:
-                emitter.SetShapeRectangleEdge(size);
-                break;
-
-            case Distribution::Surface:
-                emitter.SetShapeRectangleSurface(size);
-                break;
-
-            default:
-                break;
-            }
-
-            break;
-        }
-
-        case Shape::Line:
-        {
-            constexpr float length = 2.8f;
-
-            switch (distribution)
-            {
-            case Distribution::Vertex:
-                emitter.SetShapeLineVertex(length);
-                break;
-
-            case Distribution::Edge:
-                emitter.SetShapeLineEdge(length);
-                break;
-
-            default:
-                break;
-            }
-
-            break;
-        }
-
-        case Shape::Mesh:
-        {
-            // Mesh には現在 SetShapeMeshXXX() が無いので、
-            // ここだけ従来通り直接設定。
-            emitter.source_shape = Shape::Mesh;
-            emitter.distribution = distribution;
-            break;
-        }
-
-        default:
-            break;
-        }
-    };
-
-    // =========================================================================
-    // Emitter 共通設定
-    // =========================================================================
-
-    auto configure_emitter = [&](
-        Emitter& emitter,
-        Shape shape,
-        Distribution distribution,
-        float rate,
-        float size,
-        const float4& color,
-        UInt32 seed)
-    {
-        emitter.max_particle_count = 1000;
-
-        emitter.emission_rate = rate;
-        emitter.lifetime = 2.0f;
-        emitter.duration = 3600.0f;
-
-        emitter.initial_velocity = move_particles
-            ? float3(0.0f, 0.4f, 0.0f)
-            : float3(0.0f, 0.0f, 0.0f);
-
-        emitter.velocity_random = move_particles
-            ? float3(0.12f, 0.12f, 0.12f)
-            : float3(0.0f, 0.0f, 0.0f);
-
-        emitter.start_color = color;
-        emitter.end_color = color;
-
-        emitter.start_size = size;
-        emitter.end_size = size;
-
-        emitter.random_seed = seed;
-        emitter.spawn_accumulator = 0.0f;
-
-        // Shape 設定は setter 経由。
-        configure_shape(
-            emitter,
-            shape,
-            distribution);
-
-        emitter.Start();
-    };
-
-    // =========================================================================
-    // Shape Emitters
-    // =========================================================================
-
-    UInt32 preset_index = 0;
-
-    for (const auto& preset : presets)
-    {
-        // 5列 -> 9列へ拡張。
-        // -24, -18, -12, -6, 0, 6, 12, 18, 24
-        const float x =
-            -24.0f +
-            6.0f * static_cast<float>(preset.column);
-
-        const float y =
-            14.4f -
-            5.8f * static_cast<float>(preset.row);
-
-        const Vector3 position(x, y, 0.0f);
-
-        create_solid_mesh(
-            preset.pedestal_name,
-            Vector3(x, y - 2.3f, 0.0f),
-            Vector3(3.6f, 0.14f, 3.6f),
-            pedestal_colors[preset.row]);
-
-        SceneObject& object =
-            scene.CreateObject(preset.emitter_name);
-
-        auto& transform =
-            object.GetComponent<TransformComponent>();
-
-        transform.SetLocalPosition(position);
-        transform.SetLocalScale(preset.scale);
-
-        // =====================================================================
-        // Mesh
-        //
-        // sphere_index / cube_index は引数でもらった値を
-        // source_mesh -> MeshComponent::mesh_index にそのまま渡す。
-        // =====================================================================
-
-        if (preset.shape == Shape::Mesh)
-        {
-            auto& mesh = object.AddComponent<Mesh>();
-
-            mesh.mesh_index = preset.source_mesh;
-            mesh.visible = show_source_meshes;
-        }
-
-        auto& emitter = object.AddComponent<Emitter>();
-
-        configure_emitter(
-            emitter,
-            preset.shape,
-            preset.distribution,
-            preset.emission_rate,
-            preset.particle_size,
-            row_colors[preset.row],
-            1001u + preset_index * 97u);
-
-        ++preset_index;
+        auto& mesh_component =
+            object.AddComponent<MeshComponent>();
+
+        mesh_component.mesh_index = found->second;
+        mesh_component.enabled = true;
+        mesh_component.visible = true;
     }
 
-    // =========================================================================
-    // Character Mesh Emitters
-    // =========================================================================
+    // ufbx のポインタを Scene や ModelHandle に残していないので、
+    // この関数の終了時に fbx_scene を解放できる。
+}
 
-    struct CharacterPreset
+
+AnimationBlueprint MakeLocomotionBlueprint(
+    TShared<Clip> walk_clip,
+    TShared<Clip> run_clip,
+    TShared<Clip> dash_clip)
+{
+    AnimationBlueprint blueprint;
+    auto& root = blueprint.GetRootMachine();
+    root.name = L"Locomotion";
+    root.play_rate = 1.0f;
+
+    const auto walk_index = root.AddState(L"Walk");
+    const auto run_index = root.AddState(L"Run");
+    const auto dash_index = root.AddState(L"Dash");
+    root.entry_state_index = walk_index;
+
+    auto walk = root.GetState(walk_index);
+    auto run = root.GetState(run_index);
+    auto dash = root.GetState(dash_index);
+    walk->play_rate = 1.0f;
+    run->play_rate = 1.0f;
+    dash->play_rate = 1.0f;
+
+    walk->graph.AddLeafNode(std::move(walk_clip));
+    run->graph.AddLeafNode(std::move(run_clip));
+    dash->graph.AddLeafNode(std::move(dash_clip));
+
+    auto add_speed_transition = [&](UInt32 source, UInt32 destination,
+        ECompareType comparison, float threshold)
     {
-        const wchar_t* emitter_name;
-        const wchar_t* pedestal_name;
+        Condition condition{};
+        condition.parameter_name = L"Speed";
+        condition.threshold = threshold;
+        condition.compare_type = comparison;
 
-        UInt32 mesh_index;
-
-        float x;
-
-        Distribution distribution;
-
-        float4 particle_color;
-        Color3 pedestal_color;
-
-        UInt32 random_seed;
+        TransitionDefinition transition;
+        transition.dest_index = destination;
+        transition.duration = 0.2f;
+        transition.condition_type = EConditionType::All;
+        transition.conditions.push_back(condition);
+        root.GetChild(source)->transitions.push_back(std::move(transition));
     };
 
-    const CharacterPreset characters[] =
-    {
-        {
-            L"18_Akari_Vertex",
-            L"18_Akari_Pedestal",
-
-            // 引数の値をそのまま使う。
-            akari_index,
-
-            -32.0f,
-
-            Distribution::Vertex,
-
-            float4(1.0f, 0.30f, 0.06f, 1.0f),
-            Color3(0.18f, 0.05f, 0.015f),
-
-            8101u,
-        },
-
-        {
-            L"19_Patchouli_Vertex",
-            L"19_Patchouli_Pedestal",
-
-            // 引数の値をそのまま使う。
-            patchouli_index,
-
-            32.0f,
-
-            Distribution::Vertex,
-
-            float4(0.75f, 0.25f, 1.0f, 1.0f),
-            Color3(0.10f, 0.025f, 0.18f),
-
-            8201u,
-        },
-    };
-
-    for (const auto& preset : characters)
-    {
-        create_solid_mesh(
-            preset.pedestal_name,
-            Vector3(preset.x, 0.25f, 0.0f),
-            Vector3(8.0f, 0.5f, 8.0f),
-            preset.pedestal_color);
-
-        SceneObject& object =
-            scene.CreateObject(preset.emitter_name);
-
-        auto& transform =
-            object.GetComponent<TransformComponent>();
-
-        transform.SetLocalPosition(
-            Vector3(preset.x, 0.5f, 0.0f));
-
-        transform.SetLocalScale(
-            Vector3(
-            character_scale,
-            character_scale,
-            character_scale));
-
-        auto& mesh = object.AddComponent<Mesh>();
-
-        // akari_index / patchouli_index をそのまま渡す。
-        mesh.mesh_index = preset.mesh_index;
-        mesh.visible = show_character_meshes;
-
-        // MaterialOverrideComponent を付けず、
-        // 登録済み PMX のマテリアルを使用する。
-        auto& emitter = object.AddComponent<Emitter>();
-
-        configure_emitter(
-            emitter,
-            Shape::Mesh,
-            preset.distribution,
-            character_emission_rate,
-            0.065f,
-            preset.particle_color,
-            preset.random_seed);
-    }
-
-    // =========================================================================
-    // Light
-    // =========================================================================
-
-    {
-        SceneObject& object =
-            scene.CreateObject(L"ShapeTest_Light");
-
-        auto& light =
-            object.AddComponent<LightComponent>();
-
-        light.type = 2;
-
-        light.direction =
-            VectorNormalize(
-            Vector3(-0.3f, -1.0f, 0.4f));
-
-        light.SetColor(
-            float3(0.95f, 0.97f, 1.0f));
-
-        light.SetIntensity(3.0f);
-    }
-
-    // =========================================================================
-    // Camera
-    // =========================================================================
-
-    {
-        SceneObject& object =
-            scene.CreateObject(L"MainCamera");
-
-        auto& transform =
-            object.GetComponent<TransformComponent>();
-
-        transform.SetLocalPosition(
-            Vector3(0.0f, 8.8f, -54.0f));
-
-        // 方向を渡す LookAt。
-        transform.LookAt(
-            Vector3(0.0f, -0.023f, 1.0f));
-
-        object.AddComponent<CameraComponent>();
-    }
+    add_speed_transition(walk_index, run_index, ECompareType::Greater, 2.0f);
+    add_speed_transition(run_index, walk_index, ECompareType::Less, 2.0f);
+    add_speed_transition(run_index, dash_index, ECompareType::Greater, 3.0f);
+    add_speed_transition(dash_index, run_index, ECompareType::Less, 3.0f);
+    return blueprint;
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 //int main()
 {
-
     WindowSystem::Args win_args =
     {
         .title = L"AlphaEngine",
@@ -1037,14 +472,31 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     auto model3 = AssetManager::Get().GetSphere();
     auto model4 = AssetManager::Get().GetCube();
 
- //   auto texture1 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/church_bricks_03_4k.blend/textures/church_bricks_03_diff_4k.jpg");
-	//texture1->SetName(L"church_bricks_03_diff_4k");
- //   auto texture2 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/concrete_floor_4k.blend/textures/concrete_floor_diff_4k.jpg");
-	//texture2->SetName(L"concrete_floor_diff_4k");
- //   auto texture3 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/metal_plate_02_4k.blend/textures/metal_plate_02_diff_4k.jpg");
- //   texture3->SetName(L"metal_plate_02_4k");
- //   auto texture4 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/rocks_ground_06_4k.blend/textures/rocks_ground_06_diff_4k.jpg");
- //   texture4->SetName(L"rocks_ground_06_4k");
+    auto walk = AssetManager::Get().Load<MotionHandle>(L"C:/Users/owner/Desktop/Asset/全親での移動モーション/歩きモーション/01_普通歩き【-33】.vmd");
+    //auto walk = AssetManager::Get().Load(L"C:/Users/owner/Documents/Skinned/Project1/Assets/ハッピーシンセサイザ配布用モーション/GUMI.vmd");
+    auto run = AssetManager::Get().Load<MotionHandle>(L"C:/Users/owner/Desktop/Asset/移動モーション_sm38179018/2_ランニング.vmd");
+    auto dash = AssetManager::Get().Load<MotionHandle>(L"C:/Users/owner/Desktop/Asset/移動モーション_sm38179018/3_ダッシュ.vmd");
+
+    auto skeleton = model1->GetSkeleton();
+
+
+    walk->GetSkeletalClip()->Bind(skeleton);
+    run->GetSkeletalClip()->Bind(skeleton);
+    dash->GetSkeletalClip()->Bind(skeleton);
+
+    auto blueprint = MakeLocomotionBlueprint(walk->GetSkeletalClip(), run->GetSkeletalClip(), dash->GetSkeletalClip());
+
+
+
+
+    //   auto texture1 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/church_bricks_03_4k.blend/textures/church_bricks_03_diff_4k.jpg");
+       //texture1->SetName(L"church_bricks_03_diff_4k");
+    //   auto texture2 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/concrete_floor_4k.blend/textures/concrete_floor_diff_4k.jpg");
+       //texture2->SetName(L"concrete_floor_diff_4k");
+    //   auto texture3 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/metal_plate_02_4k.blend/textures/metal_plate_02_diff_4k.jpg");
+    //   texture3->SetName(L"metal_plate_02_4k");
+    //   auto texture4 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/rocks_ground_06_4k.blend/textures/rocks_ground_06_diff_4k.jpg");
+    //   texture4->SetName(L"rocks_ground_06_4k");
 
     RenderCore::Args render_core_args = {};
     render_core_args.hWnd = (HWND)WindowSystem::Get().GetNativeHandle();
@@ -1071,20 +523,55 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     RenderSystem::Args rs_args = {
         .render_core = RenderCore::GetPtr(),
     };
-	RenderSystem render_system;
-	render_system.Initialize(rs_args);
+    RenderSystem render_system;
+    render_system.Initialize(rs_args);
 
 
     Scene scene;
     scene.Initialize();
 
-    BuildParticleShapeTestScene(
-        scene,
-        akari_index,
-        patchouli_index,
-        sphere_index,
-        cube_index);
     auto& registry = scene.GetRegistry();
+
+    SceneObject& object = scene.CreateObject(L"akari");
+
+    auto& transform = object.GetComponent<TransformComponent>();
+
+    transform.SetLocalPosition( Vector3(0.0f, 0.5f, 0.0f));
+
+    auto& mesh = object.AddComponent<MeshComponent>();
+
+    mesh.mesh_index = akari_index;
+    mesh.visible = true;
+
+    auto& anim = object.AddComponent<AnimationComponent>();
+    anim.m_state_machine = blueprint.Instantiate();
+    anim.m_pose = std::make_unique<SkeletonPose>();
+    anim.m_pose->SetSkeleton(skeleton);
+    anim.m_current_pose.bone_transforms.resize(512);
+
+    anim.Play();
+
+    {
+        SceneObject& object =  scene.CreateObject(L"MainCamera");
+
+        auto& transform = object.GetComponent<TransformComponent>();
+
+        transform.SetLocalPosition( Vector3(0.0f, 8.8f, -54.0f));
+
+        transform.LookAt(Vector3(0.0f, -0.023f, 1.0f));
+
+        object.AddComponent<CameraComponent>();
+    }
+
+    TestLoader(
+        scene,
+        "C:/Users/owner/Desktop/Asset/Bistro_v5_2/BistroExterior.fbx",
+        L"BistroExterior");
+
+    //TestLoader(
+    //    scene,
+    //    "C:/Users/owner/Desktop/Asset/Bistro_v5_2/BistroInterior.fbx",
+    //    L"BistroInterior");
 
     using namespace std::chrono;
 
@@ -1092,6 +579,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     const duration<double, std::milli> target_frame_time(1000.0 / 60.0);
 
     CameraSystem cm_sys;
+    AnimationSystem anim_sys;
+
+    static float speed = 2.0f;
 
     while (WindowSystem::Get().ProcessMessages() && !WindowSystem::Get().ShouldClose())
     {
@@ -1100,6 +590,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         scene.Update(1.0f / 60);
 
         cm_sys.Update(registry);
+
+        anim_sys.Update(registry, 1.0f / 60);
 
         RenderCore::Get().BeginFrame();
         GUISystem::Get().BeginFrame();
@@ -1122,7 +614,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         ImGui::Begin("Inspector");
         static float pos[3] = { 0.0f, 0.0f, 0.0f };
         ImGui::DragFloat3("Position", pos, 0.1f);
+
+        ImGui::SliderFloat("Speed", &speed, 0.1f, 5.0f);
+        anim.SetParameter(L"Speed", speed);
         ImGui::End();
+
+
+
 
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));

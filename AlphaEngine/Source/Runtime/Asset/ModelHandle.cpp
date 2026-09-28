@@ -1,5 +1,5 @@
 ﻿#include "ModelHandle.h"
-#include "Animation/Resource/Skeleton.h"
+#include "Animation/Skeleton.h"
 
 #include <meshoptimizer/meshoptimizer.h>
 

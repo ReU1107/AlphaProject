@@ -81,4 +81,14 @@ namespace Alpha
 	};
 
 	EnumClassFlags(ERenderTargets);
+
+	enum class ETextureAlphaMode
+	{
+		Unknown,
+		Straight,
+		Premultiplied,
+		Opaque,
+		Custom
+	};
+
 }

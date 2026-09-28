@@ -1,6 +1,6 @@
 ﻿#include "Node.h"
-#include "Snapshot.h"
-#include "Animation/Resource/Clip.h"
+#include "Definitions.h"
+#include "Clip.h"
 #include "ClipInstance.h"
 
 #include "Core/Math/MathUtil.h"
@@ -36,6 +36,10 @@ namespace Alpha::Animation
 	void BlendNode::SetAlpha(float alpha)
 	{
 		m_alpha = Clamp(alpha, 0.0f, 1.0f);
+	}
+
+	void BlendNode::SetInputs(Node* lhs, Node* rhs)
+	{
 	}
 
 	void BlendNode::Update(float delta_time)

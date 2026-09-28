@@ -22,6 +22,11 @@ namespace Alpha::Animation
 		State* MakeState();
 		StateMachine* MakeStateMachine();
 
+		void SetEntryStateIndex(uint32_t index) { m_entry_state_index = index; }
+
+		void OnEnter() override;
+		void OnExit() override;
+
 		void OnUpdate(ParameterContext& ctx, float delta_time) override;
 
 		void OnEvaluate(Snapshot* out_pose) override;

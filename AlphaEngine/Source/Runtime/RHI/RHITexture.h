@@ -17,7 +17,7 @@ namespace Alpha
 
 		virtual bool Initialize(const RHITextureDesc& desc) = 0;
 
-		virtual UInt32 GetSubresourceNum() = 0;
+		virtual UInt32 GetSubresourceCount() = 0;
 
 		virtual void Upload(void* map_ptr, const void* data) = 0;
 

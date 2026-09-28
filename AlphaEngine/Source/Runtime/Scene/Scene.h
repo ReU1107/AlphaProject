@@ -23,6 +23,8 @@ namespace Alpha
 
 		SceneObject& CreateObject(const String& name);
 
+		SceneObject* FindObject(StringView name);
+
 		bool Reparent(SceneObject* object, SceneObject* new_parent);
 
 		void DetachFromHierarchy(SceneObject* object);

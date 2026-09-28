@@ -13,7 +13,7 @@
 #include "SkeletonHandle.h"
 #include "ShaderHandle.h"
 
-#include "Animation/Resource/Skeleton.h"
+#include "Animation/Skeleton.h"
 
 #include "Core/Math/GeometryUtil.h"
 

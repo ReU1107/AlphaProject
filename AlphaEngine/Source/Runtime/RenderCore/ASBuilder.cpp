@@ -16,7 +16,7 @@ namespace Alpha
 
 	void ASBuilder::Initialize(const Args& args)
 	{
-		m_scratch_blas_allocator = CreateTransientAllocator(args.render_core, 256, 64_MB, EBufferPresetType::RWByteAddress, L"ScratchASBuffer");
+		m_scratch_blas_allocator = CreateTransientAllocator(args.render_core, 256, args.staging_buffer_size, EBufferPresetType::RWByteAddress, L"ScratchASBuffer");
 	}
 
 	void ASBuilder::AddBuildRequest(const BLASRequest& request)

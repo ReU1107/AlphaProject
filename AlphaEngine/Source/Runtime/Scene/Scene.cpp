@@ -89,6 +89,17 @@ namespace Alpha
 		return result;
 	}
 
+	SceneObject* Scene::FindObject(StringView name)
+	{
+		for (auto& object : m_objects)
+		{
+			if (object->GetName() == name)
+				return object.get();
+		}
+
+		return nullptr;
+	}
+
 	bool Scene::Reparent(SceneObject* object, SceneObject* new_parent)
 	{
 		if (object->m_scene != this)

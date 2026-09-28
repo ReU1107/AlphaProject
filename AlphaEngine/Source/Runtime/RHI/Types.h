@@ -203,7 +203,7 @@ namespace Alpha
 		RGB10A2Unorm,
 		R11G11B10Float,      // HDRレンダーターゲットや特殊バッファで頻出
 
-		// RG (Dual Channel)
+		// RG
 		RG8Unorm,            // 
 		RG8UInt,             // 
 		RGFloat,             // R32G32_FLOAT
@@ -212,7 +212,6 @@ namespace Alpha
 		RG16UInt,            // 
 		RGUInt,              // R32G32_UINT
 
-		// R (Single Channel)
 		R8Unorm,             // 
 		R8UInt,              // 
 		RHalf,               // R16_FLOAT
@@ -221,7 +220,6 @@ namespace Alpha
 		RFloat,              // R32_FLOAT
 		RUInt,               // R32_UINT
 
-		// BGRA 系統 (Windows画面出力・相互運用)
 		BGRA8Unorm,          // 
 		BGRA8UnormSRGB,      // 
 
@@ -231,7 +229,6 @@ namespace Alpha
 		Depth24Stencil8,
 		Depth32Stencil8,     // D32_FLOAT_S8X24_UINT 用
 
-		// ブロック圧縮テクスチャ (Block Compression / BC) - アセット読込に必須
 		BC1Unorm,            // DXT1 不透明 / 1bitアルファ
 		BC1UnormSRGB,        // 
 		BC2Unorm,            // DXT3 明示的アルファ
@@ -242,7 +239,10 @@ namespace Alpha
 		BC4Snorm,            // 
 		BC5Unorm,            // 3DC / BC5 2チャンネル圧縮 (法線マップ標準)
 		BC5Snorm,            // 
-		BC6HFloat,           // HDRテクスチャ圧縮
+
+		BC6HUFloat,
+		BC6HSFloat,
+
 		BC7Unorm,            // 高画質RGBA圧縮 (近代的な標準)
 		BC7UnormSRGB,        // 
 	};

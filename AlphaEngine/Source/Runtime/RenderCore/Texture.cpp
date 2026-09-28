@@ -26,6 +26,7 @@ namespace Alpha
 			desc.width = args.width;
 			desc.height = args.height;
 			desc.depth = args.depth;
+			desc.mip_level = args.mip_level;
 			desc.format = args.format;
 			desc.dimension = args.dimension;
 			desc.flags = args.bind_flags;

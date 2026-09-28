@@ -109,7 +109,7 @@ namespace Alpha::Renderer
 		UInt32 mesh_offset{};
 		UINT32 vertex_element_offset{};
 		UInt32 override_material_element_offset{ 0xFFFFFFFF };	// 使わない場合は0xFFFFFFFF
-
+		UInt32 matrix_palette_offset{ 0xFFFFFFFF };
 		UInt32 visible{ 1 };
 	};
 
@@ -247,6 +247,8 @@ namespace Alpha::Renderer
 
 		UInt32 current_position_srv{};      // 
 		UInt32 current_position_uav{};      // 
+
+		UInt32 matrix_palette{};
 
 		UInt32 override_material{};
 

@@ -20,15 +20,7 @@ namespace Alpha
 
     bool PersistentBufferAllocator::AllocateByNum(UInt32 num, Allocation* allocation)
     {
-        UInt64 size = num * m_alignment;
-        Allocation alloc = m_allocator.Allocate(size, m_alignment);
-
-        if (!alloc.is_valid)
-            return false;
-
-        *allocation = alloc;
-
-        return true;
+        return AllocateBySize(num * m_alignment, allocation);
     }
 
     bool PersistentBufferAllocator::AllocateBySize(UInt32 size, Allocation* allocation)
@@ -40,12 +32,16 @@ namespace Alpha
 
         *allocation = alloc;
 
+        m_used_size += alloc.size;
+
         return true;
     }
 
     void PersistentBufferAllocator::Free(const Allocation& allocation)
     {
+        UInt64 size = allocation.size;
         m_allocator.Free(allocation);
+        m_used_size -= size;
     }
 
     UInt32 PersistentBufferAllocator::GetSRVIndex() const
@@ -58,6 +54,21 @@ namespace Alpha
         // 必ずBufferがWrite系であることを確認してから使う
 
         return m_buffer->GetUAVHandle().index;
+    }
+
+    UInt64 PersistentBufferAllocator::GetCapacity() const
+    {
+        return m_allocator.GetTotalSize();
+    }
+
+    UInt64 PersistentBufferAllocator::GetUsedSize() const
+    {
+        return m_used_size;
+    }
+
+    UInt64 PersistentBufferAllocator::GetRemainingSize() const
+    {
+        return GetCapacity() - GetUsedSize();
     }
 
     void PersistentBufferAllocator::SetName(StringView name)

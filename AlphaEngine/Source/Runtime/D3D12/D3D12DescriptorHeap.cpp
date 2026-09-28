@@ -233,15 +233,15 @@ namespace
 					view_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
 					view_desc.Texture1DArray.ArraySize = resource_desc.DepthOrArraySize;
 					view_desc.Texture1DArray.FirstArraySlice = 0;
-					view_desc.Texture1DArray.MipLevels = 0;
 					view_desc.Texture1DArray.MostDetailedMip = 0;
+					view_desc.Texture1DArray.MipLevels = resource_desc.MipLevels;
 					view_desc.Texture1DArray.ResourceMinLODClamp = 0;
 				}
 				else
 				{
 					view_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE1D;
-					view_desc.Texture1D.MipLevels = 0;
 					view_desc.Texture1D.MostDetailedMip = 0;
+					view_desc.Texture1D.MipLevels = resource_desc.MipLevels;
 					view_desc.Texture1D.ResourceMinLODClamp = 0.0f;
 				}
 
@@ -270,15 +270,15 @@ namespace
 						view_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
 						view_desc.Texture2DArray.ArraySize = resource_desc.DepthOrArraySize;
 						view_desc.Texture2DArray.FirstArraySlice = 0;
+						view_desc.Texture2DArray.MostDetailedMip = 0;
 						view_desc.Texture2DArray.MipLevels = resource_desc.MipLevels;
-						view_desc.Texture2DArray.MostDetailedMip = resource_desc.MipLevels;
 						view_desc.Texture2DArray.ResourceMinLODClamp = 0;
 					}
 					else
 					{
 						view_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-						view_desc.Texture2D.MipLevels = resource_desc.MipLevels;
 						view_desc.Texture2D.MostDetailedMip = 0;
+						view_desc.Texture2D.MipLevels = resource_desc.MipLevels;
 						view_desc.Texture2D.ResourceMinLODClamp = 0;
 
 					}
@@ -288,8 +288,8 @@ namespace
 			case D3D12_RESOURCE_DIMENSION_TEXTURE3D:
 			{
 				view_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+				view_desc.Texture3D.MostDetailedMip = 0;
 				view_desc.Texture3D.MipLevels = resource_desc.MipLevels;
-				view_desc.Texture3D.MostDetailedMip = resource_desc.MipLevels - 1;
 				view_desc.Texture3D.ResourceMinLODClamp = 0;
 
 			}

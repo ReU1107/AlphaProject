@@ -95,7 +95,8 @@ namespace Alpha
         case Alpha::ERHIResourceFormat::BC4Snorm:         return DXGI_FORMAT_BC4_SNORM;
         case Alpha::ERHIResourceFormat::BC5Unorm:         return DXGI_FORMAT_BC5_UNORM;
         case Alpha::ERHIResourceFormat::BC5Snorm:         return DXGI_FORMAT_BC5_SNORM;
-        case Alpha::ERHIResourceFormat::BC6HFloat:        return DXGI_FORMAT_BC6H_UF16; // 一般的な符号なし(UF16)を採用
+        case Alpha::ERHIResourceFormat::BC6HUFloat:       return DXGI_FORMAT_BC6H_UF16;
+        case Alpha::ERHIResourceFormat::BC6HSFloat:       return DXGI_FORMAT_BC6H_SF16;
         case Alpha::ERHIResourceFormat::BC7Unorm:         return DXGI_FORMAT_BC7_UNORM;
         case Alpha::ERHIResourceFormat::BC7UnormSRGB:     return DXGI_FORMAT_BC7_UNORM_SRGB;
 

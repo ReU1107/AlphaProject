@@ -1,5 +1,5 @@
 ﻿#include "MotionHandle.h"
-#include "Animation/Resource/Clip.h"
+#include "Animation/Clip.h"
 
 namespace Alpha
 {

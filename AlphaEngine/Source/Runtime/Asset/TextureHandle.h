@@ -3,56 +3,58 @@
 #include "RHI/Types.h"
 #include "Renderer/Types.h"
 
+#include <span>
+
 namespace Alpha
 {
-	class TextureHandle : public AssetHandle
-	{
-	private:
-		UInt32 m_width{ 0 };
-		UInt32 m_height{ 0 };
-		ERHIResourceDimension m_dimension{ ERHIResourceDimension::Tex2D };
-		ERHIResourceFormat m_format{ ERHIResourceFormat::RGBAUnorm };
-		ERHIResourceBindFlags m_bind_flags{ ERHIResourceBindFlags::ShaderResource };
 
-		TArray<UInt8> m_pixels{};
+    struct TextureMipData 
+    {
+        UInt32 width{}, height{}, row_count{};
+        UInt64 offset{}, row_pitch{}, slice_pitch{};
+    };
 
-	public:
-		~TextureHandle();
+    class TextureHandle : public AssetHandle 
+    {
+        UInt32 m_width{ 0 }, m_height{ 0 };
+        ERHIResourceDimension m_dimension{ ERHIResourceDimension::Tex2D };
+        ERHIResourceFormat m_format{ ERHIResourceFormat::RGBAUnorm };
+        ERHIResourceBindFlags m_bind_flags{ ERHIResourceBindFlags::ShaderResource };
+        ETextureAlphaMode m_alpha_mode{ ETextureAlphaMode::Unknown };
+        TArray<UInt8> m_pixels;
+        TArray<TextureMipData> m_mips;
 
-		static AssetType Type() { return AssetType::Texture; }
+    public:
+        ~TextureHandle();
 
-		AssetType GetType() const final { return AssetType::Texture; }
+        static AssetType Type() { return AssetType::Texture; }
 
-		void SetWidth(UInt32 width) { m_width = width; }
-		void SetHeight(UInt32 height) { m_height = height; }
+        AssetType GetType() const final { return Type(); }
 
-		void SetDimension(ERHIResourceDimension dimension) { m_dimension = dimension; }
-		void SetFormat(ERHIResourceFormat format) { m_format = format; }
-		void SetBindFlags(ERHIResourceBindFlags flags) { m_bind_flags = flags; }
+        void SetImage2D(UInt32 width, UInt32 height, ERHIResourceFormat format,
+            TArray<UInt8> pixels, TArray<TextureMipData> mips,
+            ETextureAlphaMode alpha_mode = ETextureAlphaMode::Unknown);
 
-		void SetPixels(const UInt8* pixels)
-		{
-			if (!pixels)
-				return;
+        void SetRGBA8(UInt32 width, UInt32 height, std::span<const UInt8> pixels, bool srgb = false);
 
-			USize size = static_cast<USize>(m_width) * m_height * 4;
+        void SetWidth(UInt32 value);
+        void SetHeight(UInt32 value);
+        void SetFormat(ERHIResourceFormat value);
+        void SetPixels(std::span<const UInt8> pixels);
+        void SetPixels(const UInt8* pixels);
 
-			m_pixels.assign(pixels, pixels + size);
-		}
-
-
-		uint32_t GetWidth() const { return m_width; }
-		uint32_t GetHeight() const { return m_height; }
-
-		ERHIResourceDimension GetDimension() const { return m_dimension; }
-		ERHIResourceFormat GetFormat() const { return m_format; }
-		ERHIResourceBindFlags GetBindFlags() const { return m_bind_flags; }
-
-		const UInt8* GetPixels() const { return m_pixels.data(); }
-		UInt8* GetPixels() { return m_pixels.data(); }
-
-		void Accept(IVisitor* visitor) override {}
-
-	};
+        UInt32 GetWidth() const { return m_width; }
+        UInt32 GetHeight() const { return m_height; }
+        UInt32 GetMipCount() const { return static_cast<UInt32>(m_mips.size()); }
+        UInt32 GetDepth() const { return 1; }
+       
+        ERHIResourceDimension GetDimension() const { return m_dimension; }
+        ERHIResourceFormat GetFormat() const { return m_format; }
+        ERHIResourceBindFlags GetBindFlags() const { return m_bind_flags; }
+        ETextureAlphaMode GetAlphaMode() const { return m_alpha_mode; }
+        const TArray<UInt8>& GetPixels() const { return m_pixels; }
+        UInt64 GetDataSize() const { return m_pixels.size(); }
+        const TArray<TextureMipData>& GetMipLayouts() const { return m_mips; }
+    };
 
 }

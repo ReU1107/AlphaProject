@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "Core/Common.h"
 #include "Core/Object.h"
-#include "Condition.h"
+#include "Definitions.h"
 
 namespace Alpha::Animation
 {

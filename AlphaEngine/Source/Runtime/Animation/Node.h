@@ -58,6 +58,8 @@ namespace Alpha::Animation
 
 		void SetAlpha(float alpha);
 
+		void SetInputs(Node* lhs, Node* rhs);
+
 		// 時間の更新やパラメータの事前計算
 		void Update(float delta_time) final;
 

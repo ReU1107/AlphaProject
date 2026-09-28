@@ -213,52 +213,49 @@
     <ClCompile Include="Source\Runtime\Asset\SkeletonHandle.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Context\Graph.cpp">
+    <ClCompile Include="Source\Runtime\Animation\Graph.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Context\IKSolver.cpp">
+    <ClCompile Include="Source\Runtime\Animation\IKSolver.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Context\Node.cpp">
+    <ClCompile Include="Source\Runtime\Animation\Node.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Context\SkeletalClipInstance.cpp">
+    <ClCompile Include="Source\Runtime\Animation\SkeletalClipInstance.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Context\SkeletonPose.cpp">
+    <ClCompile Include="Source\Runtime\Animation\SkeletonPose.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Context\Snapshot.cpp">
+    <ClCompile Include="Source\Runtime\Animation\State.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Context\State.cpp">
+    <ClCompile Include="Source\Runtime\Animation\StateMachine.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Context\StateMachine.cpp">
+    <ClCompile Include="Source\Runtime\Animation\StateTransition.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Context\StateTransition.cpp">
+    <ClCompile Include="Source\Runtime\Animation\Channel.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Resource\Channel.cpp">
+    <ClCompile Include="Source\Runtime\Animation\Clip.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Resource\Clip.cpp">
+    <ClCompile Include="Source\Runtime\Animation\Curve.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Resource\Curve.cpp">
+    <ClCompile Include="Source\Runtime\Animation\IKChain.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Resource\IKChain.cpp">
+    <ClCompile Include="Source\Runtime\Animation\Joint.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Resource\Joint.cpp">
+    <ClCompile Include="Source\Runtime\Animation\Skeleton.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Resource\Skeleton.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Animation\Resource\Track.cpp">
+    <ClCompile Include="Source\Runtime\Animation\Track.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Animation\AnimationComponent.cpp">
@@ -450,7 +447,7 @@
     <ClCompile Include="TestScene\Scene1.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Renderer\Definitions.cpp">
+    <ClCompile Include="Source\Runtime\Renderer\RendererDefinitions.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\System\RenderSceneBuilder.cpp">
@@ -478,6 +475,18 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Particle\ParticleEmitterComponent.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimationBlueprint.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Animation\AnimationDefinitions.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\ufbx\ufbx.c">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Asset\Importer\DDS\DDSLoader.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -872,70 +881,55 @@
     <ClInclude Include="Source\Core\Allocator\FreeListAllocator.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Context\ClipInstance.h">
+    <ClInclude Include="Source\Runtime\Animation\ClipInstance.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Context\Condition.h">
+    <ClInclude Include="Source\Runtime\Animation\Graph.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Context\Graph.h">
+    <ClInclude Include="Source\Runtime\Animation\IKSolver.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Context\IKSolver.h">
+    <ClInclude Include="Source\Runtime\Animation\Node.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Context\Node.h">
+    <ClInclude Include="Source\Runtime\Animation\SkeletalClipInstance.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Context\ParameterContext.h">
+    <ClInclude Include="Source\Runtime\Animation\SkeletonPose.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Context\SkeletalClipInstance.h">
+    <ClInclude Include="Source\Runtime\Animation\State.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Context\SkeletonPose.h">
+    <ClInclude Include="Source\Runtime\Animation\StateMachine.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Context\Snapshot.h">
+    <ClInclude Include="Source\Runtime\Animation\StateTransition.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Context\State.h">
+    <ClInclude Include="Source\Runtime\Animation\Channel.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Context\StateMachine.h">
+    <ClInclude Include="Source\Runtime\Animation\Clip.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Context\StateTransition.h">
+    <ClInclude Include="Source\Runtime\Animation\Curve.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Resource\Channel.h">
+    <ClInclude Include="Source\Runtime\Animation\IKChain.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Resource\Clip.h">
+    <ClInclude Include="Source\Runtime\Animation\Joint.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Resource\Curve.h">
+    <ClInclude Include="Source\Runtime\Animation\Skeleton.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Resource\IKChain.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Resource\Joint.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Resource\Keyframe.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Resource\Skeleton.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\Resource\Track.h">
+    <ClInclude Include="Source\Runtime\Animation\Track.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Animation\AnimationComponent.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Animation\AnimationResource.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Animation\AnimationSystem.h">
@@ -1194,6 +1188,18 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Particle\ParticleSystem.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Animation\AnimationBlueprint.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\ufbx\ufbx.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Asset\Importer\DDS\DDSLoader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\tinyddsloader\tinyddsloader.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

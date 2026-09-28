@@ -32,6 +32,8 @@ namespace Alpha::Renderer
         TUnique<TransientBufferAllocator> m_volume_allocator{ nullptr };
         TUnique<TransientBufferAllocator> m_procedural_primitive_allocator{ nullptr };
 
+        TUnique<TransientBufferAllocator> m_matrix_palette_allocator{ nullptr };
+
 
         UInt32 m_instance_count{ 0 };
         UInt32 m_light_count{ 0 };
@@ -68,6 +70,8 @@ namespace Alpha::Renderer
         TransientBufferAllocator* GetTLASScratchAllocator();
         TransientBufferAllocator* GetTLASInstanceAllocator();
         TransientBufferAllocator* GetVertToInstanceAllocator();
+
+        TransientBufferAllocator* GetMatrixPaletteAllocator();
 
 
         UInt32 GetInstanceCount() const { return m_instance_count; }

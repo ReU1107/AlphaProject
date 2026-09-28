@@ -40,6 +40,7 @@ namespace Alpha
         const TArray<SceneObject*>& GetChildren() const { return m_children; }
 
         entt::entity GetEntity() const { return m_entity; }
+        const String& GetName() const { return m_name; }
 
     private:
         entt::registry& GetRegistry();

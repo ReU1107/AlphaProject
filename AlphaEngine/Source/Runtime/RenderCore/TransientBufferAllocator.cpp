@@ -17,7 +17,7 @@ namespace Alpha
 			block.map_ptr = block.buffer->GetMappedPtr();
 
 		}
-
+		m_capacity = args.size;
 		m_alignment = args.alignment;
 	}
 
@@ -37,6 +37,8 @@ namespace Alpha
 
 		block.current_offset = aligned_size + aligned_offset;
 
+		m_used_size += aligned_size;
+
 		return dest;
 	}
 
@@ -49,6 +51,8 @@ namespace Alpha
 		UInt64 aligned_size = Alignment(size, m_alignment);
 
 		block.current_offset = aligned_offset + aligned_size;
+
+		m_used_size += aligned_size;
 
 		return aligned_offset;
 	}
@@ -73,10 +77,26 @@ namespace Alpha
 		return GetBuffer()->GetUAVHandle().index;
 	}
 
+	UInt64 TransientBufferAllocator::GetCapacity() const
+	{
+		return m_capacity;
+	}
+
+	UInt64 TransientBufferAllocator::GetUsedSize() const
+	{
+		return m_used_size;
+	}
+
+	UInt64 TransientBufferAllocator::GetRemainingSize() const
+	{
+		return GetCapacity() - GetUsedSize();
+	}
+
 	void TransientBufferAllocator::Reset(UInt32 current_buffer_index)
 	{
 		m_blocks[current_buffer_index].current_offset = 0;
 		m_current_block_index = current_buffer_index;
+		m_used_size = 0;
 	}
 
 	void TransientBufferAllocator::SetName(StringView name)

@@ -45,5 +45,7 @@ float4 main(VertexOut input) : SV_TARGET
     
     float3 final_rgb = final_base.rgb + final_emissive;
     
-    return float4(final_rgb, final_base.a);
+    //return float4(final_rgb, final_base.a);
+    return input.Color;
+
 }

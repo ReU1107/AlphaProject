@@ -1,9 +1,9 @@
 ﻿#include "IKSolver.h"
 #include "SkeletonPose.h"
 
-#include "Animation/Resource/Skeleton.h"
-#include "Animation/Resource/Joint.h"
-#include "Animation/Resource/IKChain.h"
+#include "Skeleton.h"
+#include "Joint.h"
+#include "IKChain.h"
 
 #include "Core/Math/MathF.h"
 
