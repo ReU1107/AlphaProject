@@ -20,6 +20,8 @@ namespace Alpha
 	private:
 		TArray<FrameBlock> m_blocks{};
 		UInt64 m_alignment{ 4 };
+		UInt64 m_used_size{ 0 };
+		UInt64 m_capacity{ 0 };
 		UInt32 m_current_block_index{ 0 };
 
 	public:
@@ -83,6 +85,11 @@ namespace Alpha
 
 		UInt32 GetSRVIndex() const;
 		UInt32 GetUAVIndex() const;
+
+
+		UInt64 GetCapacity() const;
+		UInt64 GetUsedSize() const;
+		UInt64 GetRemainingSize() const;
 
 		void Reset(UInt32 current_buffer_index);
 

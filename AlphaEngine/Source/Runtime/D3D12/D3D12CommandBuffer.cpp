@@ -144,23 +144,26 @@ namespace Alpha
 		auto* d3d_dst = static_cast<D3D12Texture*>(dst);
 		auto* d3d_src = static_cast<D3D12Buffer*>(src);
 
-		// 一旦サブリソース0だけで
-		// TODO: みっぷマップとか必要になってきたらまた別途作る
-		const UInt32 subresource_index = 0;
-		const auto& layout = d3d_dst->GetLayout(subresource_index);
+		const UInt32 subresource_count = d3d_dst->GetSubresourceCount();
 
-		D3D12_TEXTURE_COPY_LOCATION dst_location = {};
-		dst_location.pResource = (ID3D12Resource*)d3d_dst->GetNative();
-		dst_location.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-		dst_location.SubresourceIndex = subresource_index;
+		for (UInt32 subresource_index = 0; subresource_index < subresource_count; ++subresource_index)
+		{
+			const auto& layout = d3d_dst->GetLayout(subresource_index);
 
-		D3D12_TEXTURE_COPY_LOCATION src_location = {};
-		src_location.pResource = (ID3D12Resource*)d3d_src->GetNative();
-		src_location.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-		src_location.PlacedFootprint = layout.footprint;
-		src_location.PlacedFootprint.Offset += src_offset;
+			D3D12_TEXTURE_COPY_LOCATION dst_location = {};
+			dst_location.pResource = static_cast<ID3D12Resource*>(d3d_dst->GetNative());
+			dst_location.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+			dst_location.SubresourceIndex = subresource_index;
 
-		m_list->CopyTextureRegion(&dst_location, 0, 0, 0, &src_location, nullptr);
+			D3D12_TEXTURE_COPY_LOCATION src_location = {};
+			src_location.pResource = static_cast<ID3D12Resource*>(d3d_src->GetNative());
+			src_location.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+			src_location.PlacedFootprint = layout.footprint;
+			src_location.PlacedFootprint.Offset += src_offset;
+
+			m_list->CopyTextureRegion(&dst_location, 0, 0, 0, &src_location, nullptr);
+
+		}
 	}
 
 	void D3D12CommandBuffer::CopyBuffer(RHIBuffer* src, RHIBuffer* dst)

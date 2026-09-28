@@ -126,7 +126,7 @@ namespace Alpha
 			ERHIResourceBindFlags flags = ERHIResourceBindFlags::ShaderResource,
 			ERHIResourceFormat format = ERHIResourceFormat::RGBAUnorm,
 			ERHIResourceDimension dimension = ERHIResourceDimension::Tex2D,
-			UInt32 array_size = 1);
+			UInt32 array_size = 1, UInt32 mip_level = 1);
 
 		void UploadTexture(Texture* texture, void* pixels);
 

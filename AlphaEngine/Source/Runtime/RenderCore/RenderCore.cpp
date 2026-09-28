@@ -113,7 +113,7 @@ namespace Alpha
 		{
 			ASBuilder::Args desc = {
 				.render_core = this,
-				.staging_buffer_size = 32_MB,
+				.staging_buffer_size = 128_MB,
 			};
 			m_as_builder->Initialize(desc);
 		}
@@ -439,7 +439,7 @@ namespace Alpha
 		return texture;
 	}
 
-	TUnique<Texture> RenderCore::CreateTexture(UInt32 width, UInt32 height, ERHIResourceBindFlags flags, ERHIResourceFormat format, ERHIResourceDimension dimension, UInt32 array_size)
+	TUnique<Texture> RenderCore::CreateTexture(UInt32 width, UInt32 height, ERHIResourceBindFlags flags, ERHIResourceFormat format, ERHIResourceDimension dimension, UInt32 array_size, UInt32 mip_level)
 	{
 		auto texture = std::make_unique<Texture>();
 
@@ -451,6 +451,7 @@ namespace Alpha
 			.width = width,
 			.height = height,
 			.depth = array_size,
+			.mip_level = mip_level,
 			.format = format,
 			.dimension = dimension,
 			.bind_flags = flags,

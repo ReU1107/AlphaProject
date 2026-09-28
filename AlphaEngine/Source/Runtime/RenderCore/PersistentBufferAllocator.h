@@ -14,6 +14,7 @@ namespace Alpha
         TUnique<Buffer> m_buffer{ nullptr };
         FreeListAllocator m_allocator{};
         UInt64 m_alignment{ 0 };
+        UInt64 m_used_size{ 0 };
 
     public:
         ~PersistentBufferAllocator();
@@ -38,6 +39,10 @@ namespace Alpha
 
         UInt32 GetSRVIndex() const;
         UInt32 GetUAVIndex() const;
+
+        UInt64 GetCapacity() const;
+        UInt64 GetUsedSize() const;
+        UInt64 GetRemainingSize() const;
 
         void SetName(StringView name);
     };

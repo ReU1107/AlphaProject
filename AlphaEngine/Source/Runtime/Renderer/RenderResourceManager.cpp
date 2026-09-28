@@ -14,47 +14,46 @@ namespace Alpha::Renderer
 
 	bool RenderResourceManager::Initialize(const Args& args)
 	{
-        m_vertex_position_allocator = CreatePersistentAllocator(args.render_core, sizeof(Vector3), 12_MB, EBufferPresetType::ROStructured, L"VertexPosition");
-		m_vertex_attribute_allocator= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 12_MB, EBufferPresetType::ROByteAddress, L"VertexAttribute");
+        m_vertex_position_allocator = CreatePersistentAllocator(args.render_core, sizeof(Vector3), 128_MB, EBufferPresetType::ROStructured, L"VertexPosition");
+		m_vertex_attribute_allocator= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 256_MB, EBufferPresetType::ROByteAddress, L"VertexAttribute");
 		
-        m_vertex_indices_allocator	= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 12_MB, EBufferPresetType::ROStructured, L"VertexIndices");
-		m_triangle_indices_allocator= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 12_MB, EBufferPresetType::ROStructured, L"TriangleIndices");
-		m_meshlet_allocator			= CreatePersistentAllocator(args.render_core, sizeof(Meshlet), 12_MB, EBufferPresetType::ROStructured, L"Meshlet");
-		m_index_allocator			= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 8_MB, EBufferPresetType::ROStructured, L"Index");
+        m_vertex_indices_allocator	= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 64_MB, EBufferPresetType::ROStructured, L"VertexIndices");
+		m_triangle_indices_allocator= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 64_MB, EBufferPresetType::ROStructured, L"TriangleIndices");
+		m_meshlet_allocator			= CreatePersistentAllocator(args.render_core, sizeof(Meshlet), 64_MB, EBufferPresetType::ROStructured, L"Meshlet");
+		m_index_allocator			= CreatePersistentAllocator(args.render_core, sizeof(UInt32), 64_MB, EBufferPresetType::ROStructured, L"Index");
 		
-        m_mesh_allocator			= CreatePersistentAllocator(args.render_core, sizeof(MeshData), 4_MB, EBufferPresetType::ROStructured, L"Mesh");
-        m_submesh_allocator			= CreatePersistentAllocator(args.render_core, sizeof(Submesh), 4_MB, EBufferPresetType::ROStructured, L"Submesh");
+        m_mesh_allocator			= CreatePersistentAllocator(args.render_core, sizeof(MeshData), 8_MB, EBufferPresetType::ROStructured, L"Mesh");
+        m_submesh_allocator			= CreatePersistentAllocator(args.render_core, sizeof(Submesh), 8_MB, EBufferPresetType::ROStructured, L"Submesh");
 		
-        m_material_allocator		= CreatePersistentAllocator(args.render_core, sizeof(MaterialData), 4_MB, EBufferPresetType::ROStructured, L"Material");
+        m_material_allocator		= CreatePersistentAllocator(args.render_core, sizeof(MaterialData), 8_MB, EBufferPresetType::ROStructured, L"Material");
 
-        m_material_table_allocator  = CreatePersistentAllocator(args.render_core, sizeof(UInt32), 4_MB, EBufferPresetType::ROStructured, L"MaterialTable");
+        m_material_table_allocator  = CreatePersistentAllocator(args.render_core, sizeof(UInt32), 8_MB, EBufferPresetType::ROStructured, L"MaterialTable");
         
         
-        m_source_as_allocator       = CreatePersistentAllocator(args.render_core, 256, 32_MB, EBufferPresetType::RTAccelStructure, L"SourceAS");
+        m_source_as_allocator       = CreatePersistentAllocator(args.render_core, 256, 256_MB, EBufferPresetType::RTAccelStructure, L"SourceAS");
 
-        m_gpu_data_transfer = std::make_unique<GPUDataTransfer>();
-        {
-            GPUDataTransfer::Args desc = {
-                .render_core = args.render_core,
-                .staging_buffer_size = 64_MB,
-            };
-            m_gpu_data_transfer->Initialize(desc);
-        }
+        //m_gpu_data_transfer = std::make_unique<GPUDataTransfer>();
+        //{
+        //    GPUDataTransfer::Args desc = {
+        //        .render_core = args.render_core,
+        //        .staging_buffer_size = 64_MB,
+        //    };
+        //    m_gpu_data_transfer->Initialize(desc);
+        //}
 
-        m_as_builder = std::make_unique<ASBuilder>();
-        {
-            ASBuilder::Args desc = {
-                .render_core = args.render_core,
-                .staging_buffer_size = 32_MB,
-            };
-            m_as_builder->Initialize(desc);
-        }
+        //m_as_builder = std::make_unique<ASBuilder>();
+        //{
+        //    ASBuilder::Args desc = {
+        //        .render_core = args.render_core,
+        //        .staging_buffer_size = 128_MB,
+        //    };
+        //    m_as_builder->Initialize(desc);
+        //}
 
-        m_mesh_palette.Initialize(100);
-        m_material_palette.Initialize(100);
-        m_material_table_palette.Initialize(100);
-        m_texture_palette.Initialize(100);
-
+        m_mesh_palette.Initialize(2048);
+        m_material_palette.Initialize(2048);
+        m_material_table_palette.Initialize(2048);
+        m_texture_palette.Initialize(2048);
 
         // テクスチャ
         auto white_tex = args.asset_manager->GetWhiteTexture();
@@ -100,8 +99,11 @@ namespace Alpha::Renderer
 			Allocation alloc{};
 			if (!m_vertex_position_allocator->AllocateByNum(num, &alloc))
 			{
-				ALPHA_LOG_WARN(L"ModelHandleのリソース化に失敗しました");
-				// 
+                ALPHA_LOG_WARN(L"VertexPositionのアロケートに失敗しました");
+                ALPHA_LOG_INFO(
+                    L"VertexPosition: {:.2f} / {:.2f} MB",
+                    BytesToMB(m_vertex_position_allocator->GetUsedSize()),
+                    BytesToMB(m_vertex_position_allocator->GetCapacity()));
 			}
 			
             RenderCore::Get().UploadBuffer(m_vertex_position_allocator->GetBuffer(), alloc.offset, handle->GetPositions().data(), alloc.size);
@@ -116,8 +118,11 @@ namespace Alpha::Renderer
 			Allocation alloc{};
 			if (!m_vertex_attribute_allocator->AllocateBySize(size, &alloc))
 			{
-				ALPHA_LOG_WARN(L"ModelHandleのリソース化に失敗しました");
-				// 
+                ALPHA_LOG_WARN(L"VertexAttributeのアロケートに失敗しました");
+                ALPHA_LOG_INFO(
+                    L"VertexAttribute: {:.2f} / {:.2f} MB",
+                    BytesToMB(m_vertex_attribute_allocator->GetUsedSize()),
+                    BytesToMB(m_vertex_attribute_allocator->GetCapacity()));
 			}
 			RenderCore::Get().UploadBuffer(m_vertex_attribute_allocator->GetBuffer(), alloc.offset, handle->GetPackData().data(), alloc.size);
 
@@ -130,8 +135,11 @@ namespace Alpha::Renderer
             Allocation alloc{};
             if (!m_index_allocator->AllocateByNum(size, &alloc))
             {
-                ALPHA_LOG_WARN(L"ModelHandleのリソース化に失敗しました");
-                // 
+                ALPHA_LOG_WARN(L"Indexのアロケートに失敗しました");
+                ALPHA_LOG_INFO(
+                    L"Index: {:.2f} / {:.2f} MB",
+                    BytesToMB(m_index_allocator->GetUsedSize()),
+                    BytesToMB(m_index_allocator->GetCapacity()));
             }
             RenderCore::Get().UploadBuffer(m_index_allocator->GetBuffer(), alloc.offset, handle->GetIndices().data(), alloc.size);
 
@@ -153,8 +161,12 @@ namespace Alpha::Renderer
             Allocation alloc{};
             if (!m_submesh_allocator->AllocateByNum(num, &alloc))
             {
-                ALPHA_LOG_WARN(L"ModelHandleのリソース化に失敗しました");
-                // 
+                ALPHA_LOG_WARN(L"SubMeshのアロケートに失敗しました");
+                ALPHA_LOG_INFO(
+                    L"SubMesh: {:.2f} / {:.2f} MB",
+                    BytesToMB(m_submesh_allocator->GetUsedSize()),
+                    BytesToMB(m_submesh_allocator->GetCapacity()));
+                 
             }
             RenderCore::Get().UploadBuffer(m_submesh_allocator->GetBuffer(), alloc.offset, mesh.submeshes.data(), alloc.size);
 
@@ -300,7 +312,7 @@ namespace Alpha::Renderer
             Allocation alloc{};
             if (!m_material_table_allocator->AllocateByNum(num, &alloc))
             {
-                ALPHA_LOG_WARN(L"ModelHandleのリソース化に失敗しました");
+                ALPHA_LOG_WARN(L"MaterialTableHandleのリソース化に失敗しました");
                 // 
             }
             RenderCore::Get().UploadBuffer(m_material_table_allocator->GetBuffer(), alloc.offset, table.material_indices, alloc.size);
@@ -389,9 +401,11 @@ namespace Alpha::Renderer
             handle->GetHeight(),
             handle->GetBindFlags(),
             handle->GetFormat(),
-            handle->GetDimension()
+            handle->GetDimension(),
+            handle->GetDepth(),
+            handle->GetMipCount()
         );
-        RenderCore::Get().UploadTexture(tex.get(), handle->GetPixels());
+        RenderCore::Get().UploadTexture(tex.get(), (void*)handle->GetPixels().data());
         texture.tex = std::move(tex);
 
         return palette_index;

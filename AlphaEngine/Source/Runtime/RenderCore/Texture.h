@@ -29,6 +29,7 @@ namespace Alpha
 			UInt32 width{ 256 };
 			UInt32 height{ 256 };
 			UInt32 depth{ 1 };
+			UInt32 mip_level{ 1 };
 			ERHIResourceFormat format{ ERHIResourceFormat::RGBAUnorm };
 			ERHIResourceDimension dimension{ ERHIResourceDimension::Tex2D };
 			ERHIResourceBindFlags bind_flags{ ERHIResourceBindFlags::ShaderResource };

@@ -21,7 +21,7 @@ namespace Alpha
 	private:
 		ComPtr<ID3D12Resource1> m_resource{ nullptr };
 		TArray<D3D12SubresourceLayout> m_layouts{};
-		
+
 
 	public:
 		D3D12Texture(D3D12Device* device);
@@ -35,7 +35,7 @@ namespace Alpha
 
 		void* GetNative() const final { return m_resource.Get(); }
 
-		UInt32 GetSubresourceNum() final { return (UInt32)m_layouts.size(); }
+		UInt32 GetSubresourceCount() final { return (UInt32)m_layouts.size(); }
 
 		void SetName(StringView name) final;
 	};

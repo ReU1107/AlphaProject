@@ -169,6 +169,7 @@
     <ClCompile Include="Source\Runtime\Animation\AnimationBlueprint.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimationComponent.cpp" />
     <ClCompile Include="Source\Runtime\Animation\AnimationDefinitions.cpp" />
+    <ClCompile Include="Source\Runtime\Asset\Importer\DDS\DDSLoader.cpp" />
     <ClCompile Include="Source\Runtime\Particle\ParticleEmitterComponent.cpp" />
     <ClCompile Include="Source\Runtime\Particle\ParticleRender.cpp" />
     <ClCompile Include="Source\Runtime\Particle\ParticleSystem.cpp" />
@@ -305,6 +306,7 @@
     <ClCompile Include="ThirdParty\meshoptimizer\vertexcodec.cpp" />
     <ClCompile Include="ThirdParty\meshoptimizer\vertexfilter.cpp" />
     <ClCompile Include="ThirdParty\meshoptimizer\vfetchoptimizer.cpp" />
+    <ClCompile Include="ThirdParty\ufbx\ufbx.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components.h" />
@@ -327,6 +329,7 @@
     <ClInclude Include="Source\Editor\Viewport.h" />
     <ClInclude Include="Source\Editor\Panel.h" />
     <ClInclude Include="Source\Runtime\Animation\AnimationBlueprint.h" />
+    <ClInclude Include="Source\Runtime\Asset\Importer\DDS\DDSLoader.h" />
     <ClInclude Include="Source\Runtime\D3D12\D3D12RayTracePipeline.h" />
     <ClInclude Include="Source\Runtime\Particle\Definitions.h" />
     <ClInclude Include="Source\Runtime\Particle\Module.h" />
@@ -541,6 +544,8 @@
     <ClInclude Include="ThirdParty\imgui\imstb_truetype.h" />
     <ClInclude Include="ThirdParty\meshoptimizer\meshoptimizer.h" />
     <ClInclude Include="ThirdParty\std\stb_image.h" />
+    <ClInclude Include="ThirdParty\tinyddsloader\tinyddsloader.h" />
+    <ClInclude Include="ThirdParty\ufbx\ufbx.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\ExecuteIndirect.hlsli" />

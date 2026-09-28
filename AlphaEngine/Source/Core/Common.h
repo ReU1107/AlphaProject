@@ -15,6 +15,7 @@
 #include "Math/Transform.h"
 #include "Math/Vector.h"
 #include "Math/Viewport.h"
+#include "Math/MathUtil.h"
 
 #include "Literal.h"
 

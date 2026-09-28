@@ -14,24 +14,24 @@ namespace Alpha::Renderer
 
 	bool RenderScene::Initialize(const Args& args)
 	{
-		m_instance_allocator = CreateTransientAllocator(args.render_core, sizeof(InstanceData), 4_MB, EBufferPresetType::UploadStructured, L"Instance");
-		m_vert_to_inst_allocator = CreateTransientAllocator(args.render_core, sizeof(UInt32), 4_MB, EBufferPresetType::UploadStructured, L"VertexToInstance");
+		m_instance_allocator = CreateTransientAllocator(args.render_core, sizeof(InstanceData), 16_MB, EBufferPresetType::UploadStructured, L"Instance");
+		m_vert_to_inst_allocator = CreateTransientAllocator(args.render_core, sizeof(UInt32), 32_MB, EBufferPresetType::UploadStructured, L"VertexToInstance");
 
 		// 暫定
 		TLASRequest request = {
-			.instance_count = 1000
+			.instance_count = 2496
 		};
 
 		ASBuildSize build_size = args.render_core->PreBuildTLAS(request);
 
-		m_instance_tlas_allocator = CreateTransientAllocator(args.render_core, sizeof(ASInstanceData), 4_MB, EBufferPresetType::UploadStructured, L"TLASInstance");
+		m_instance_tlas_allocator = CreateTransientAllocator(args.render_core, sizeof(ASInstanceData), 16_MB, EBufferPresetType::UploadStructured, L"TLASInstance");
 
 		m_scratch_tlas_allocator = CreateTransientAllocator(args.render_core, 256, build_size.scratch, EBufferPresetType::RWByteAddress, L"TLASScratch");
 
 		m_result_tlas_allocator = CreateTransientAllocator(args.render_core, 256, build_size.result, EBufferPresetType::RTAccelStructure, L"TLASResult");
-		m_result_blas_allocator = CreateTransientAllocator(args.render_core, 256, 64_MB, EBufferPresetType::RTAccelStructure, L"BLASResult");
+		m_result_blas_allocator = CreateTransientAllocator(args.render_core, 256, 256_MB, EBufferPresetType::RTAccelStructure, L"BLASResult");
 
-		m_dynamic_vertex_allocator = CreateTransientAllocator(args.render_core, sizeof(Vector3), 4_MB, EBufferPresetType::RWStructured, L"DynamicVertex");
+		m_dynamic_vertex_allocator = CreateTransientAllocator(args.render_core, sizeof(Vector3), 64_MB, EBufferPresetType::RWStructured, L"DynamicVertex");
 		m_override_material_allocator = CreateTransientAllocator(args.render_core, sizeof(MaterialData), 4_MB, EBufferPresetType::UploadStructured, L"OverrideMaterial");
 		
 		m_light_allocator = CreateTransientAllocator(args.render_core, sizeof(LightData), 4_MB, EBufferPresetType::UploadStructured, L"Light");
