@@ -60,6 +60,22 @@ struct FBXImportContext
     TMap<const ufbx_material*, TShared<MaterialHandle>> materials;
     TMap<const ufbx_texture*, TShared<TextureHandle>> textures;
 };
+ESamplerPresetType ConvertSampler(ufbx_wrap_mode wrap_u, ufbx_wrap_mode wrap_v)
+{
+    const bool u_wrap = wrap_u == UFBX_WRAP_REPEAT;
+    const bool v_wrap = wrap_v == UFBX_WRAP_REPEAT;
+
+    if (u_wrap && v_wrap)
+        return ESamplerPresetType::LinearWrap;
+
+    if (u_wrap)
+        return ESamplerPresetType::LinearWrapClampClamp;
+
+    if (v_wrap)
+        return ESamplerPresetType::LinearClampWrapClamp;
+
+    return ESamplerPresetType::LinearClamp;
+}
 
 TShared<TextureHandle> ConvertTexture(
     ufbx_texture* texture,
@@ -143,12 +159,15 @@ TShared<MaterialHandle> ConvertMaterial(
         auto tex = pbr.base_color.texture;
         if (texture)
         {
-            handle->AddTexture(
-                ETextureAttribute::BaseColor,
-                texture);
             auto format = texture->GetFormat();
 
             texture->SetFormat(ToSRGBFormat(format));
+
+            ESamplerPresetType sampler = ConvertSampler(pbr.base_color.texture->wrap_u, pbr.base_color.texture->wrap_v);
+            handle->AddTexture(
+                ETextureAttribute::BaseColor,
+                texture, sampler);
+
         }
     }
 
@@ -163,9 +182,10 @@ TShared<MaterialHandle> ConvertMaterial(
 
         if (texture)
         {
+            ESamplerPresetType sampler = ConvertSampler(pbr.normal_map.texture->wrap_u, pbr.normal_map.texture->wrap_v);
             handle->AddTexture(
                 ETextureAttribute::Normal,
-                texture);
+                texture, sampler);
         }
     }
 
@@ -173,6 +193,7 @@ TShared<MaterialHandle> ConvertMaterial(
     if (pbr.metalness.texture &&
         pbr.metalness.texture_enabled)
     {
+
         auto texture =
             ConvertTexture(
             pbr.metalness.texture,
@@ -180,9 +201,11 @@ TShared<MaterialHandle> ConvertMaterial(
 
         if (texture)
         {
+            ESamplerPresetType sampler = ConvertSampler(pbr.metalness.texture->wrap_u, pbr.metalness.texture->wrap_v);
+
             handle->AddTexture(
                 ETextureAttribute::Metallic,
-                texture);
+                texture, sampler);
         }
     }
 
@@ -197,9 +220,10 @@ TShared<MaterialHandle> ConvertMaterial(
 
         if (texture)
         {
+            ESamplerPresetType sampler = ConvertSampler(pbr.emission_color.texture->wrap_u, pbr.emission_color.texture->wrap_v);
             handle->AddTexture(
                 ETextureAttribute::Emissive,
-                texture);
+                texture, sampler);
         }
     }
 
@@ -214,9 +238,10 @@ TShared<MaterialHandle> ConvertMaterial(
 
         if (texture)
         {
+            ESamplerPresetType sampler = ConvertSampler(pbr.ambient_occlusion.texture->wrap_u, pbr.ambient_occlusion.texture->wrap_v);
             handle->AddTexture(
                 ETextureAttribute::Occlusion,
-                texture);
+                texture, sampler);
         }
     }
 
@@ -745,24 +770,24 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     auto& registry = scene.GetRegistry();
 
-    //SceneObject& object = scene.CreateObject(L"akari");
+    SceneObject& object = scene.CreateObject(L"akari");
 
-    //auto& transform = object.GetComponent<TransformComponent>();
+    auto& transform = object.GetComponent<TransformComponent>();
 
-    //transform.SetLocalPosition( Vector3(0.0f, 0.5f, 0.0f));
+    transform.SetLocalPosition( Vector3(0.0f, 0.5f, 0.0f));
 
-    //auto& mesh = object.AddComponent<MeshComponent>();
+    auto& mesh = object.AddComponent<MeshComponent>();
 
-    //mesh.mesh_index = akari_index;
-    //mesh.visible = true;
+    mesh.mesh_index = akari_index;
+    mesh.visible = true;
 
-    //auto& anim = object.AddComponent<AnimationComponent>();
-    //anim.m_state_machine = blueprint.Instantiate();
-    //anim.m_pose = std::make_unique<SkeletonPose>();
-    //anim.m_pose->SetSkeleton(skeleton);
-    //anim.m_current_pose.bone_transforms.resize(512);
+    auto& anim = object.AddComponent<AnimationComponent>();
+    anim.m_state_machine = blueprint.Instantiate();
+    anim.m_pose = std::make_unique<SkeletonPose>();
+    anim.m_pose->SetSkeleton(skeleton);
+    anim.m_current_pose.bone_transforms.resize(512);
 
-    //anim.Play();
+    anim.Play();
 
     {
         SceneObject& object =  scene.CreateObject(L"MainCamera");

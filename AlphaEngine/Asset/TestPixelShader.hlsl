@@ -46,31 +46,55 @@ float4 main(VertexOut input) : SV_TARGET
 
     }
     
-    SamplerState sam = SamplerDescriptorHeap[SAMPLER_PRESET_LINEAR_WRAP];
+    Texture2D base_tex = ResourceDescriptorHeap[material.base_color.texture_index];
 
-    Texture2D base_tex = ResourceDescriptorHeap[material.base_color_tex_idx];
-    Texture2D emissive_tex = ResourceDescriptorHeap[material.emissive_tex_idx];
-    Texture2D normal_tex = ResourceDescriptorHeap[material.normal_tex_idx];
+    SamplerState base_sampler = SamplerDescriptorHeap[material.base_color.sampler_index];
 
-    float3 normal_sample = normal_tex.Sample(sam, input.TexCoord).xyz;
+    float4 base_color_sample = base_tex.Sample(base_sampler, input.TexCoord);
     
+    // 
+    Texture2D normal_tex = ResourceDescriptorHeap[material.normal.texture_index];
+
+    SamplerState normal_sampler = SamplerDescriptorHeap[material.normal.sampler_index];
+
+    float3 normal_sample = normal_tex.Sample(normal_sampler, input.TexCoord).xyz;
+
     float3 tangent_normal = normal_sample * 2.0 - 1.0;
-    
-    float4 base_color_sample = base_tex.Sample(sam, input.TexCoord);
-    float3 emissive_sample = emissive_tex.Sample(sam, input.TexCoord).rgb;
-    
-    float4 final_base = float4(material.props.base_color, material.props.opacity) * base_color_sample;
-    
-    float3 final_emissive = material.props.emissive_color * material.props.emissive_intensity * emissive_sample;
-    
+
+    // 
+    Texture2D metallic_roughness_tex = ResourceDescriptorHeap[material.metallic_roughness.texture_index];
+
+    SamplerState metallic_roughness_sampler = SamplerDescriptorHeap[material.metallic_roughness.sampler_index];
+
+    float4 metallic_roughness_sample = metallic_roughness_tex.Sample( metallic_roughness_sampler, input.TexCoord);
+
+    // 
+    Texture2D emissive_tex = ResourceDescriptorHeap[material.emissive.texture_index];
+
+    SamplerState emissive_sampler = SamplerDescriptorHeap[material.emissive.sampler_index];
+
+    float3 emissive_sample = emissive_tex.Sample( emissive_sampler, input.TexCoord).rgb;
+
+
+    // Occlusion
+    Texture2D occlusion_tex = ResourceDescriptorHeap[material.occlusion.texture_index];
+
+    SamplerState occlusion_sampler = SamplerDescriptorHeap[material.occlusion.sampler_index];
+
+    float occlusion_sample = occlusion_tex.Sample( occlusion_sampler, input.TexCoord).r;
+
+
+    // Material properties
+    float4 final_base = float4( material.props.base_color, material.props.opacity)  * base_color_sample;
+
+    float3 final_emissive =
+    material.props.emissive_color
+    * material.props.emissive_intensity
+    * emissive_sample;
+
     float3 final_rgb = final_base.rgb + final_emissive;
     
 
-    //return float4(final_rgb, final_base.a);
-    //return float4(base_color_sample.rgb, final_base.a);
-    //return input.Color;
-    
-    
     switch (render_frame.debug_value)
     {
         case 0:
@@ -97,7 +121,7 @@ float4 main(VertexOut input) : SV_TARGET
             return float4(tangent_normal * 0.5 + 0.5, 1.0);
         case 7:
     // MaterialTable ID
-            return float4(DebugColor(material.base_color_tex_idx), 1.0);
+            return float4(DebugColor(material.base_color.texture_index), 1.0);
         case 8:
             return float4(
         saturate(input.TexCoord.x),

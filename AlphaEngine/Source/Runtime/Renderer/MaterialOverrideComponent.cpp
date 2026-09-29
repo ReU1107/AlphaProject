@@ -53,19 +53,19 @@ namespace Alpha::Renderer
     void MaterialOverrideComponent::SetBaseColorTextureIndex(UInt32 index, UInt32 tex_idx)
     {
         if (!IsValidIndex(index)) return;
-        materials[index].base_color_tex_idx = tex_idx;
+        materials[index].base_color.texture_index = tex_idx;
     }
 
     void MaterialOverrideComponent::SetNormalTextureIndex(UInt32 index, UInt32 tex_idx)
     {
         if (!IsValidIndex(index)) return;
-        materials[index].normal_tex_idx = tex_idx;
+        materials[index].normal.texture_index = tex_idx;
     }
 
     void MaterialOverrideComponent::SetMetallicRoughnessTextureIndex(UInt32 index, UInt32 tex_idx)
     {
         if (!IsValidIndex(index)) return;
-        materials[index].metallic_roughness_tex_idx = tex_idx;
+        materials[index].metallic_roughness.texture_index = tex_idx;
     }
 
     void MaterialOverrideComponent::SetMaterialName(UInt32 index, const TString& name)

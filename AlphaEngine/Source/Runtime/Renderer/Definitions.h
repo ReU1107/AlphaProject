@@ -48,18 +48,21 @@ namespace Alpha::Renderer
 		float3 specular_tint{ 1.0f, 1.0f, 1.0f };	// 鏡面反射の微調整用
 	};
 
+	struct TextureBindingData
+	{
+		UInt32 texture_index{ 0xFFFFFFFF };
+		UInt32 sampler_index;
+	};
+
 	struct MaterialData
 	{
 		MaterialProperties props{};
-		UInt32 base_color_tex_idx{ 0xFFFFFFFF };
-		UInt32 normal_tex_idx{ 0xFFFFFFFF };
-		UInt32 metallic_roughness_tex_idx{ 0xFFFFFFFF };
-		UInt32 emissive_tex_idx{ 0xFFFFFFFF };
 
-		UInt32 occlusion_tex_idx{ 0xFFFFFFFF };
-		UInt32 toon_tex_idx{ 0xFFFFFFFF };
-		UInt32 sphere_tex_idx{ 0xFFFFFFFF };
-		UInt32 flags{ 0 }; // マテリアルの種類（不透明・半透明など）を判別するフラグ用
+		TextureBindingData base_color{};
+		TextureBindingData normal{};
+		TextureBindingData metallic_roughness{};
+		TextureBindingData emissive{};
+		TextureBindingData occlusion{};
 	};
 
 	struct Meshlet

@@ -343,7 +343,14 @@ namespace Alpha::Renderer
             L"[NEW] ID={} Palette={}",
             handle_id,
             palette_index);
-        TMap<ETextureAttribute, UInt32> local_tex_cache;
+
+        struct TextureBindingCache
+        {
+            UInt32 texture_palette_index;
+            UInt32 sampler_index;
+        };
+
+        TMap<ETextureAttribute, TextureBindingCache> local_tex_cache;
 
         for (auto& texture : handle->GetTextures())
         {
@@ -351,7 +358,10 @@ namespace Alpha::Renderer
             if (attr == ETextureAttribute::None) 
                 continue;
 
-            local_tex_cache[attr] = RegisterTexture(texture.handle);
+            local_tex_cache[attr] = {
+                .texture_palette_index = RegisterTexture(texture.handle),
+                .sampler_index = static_cast<UInt32>(texture.sampler)
+            };
         }
 
         auto white_tex = m_default_white_texture_index;
@@ -362,22 +372,31 @@ namespace Alpha::Renderer
         {
             auto found = local_tex_cache.find(attr);
             
-            UInt32 index = fallback_index;
-            if (found != local_tex_cache.cend())
-                index = found->second;
+            TextureBindingData data{};
 
-            return m_texture_palette[index].tex.get()->GetSRVHandle().index;
+            if (found != local_tex_cache.cend())
+            {
+                UInt32 index = found->second.texture_palette_index;
+                data.texture_index = m_texture_palette[index].tex->GetSRVHandle().index;
+                data.sampler_index = found->second.sampler_index;
+            }
+            else
+            {
+                data.texture_index = m_texture_palette[fallback_index].tex->GetSRVHandle().index;
+                data.sampler_index = static_cast<UInt32>(ESamplerPresetType::LinearClamp);
+            }
+
+            return data;
         };
 
         material.data.props = handle->GetProperties();
 
-        material.data.base_color_tex_idx = GetTexture(ETextureAttribute::BaseColor, white_tex);
-        material.data.normal_tex_idx = GetTexture(ETextureAttribute::Normal, normal_tex);
-        material.data.metallic_roughness_tex_idx = GetTexture(ETextureAttribute::Metallic, white_tex);
-        material.data.emissive_tex_idx = GetTexture(ETextureAttribute::Emissive, black_tex);
-        material.data.occlusion_tex_idx = GetTexture(ETextureAttribute::Occlusion, white_tex);
-        material.data.toon_tex_idx = GetTexture(ETextureAttribute::Toon, white_tex);
-        material.data.sphere_tex_idx = GetTexture(ETextureAttribute::Sphere, white_tex);
+        material.data.base_color = GetTexture(ETextureAttribute::BaseColor, white_tex);
+        material.data.normal = GetTexture(ETextureAttribute::Normal, normal_tex);
+        material.data.metallic_roughness = GetTexture(ETextureAttribute::Metallic, white_tex);
+        material.data.emissive = GetTexture(ETextureAttribute::Emissive, black_tex);
+        material.data.occlusion = GetTexture(ETextureAttribute::Occlusion, white_tex);
+
 
         // MaterialTable方式をとるため1つずつ登録していく別に連続してなくても問題ない
         Allocation alloc{};
@@ -414,8 +433,6 @@ namespace Alpha::Renderer
             handle_id,
             palette_index);
 
-        if (texture.tex)
-            return texture.tex.get()->GetSRVHandle().index;
 
         auto tex = RenderCore::Get().CreateTexture(
             handle->GetWidth(),

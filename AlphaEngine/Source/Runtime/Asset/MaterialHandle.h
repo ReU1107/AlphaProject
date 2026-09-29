@@ -12,9 +12,10 @@ namespace Alpha
 	public:
 		struct TextureInfo
 		{
-			ETextureAttribute attribute{};
 			String path{};
 			TShared<TextureHandle> handle;
+			ESamplerPresetType sampler;
+			ETextureAttribute attribute{};
 		};
 
 	private:
@@ -32,7 +33,7 @@ namespace Alpha
 		const Renderer::MaterialProperties& GetProperties() const { return m_props; }
 
 		void AddTexturePath(ETextureAttribute attribute, StringView path);
-		void AddTexture(ETextureAttribute attribute, TShared<TextureHandle> handle);
+		void AddTexture(ETextureAttribute attribute, TShared<TextureHandle> handle, ESamplerPresetType sampler = ESamplerPresetType::LinearClamp);
 
 		TArray<TextureInfo>& GetTextures() { return m_referenced_textures; }
 		const TArray<TextureInfo>& GetTextures() const { return m_referenced_textures; }

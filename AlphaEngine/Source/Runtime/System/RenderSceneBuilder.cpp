@@ -218,16 +218,11 @@ namespace Alpha
 
         for (auto& material : materials)
         {
-            resolve(material.base_color_tex_idx);
+            resolve(material.base_color.texture_index);
+            resolve(material.normal.texture_index);
+            resolve(material.metallic_roughness.texture_index);
+            resolve(material.emissive.texture_index);
 
-            resolve(
-                material.normal_tex_idx);
-
-            resolve(
-                material.metallic_roughness_tex_idx);
-
-            resolve(
-                material.emissive_tex_idx);
         }
     }
 

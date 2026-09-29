@@ -36,15 +36,43 @@ namespace Alpha
 		DepthStencil2D,
 	};
 	
-	enum class ESamplerPresetType
-	{ 
-		PointClamp, 
-		LinearClamp,
-		LinearWrap,
-		AnisoWrap,
-		Shadow,
-		Count 
-	};
+    enum class ESamplerPresetType
+    {
+        // Point
+        PointClamp,
+        PointClampClampWrap,
+        PointClampWrapClamp,
+        PointClampWrapWrap,
+        PointWrapClampClamp,
+        PointWrapClampWrap,
+        PointWrapWrapClamp,
+        PointWrap,
+
+        // Linear
+        LinearClamp,
+        LinearClampClampWrap,
+        LinearClampWrapClamp,
+        LinearClampWrapWrap,
+        LinearWrapClampClamp,
+        LinearWrapClampWrap,
+        LinearWrapWrapClamp,
+        LinearWrap,
+
+        // Anisotropic
+        AnisoClamp,
+        AnisoClampClampWrap,
+        AnisoClampWrapClamp,
+        AnisoClampWrapWrap,
+        AnisoWrapClampClamp,
+        AnisoWrapClampWrap,
+        AnisoWrapWrapClamp,
+        AnisoWrap,
+
+        // Special
+        Shadow,
+
+        Count
+    };
 
 	EnumAsIndex(ESamplerPresetType);
 
