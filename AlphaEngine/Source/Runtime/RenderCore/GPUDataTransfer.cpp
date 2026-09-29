@@ -76,10 +76,22 @@ namespace Alpha
 
 			if (!m_staging_allocator.Allocate(request.size, GetUploadAlignment(request.type), &offset))
 			{
-				// バッファが一杯なのでこの段階で予定されてる分をアップロードする
-				// で一度リセットしてからもう一度リクエスト処理に戻す
+
+				m_copy_list->End();
+
+				m_copy_queue->Execute(m_copy_list.get());
+				auto fence_value = m_copy_queue->Signal(m_copy_fence.get());
+
+				m_copy_fence->WaitCPU(fence_value);
+
 				m_staging_allocator.Reset();
-				// ↑ていうのを後でやる;;
+
+				m_copy_list->Begin(0);
+
+				// 
+				bool success = m_staging_allocator.Allocate( request.size, GetUploadAlignment(request.type), &offset);
+
+				ALPHA_CHECK_FATAL(success, L"");
 			}
 			UInt8* dest = ptr + offset;
 
@@ -118,6 +130,6 @@ namespace Alpha
 	{
 		auto fence_value = UploadAsync();
 
-		m_copy_fence->WaitCPU();
+		m_copy_fence->WaitCPU(fence_value);
 	}
 }

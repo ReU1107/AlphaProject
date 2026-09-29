@@ -19,6 +19,7 @@ namespace Alpha
 		float3 camera_right;
 
 		UInt32 light_count;
+		UInt32 debug_value;
 	};
 
 }

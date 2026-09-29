@@ -24,22 +24,6 @@ float3 GetRandomColor(uint id)
     return float3((h & 0xFFu), ((h >> 8u) & 0xFFu), ((h >> 16u) & 0xFFu)) / 255.0f;
 }
 
-float3 DebugColor(uint id)
-{
-    uint h = id;
-
-    h ^= h >> 16;
-    h *= 0x7feb352d;
-    h ^= h >> 15;
-    h *= 0x846ca68b;
-    h ^= h >> 16;
-
-    return float3(
-        float((h >> 0) & 0xff) / 255.0,
-        float((h >> 8) & 0xff) / 255.0,
-        float((h >> 16) & 0xff) / 255.0);
-}
-
 [NumThreads(128, 1, 1)]
 [OutputTopology("triangle")]
 void main(
@@ -115,7 +99,7 @@ void main(
         // 座標変換して出力
         outputs[gtid].Position = mul(mat, float4(position, 1.0f));
         
-        outputs[gtid].Color = float4(DebugColor(instance.mesh_index), 1.0f);
+        outputs[gtid].Color = float4(0.0f, 0.0f, 0.0f, 1.0f);
         outputs[gtid].TexCoord = uv;
         outputs[gtid].Normal = normal;
         outputs[gtid].MaterialTableID = mesh.material_table_index;

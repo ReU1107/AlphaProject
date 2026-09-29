@@ -93,7 +93,7 @@ namespace Alpha
 		{
 			GPUDataTransfer::Args desc = {
 				.render_core = this,
-				.staging_buffer_size = 512_MB,
+				.staging_buffer_size = 1024_MB,
 			};
 			m_gpu_data_transfer->Initialize(desc);
 		}
@@ -163,7 +163,7 @@ namespace Alpha
 	{
 		if (m_timeline)
 		{
-			m_timeline->WaitCPU();
+			m_timeline->WaitCPULatest();
 		}
 
 		m_transient_allocator.reset();

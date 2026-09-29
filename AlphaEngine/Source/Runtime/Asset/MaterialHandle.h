@@ -32,6 +32,7 @@ namespace Alpha
 		const Renderer::MaterialProperties& GetProperties() const { return m_props; }
 
 		void AddTexturePath(ETextureAttribute attribute, StringView path);
+		void AddTexture(ETextureAttribute attribute, TShared<TextureHandle> handle);
 
 		TArray<TextureInfo>& GetTextures() { return m_referenced_textures; }
 		const TArray<TextureInfo>& GetTextures() const { return m_referenced_textures; }

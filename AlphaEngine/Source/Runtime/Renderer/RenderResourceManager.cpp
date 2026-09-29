@@ -330,11 +330,19 @@ namespace Alpha::Renderer
 
         if (m_material_palette.TryGetIndex(handle_id, &palette_index))
         {
+            ALPHA_LOG_INFO(
+                L"[HIT] ID={} Palette={}",
+                handle_id,
+                palette_index);
             return palette_index;
         }
 
         Material& material = m_material_palette.Allocate(handle_id, palette_index);
 
+        ALPHA_LOG_INFO(
+            L"[NEW] ID={} Palette={}",
+            handle_id,
+            palette_index);
         TMap<ETextureAttribute, UInt32> local_tex_cache;
 
         for (auto& texture : handle->GetTextures())
@@ -386,12 +394,25 @@ namespace Alpha::Renderer
         UInt64 handle_id = handle->GetID();
         UInt32 palette_index = 0;
 
+
         if (m_texture_palette.TryGetIndex(handle_id, &palette_index))
         {
+
+            ALPHA_LOG_INFO(
+                L"[HIT] ID={} Palette={}",
+                handle_id,
+                palette_index);
+
             return palette_index;
         }
 
+
+
         TextureResource& texture = m_texture_palette.Allocate(handle_id, palette_index);
+        ALPHA_LOG_INFO(
+            L"[NEW] ID={} Palette={}",
+            handle_id,
+            palette_index);
 
         if (texture.tex)
             return texture.tex.get()->GetSRVHandle().index;

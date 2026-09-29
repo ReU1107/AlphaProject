@@ -5,6 +5,7 @@
 #include "Importer/VMD/VMDLoader.h"
 #include "Importer/WIC/WICLoader.h"
 #include "Importer/HLSL/HLSLLoader.h"
+#include "Importer/DDS/DDSLoader.h"
 
 #include "TextureHandle.h"
 #include "MaterialHandle.h"
@@ -42,6 +43,7 @@ namespace Alpha
 		RegisterLoader(L".jpg", wic);
 		RegisterLoader(L".bmp", wic);
 		RegisterLoader(L".jpeg", wic);
+		RegisterLoader(L".dds", new DDSLoader());
 
 		RegisterLoader(L".hlsl", new HLSLLoader());
 

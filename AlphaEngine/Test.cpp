@@ -6,7 +6,7 @@
 #include <dxgidebug.h>
 #include <windows.h>
 
-
+#include "Source/Core/Common.h"
 #include "Source/Core/Window/WindowSystem.h"
 
 #include "Source/Runtime/RenderCore/Module.h"
@@ -53,8 +53,182 @@ using namespace Alpha::Renderer;
 using namespace Alpha::Particle;
 using namespace Alpha::Animation;
 
+struct FBXImportContext
+{
+    String asset_prefix;
 
-TShared<ModelHandle> ConvertModel(ufbx_mesh* mesh)
+    TMap<const ufbx_material*, TShared<MaterialHandle>> materials;
+    TMap<const ufbx_texture*, TShared<TextureHandle>> textures;
+};
+
+TShared<TextureHandle> ConvertTexture(
+    ufbx_texture* texture,
+    FBXImportContext& context)
+{
+    if (!texture)
+        return nullptr;
+
+    auto found = context.textures.find(texture);
+    if (found != context.textures.end())
+        return found->second;
+
+    // shader/layered textureの場合も、実ファイルへ辿れるなら最初のものを使う
+    ufbx_texture* file_texture = texture;
+
+    if (file_texture->type != UFBX_TEXTURE_FILE)
+    {
+        if (file_texture->file_textures.count == 0)
+            return nullptr;
+
+        file_texture =
+            file_texture->file_textures.data[0];
+    }
+
+    if (file_texture->filename.length == 0)
+        return nullptr;
+
+    std::string path_utf8(
+        file_texture->filename.data,
+        file_texture->filename.length);
+
+    std::filesystem::path fs_path(path_utf8);
+    fs_path = fs_path.lexically_normal();
+    fs_path.make_preferred();
+
+    String path = fs_path.native();
+
+    auto handle =
+        AssetManager::Get().Load<TextureHandle>(path);
+    handle->SetName(path);
+
+    if (!handle)
+        return nullptr;
+
+    context.textures.emplace(texture, handle);
+
+    return handle;
+}
+
+TShared<MaterialHandle> ConvertMaterial(
+    ufbx_material* material,
+    FBXImportContext& context)
+{
+    if (!material)
+        return AssetManager::Get().GetDefaultMaterial();
+
+    auto found = context.materials.find(material);
+    if (found != context.materials.end())
+        return found->second;
+
+    auto handle =
+        std::make_shared<MaterialHandle>();
+
+    const String name =
+        context.asset_prefix +
+        L"/Material/" +
+        std::to_wstring(material->typed_id);
+
+    handle->SetName(name);
+
+    const auto& pbr = material->pbr;
+
+    // BaseColor
+    if (pbr.base_color.texture &&
+        pbr.base_color.texture_enabled)
+    {
+        auto texture =
+            ConvertTexture(
+            pbr.base_color.texture,
+            context);
+        auto tex = pbr.base_color.texture;
+        if (texture)
+        {
+            handle->AddTexture(
+                ETextureAttribute::BaseColor,
+                texture);
+            auto format = texture->GetFormat();
+
+            texture->SetFormat(ToSRGBFormat(format));
+        }
+    }
+
+    // Normal
+    if (pbr.normal_map.texture &&
+        pbr.normal_map.texture_enabled)
+    {
+        auto texture =
+            ConvertTexture(
+            pbr.normal_map.texture,
+            context);
+
+        if (texture)
+        {
+            handle->AddTexture(
+                ETextureAttribute::Normal,
+                texture);
+        }
+    }
+
+    // Metalness
+    if (pbr.metalness.texture &&
+        pbr.metalness.texture_enabled)
+    {
+        auto texture =
+            ConvertTexture(
+            pbr.metalness.texture,
+            context);
+
+        if (texture)
+        {
+            handle->AddTexture(
+                ETextureAttribute::Metallic,
+                texture);
+        }
+    }
+
+    // Emissive
+    if (pbr.emission_color.texture &&
+        pbr.emission_color.texture_enabled)
+    {
+        auto texture =
+            ConvertTexture(
+            pbr.emission_color.texture,
+            context);
+
+        if (texture)
+        {
+            handle->AddTexture(
+                ETextureAttribute::Emissive,
+                texture);
+        }
+    }
+
+    // AO
+    if (pbr.ambient_occlusion.texture &&
+        pbr.ambient_occlusion.texture_enabled)
+    {
+        auto texture =
+            ConvertTexture(
+            pbr.ambient_occlusion.texture,
+            context);
+
+        if (texture)
+        {
+            handle->AddTexture(
+                ETextureAttribute::Occlusion,
+                texture);
+        }
+    }
+
+    AssetManager::Get().RegisterAsset(name, handle);
+
+    context.materials.emplace(material, handle);
+
+    return handle;
+}
+
+
+TShared<ModelHandle> ConvertModel(ufbx_mesh* mesh, FBXImportContext& context)
 {
     if (!mesh || mesh->num_triangles == 0)
         return nullptr;
@@ -76,7 +250,21 @@ TShared<ModelHandle> ConvertModel(ufbx_mesh* mesh)
         float v;
     };
 
+    String mesh_name = std::filesystem::path(std::string(
+        mesh->name.data,
+        mesh->name.length)).c_str();
+
+
+    String name =
+        context.asset_prefix +
+        L"/Mesh/" +
+        mesh_name +
+        L"_" +
+        std::to_wstring(mesh->typed_id);
+
+
     auto model = std::make_shared<ModelHandle>();
+    model->SetName(name);
 
     TArray<Vertex> vertices;
     TArray<UInt32> indices;
@@ -87,6 +275,7 @@ TShared<ModelHandle> ConvertModel(ufbx_mesh* mesh)
 
     auto material_table =
         std::make_shared<MaterialTableHandle>();
+    material_table->SetName(model->GetName() + L"/MaterialTable");
 
     auto default_material =
         AssetManager::Get().GetDefaultMaterial();
@@ -159,7 +348,7 @@ TShared<ModelHandle> ConvertModel(ufbx_mesh* mesh)
                         static_cast<float>(normal.z),
 
                         static_cast<float>(uv.x),
-                        static_cast<float>(uv.y),
+                        1.0f - static_cast<float>(uv.y),
                     });
             }
         }
@@ -169,7 +358,22 @@ TShared<ModelHandle> ConvertModel(ufbx_mesh* mesh)
             submesh.index_element_offset;
 
         submeshes.push_back(submesh);
-        material_table->AddMaterial(default_material);
+
+
+        TShared<MaterialHandle> material = default_material;
+
+        if (part.index < mesh->materials.count)
+        {
+            if (ufbx_material* fbx_material = mesh->materials[part.index])
+            {
+                material =
+                    ConvertMaterial(
+                    fbx_material,
+                    context);
+            }
+        }
+
+        material_table->AddMaterial(material);
     }
 
     if (vertices.empty())
@@ -308,22 +512,18 @@ void TestLoader(
     UInt64 total_fbx_vertices = 0;
     UInt64 total_generated_vertices = 0;
 
+    FBXImportContext context{};
+    context.asset_prefix = L"BistroExterior";
+
     for (ufbx_mesh* mesh : fbx_scene->meshes)
     {
-        auto model = ConvertModel(mesh);
+        auto model = ConvertModel(mesh, context);
         if (!model)
             continue;
 
-        // 同名の FBX mesh があっても識別できる名前にする。
-        const String name =
-            asset_prefix +
-            L"/Mesh/" +
-            std::to_wstring(model_number++);
-
-        model->SetName(name);
 
         // AssetManager は生成済みモデルを保持するだけ。
-        AssetManager::Get().RegisterAsset(name, model);
+        AssetManager::Get().RegisterAsset(model->GetName(), model);
 
         const UInt32 mesh_index =
             RenderResourceManager::Get().RegisterMesh(model);
@@ -331,11 +531,11 @@ void TestLoader(
         models.emplace(mesh, model);
         mesh_indices.emplace(mesh, mesh_index);
 
-        ALPHA_LOG_INFO(
-            L"Mesh {}: vertices={}, indices={}",
-            model->GetName().c_str(),
-            model->GetPositions().size(),
-            model->GetIndices().size());
+        //ALPHA_LOG_INFO(
+        //    L"Mesh {}: vertices={}, indices={}",
+        //    model->GetName().c_str(),
+        //    model->GetPositions().size(),
+        //    model->GetIndices().size());
 
         total_fbx_vertices += mesh->num_vertices;
         total_generated_vertices += model->GetPositions().size();
@@ -343,18 +543,31 @@ void TestLoader(
 
 
     }
-    ALPHA_LOG_INFO(
-        L"FBX vertices: {}",
-        total_fbx_vertices);
+    //ALPHA_LOG_INFO(
+    //    L"FBX vertices: {}",
+    //    total_fbx_vertices);
 
-    ALPHA_LOG_INFO(
-        L"Generated vertices: {}",
-        total_generated_vertices);
+    //ALPHA_LOG_INFO(
+    //    L"Generated vertices: {}",
+    //    total_generated_vertices);
 
-    ALPHA_LOG_INFO(
-        L"Generated indices: {}",
-        total_indices);
+    //ALPHA_LOG_INFO(
+    //    L"Generated indices: {}",
+    //    total_indices);
     UInt32 object_number = 0;
+
+    //for (auto& tex : context.textures)
+    //{
+    //    
+    //    String path = std::filesystem::path(std::string(
+    //        tex.first->filename.data,
+    //        tex.first->filename.length)).c_str();
+
+    //    ALPHA_LOG_INFO(
+    //        L"Texture: {} Format={}",
+    //        path.c_str(),
+    //        ToString(tex.second->GetFormat()).c_str());
+    //}
 
     // 2. Node ごとにオブジェクトを生成。
     // 同じ mesh を参照する Node は同じ GPU mesh を使う。
@@ -532,31 +745,31 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     auto& registry = scene.GetRegistry();
 
-    SceneObject& object = scene.CreateObject(L"akari");
+    //SceneObject& object = scene.CreateObject(L"akari");
 
-    auto& transform = object.GetComponent<TransformComponent>();
+    //auto& transform = object.GetComponent<TransformComponent>();
 
-    transform.SetLocalPosition( Vector3(0.0f, 0.5f, 0.0f));
+    //transform.SetLocalPosition( Vector3(0.0f, 0.5f, 0.0f));
 
-    auto& mesh = object.AddComponent<MeshComponent>();
+    //auto& mesh = object.AddComponent<MeshComponent>();
 
-    mesh.mesh_index = akari_index;
-    mesh.visible = true;
+    //mesh.mesh_index = akari_index;
+    //mesh.visible = true;
 
-    auto& anim = object.AddComponent<AnimationComponent>();
-    anim.m_state_machine = blueprint.Instantiate();
-    anim.m_pose = std::make_unique<SkeletonPose>();
-    anim.m_pose->SetSkeleton(skeleton);
-    anim.m_current_pose.bone_transforms.resize(512);
+    //auto& anim = object.AddComponent<AnimationComponent>();
+    //anim.m_state_machine = blueprint.Instantiate();
+    //anim.m_pose = std::make_unique<SkeletonPose>();
+    //anim.m_pose->SetSkeleton(skeleton);
+    //anim.m_current_pose.bone_transforms.resize(512);
 
-    anim.Play();
+    //anim.Play();
 
     {
         SceneObject& object =  scene.CreateObject(L"MainCamera");
 
         auto& transform = object.GetComponent<TransformComponent>();
 
-        transform.SetLocalPosition( Vector3(0.0f, 8.8f, -54.0f));
+        transform.SetLocalPosition( Vector3(-20.0f, 5.f, -10.0f));
 
         transform.LookAt(Vector3(0.0f, -0.023f, 1.0f));
 
@@ -582,6 +795,22 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     AnimationSystem anim_sys;
 
     static float speed = 2.0f;
+
+    int debug_value = 0;
+
+    static const char* debug_view_names[] =
+    {
+        "None",
+        "BaseColor",
+        "WorldNormal",
+        "UV",
+        "MaterialID",
+        "MaterialTableID",
+        "NormalTexture",
+        "BaseColorIndex",
+        "UVRaw",
+        "UVRange",
+    };
 
     while (WindowSystem::Get().ProcessMessages() && !WindowSystem::Get().ShouldClose())
     {
@@ -612,11 +841,26 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         ImGui::End();
 
         ImGui::Begin("Inspector");
-        static float pos[3] = { 0.0f, 0.0f, 0.0f };
-        ImGui::DragFloat3("Position", pos, 0.1f);
 
-        ImGui::SliderFloat("Speed", &speed, 0.1f, 5.0f);
-        anim.SetParameter(L"Speed", speed);
+        auto camera_view = registry.view<CameraComponent, TransformComponent>();
+
+        entt::entity camera_entity = camera_view.front();
+        auto& camera = camera_view.get<CameraComponent>(camera_entity);
+        auto& camera_t = camera_view.get<TransformComponent>(camera_entity);
+
+        float* pos = camera_t.GetWorldMatrix()._4().data();
+
+        ImGui::InputFloat3("Position", pos, "%.2f", ImGuiInputTextFlags_ReadOnly);
+
+        ImGui::SeparatorText("Render Debug");
+
+        ImGui::Combo(
+            "Debug View",
+            &debug_value,
+            debug_view_names,
+            IM_ARRAYSIZE(debug_view_names));
+
+
         ImGui::End();
 
 
@@ -640,6 +884,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         ctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
         ctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
         ctx.current_back_buffer = RenderCore::Get().GetCurrentRenderTarget();
+        ctx.debug_value = debug_value;
 
         // 暫定でここに置いてるけどどこにおこう
         RenderCore::Get().GetASBuilder()->RecordBuildCommands(ctx.command_list);

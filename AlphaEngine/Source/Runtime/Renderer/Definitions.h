@@ -405,6 +405,8 @@ namespace Alpha::Renderer
 		UInt32 width{ 0 };
 		UInt32 height{ 0 };
 
+		UInt32 debug_value{ 0 };
+
 	};
 
 

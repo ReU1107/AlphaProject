@@ -10,7 +10,6 @@ namespace Alpha
 	{
 	private:
 		TUnique<RHITimeline> m_rhi{ nullptr };
-		UInt64 m_current_value{ 0 };
 		// 各フレーム（バックバッファ）が最後に発行したフェンス値を記録する
 		TArray<UInt64> m_frame_values;
 
@@ -32,10 +31,12 @@ namespace Alpha
 		RHITimeline* GetRHI() const;
 
 		UInt64 GetNextValue();
+		UInt64 GetCurrentValue() const;
 
 		void WaitCPUCurrentFrame(UInt32 next_swapchain_index);
 
-		void WaitCPU();
+		void WaitCPU(UInt64 value);
+		void WaitCPULatest();
 
 
 	};

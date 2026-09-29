@@ -29,6 +29,11 @@ namespace Alpha
 		return m_global_value;
 	}
 
+	UInt64 Timeline::GetCurrentValue() const
+	{
+		return m_global_value;
+	}
+
 	void Timeline::WaitCPUCurrentFrame(UInt32 next_swapchain_index)
 	{
 		UInt64 target_value = m_frame_values[next_swapchain_index];
@@ -37,8 +42,15 @@ namespace Alpha
 		m_current_buffer_index = next_swapchain_index;
 	}
 
-	void Timeline::WaitCPU()
+	void Timeline::WaitCPU(UInt64 value)
 	{
-		m_rhi->WaitCPU(m_current_value);
+		m_rhi->WaitCPU(value);
 	}
+
+	void Timeline::WaitCPULatest()
+	{
+		m_rhi->WaitCPU(m_global_value);
+
+	}
+
 }

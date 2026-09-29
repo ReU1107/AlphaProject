@@ -119,6 +119,7 @@ namespace Alpha
 		constants.camera_pos = camera_t.GetWorldMatrix()._4();
 		constants.camera_right = Matrix4x4Right(camera_t.GetWorldMatrix());
 		constants.camera_up = Matrix4x4Up(camera_t.GetWorldMatrix());
+		constants.debug_value = ctx.debug_value;
 
 		ctx.inv_view_proj = constants.inv_view_proj;
 
