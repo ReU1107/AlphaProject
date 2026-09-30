@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Core/Types.h"
+#include "Core/String/String.h"
 #include "Core/EnumClassUtil.h"
 
 namespace Alpha
@@ -246,6 +247,203 @@ namespace Alpha
 		BC7Unorm,            // 高画質RGBA圧縮 (近代的な標準)
 		BC7UnormSRGB,        // 
 	};
+
+	constexpr StringView ToString(ERHIResourceFormat format)
+	{
+		switch (format)
+		{
+		case ERHIResourceFormat::Unknown:             return L"Unknown";
+
+		case ERHIResourceFormat::RGBAUnorm:           return L"RGBAUnorm";
+		case ERHIResourceFormat::RGBAUnormSRGB:       return L"RGBAUnormSRGB";
+		case ERHIResourceFormat::RGBASnorm:           return L"RGBASnorm";
+		case ERHIResourceFormat::RGBA32UInt:          return L"RGBA32UInt";
+		case ERHIResourceFormat::RGBA32SInt:          return L"RGBA32SInt";
+
+		case ERHIResourceFormat::RGBA16Float:         return L"RGBA16Float";
+		case ERHIResourceFormat::RGBAHalf:            return L"RGBAHalf";
+		case ERHIResourceFormat::RGBA16Unorm:         return L"RGBA16Unorm";
+		case ERHIResourceFormat::RGBA16UInt:          return L"RGBA16UInt";
+		case ERHIResourceFormat::RGBA16SInt:          return L"RGBA16SInt";
+
+		case ERHIResourceFormat::RGBAFloat:           return L"RGBAFloat";
+		case ERHIResourceFormat::RGBA32Float:         return L"RGBA32Float";
+		case ERHIResourceFormat::RGBA32UInt128:       return L"RGBA32UInt128";
+		case ERHIResourceFormat::RGBA32SInt128:       return L"RGBA32SInt128";
+
+		case ERHIResourceFormat::RGBFloat:            return L"RGBFloat";
+		case ERHIResourceFormat::RGB10A2Unorm:        return L"RGB10A2Unorm";
+		case ERHIResourceFormat::R11G11B10Float:      return L"R11G11B10Float";
+
+		case ERHIResourceFormat::RG8Unorm:            return L"RG8Unorm";
+		case ERHIResourceFormat::RG8UInt:             return L"RG8UInt";
+		case ERHIResourceFormat::RGFloat:             return L"RGFloat";
+		case ERHIResourceFormat::RGHalf:              return L"RGHalf";
+		case ERHIResourceFormat::RG16Unorm:           return L"RG16Unorm";
+		case ERHIResourceFormat::RG16UInt:            return L"RG16UInt";
+		case ERHIResourceFormat::RGUInt:              return L"RGUInt";
+
+		case ERHIResourceFormat::R8Unorm:             return L"R8Unorm";
+		case ERHIResourceFormat::R8UInt:              return L"R8UInt";
+		case ERHIResourceFormat::RHalf:               return L"RHalf";
+		case ERHIResourceFormat::R16Unorm:            return L"R16Unorm";
+		case ERHIResourceFormat::R16UInt:             return L"R16UInt";
+		case ERHIResourceFormat::RFloat:              return L"RFloat";
+		case ERHIResourceFormat::RUInt:               return L"RUInt";
+
+		case ERHIResourceFormat::BGRA8Unorm:          return L"BGRA8Unorm";
+		case ERHIResourceFormat::BGRA8UnormSRGB:      return L"BGRA8UnormSRGB";
+
+		case ERHIResourceFormat::Depth32:             return L"Depth32";
+		case ERHIResourceFormat::Depth16:             return L"Depth16";
+		case ERHIResourceFormat::Depth24Stencil8:     return L"Depth24Stencil8";
+		case ERHIResourceFormat::Depth32Stencil8:     return L"Depth32Stencil8";
+
+		case ERHIResourceFormat::BC1Unorm:            return L"BC1Unorm";
+		case ERHIResourceFormat::BC1UnormSRGB:        return L"BC1UnormSRGB";
+		case ERHIResourceFormat::BC2Unorm:            return L"BC2Unorm";
+		case ERHIResourceFormat::BC2UnormSRGB:        return L"BC2UnormSRGB";
+		case ERHIResourceFormat::BC3Unorm:            return L"BC3Unorm";
+		case ERHIResourceFormat::BC3UnormSRGB:        return L"BC3UnormSRGB";
+		case ERHIResourceFormat::BC4Unorm:            return L"BC4Unorm";
+		case ERHIResourceFormat::BC4Snorm:            return L"BC4Snorm";
+		case ERHIResourceFormat::BC5Unorm:            return L"BC5Unorm";
+		case ERHIResourceFormat::BC5Snorm:            return L"BC5Snorm";
+
+		case ERHIResourceFormat::BC6HUFloat:          return L"BC6HUFloat";
+		case ERHIResourceFormat::BC6HSFloat:          return L"BC6HSFloat";
+
+		case ERHIResourceFormat::BC7Unorm:            return L"BC7Unorm";
+		case ERHIResourceFormat::BC7UnormSRGB:        return L"BC7UnormSRGB";
+		}
+
+		return L"Unknown";
+	}
+
+	constexpr bool IsSRGBFormat(ERHIResourceFormat format)
+	{
+		switch (format)
+		{
+		case ERHIResourceFormat::RGBAUnormSRGB:
+		case ERHIResourceFormat::BGRA8UnormSRGB:
+		case ERHIResourceFormat::BC1UnormSRGB:
+		case ERHIResourceFormat::BC2UnormSRGB:
+		case ERHIResourceFormat::BC3UnormSRGB:
+		case ERHIResourceFormat::BC7UnormSRGB:
+			return true;
+
+		default:
+			return false;
+		}
+	}
+
+	constexpr bool IsBCFormat(ERHIResourceFormat format)
+	{
+		switch (format)
+		{
+		case ERHIResourceFormat::BC1Unorm:
+		case ERHIResourceFormat::BC1UnormSRGB:
+		case ERHIResourceFormat::BC2Unorm:
+		case ERHIResourceFormat::BC2UnormSRGB:
+		case ERHIResourceFormat::BC3Unorm:
+		case ERHIResourceFormat::BC3UnormSRGB:
+		case ERHIResourceFormat::BC4Unorm:
+		case ERHIResourceFormat::BC4Snorm:
+		case ERHIResourceFormat::BC5Unorm:
+		case ERHIResourceFormat::BC5Snorm:
+		case ERHIResourceFormat::BC6HUFloat:
+		case ERHIResourceFormat::BC6HSFloat:
+		case ERHIResourceFormat::BC7Unorm:
+		case ERHIResourceFormat::BC7UnormSRGB:
+			return true;
+
+		default:
+			return false;
+		}
+	}
+
+	constexpr UInt32 GetFormatBlockSize(ERHIResourceFormat format)
+	{
+		switch (format)
+		{
+			// 4x4 pixels = 8 bytes
+		case ERHIResourceFormat::BC1Unorm:
+		case ERHIResourceFormat::BC1UnormSRGB:
+		case ERHIResourceFormat::BC4Unorm:
+		case ERHIResourceFormat::BC4Snorm:
+			return 8;
+
+			// 4x4 pixels = 16 bytes
+		case ERHIResourceFormat::BC2Unorm:
+		case ERHIResourceFormat::BC2UnormSRGB:
+		case ERHIResourceFormat::BC3Unorm:
+		case ERHIResourceFormat::BC3UnormSRGB:
+		case ERHIResourceFormat::BC5Unorm:
+		case ERHIResourceFormat::BC5Snorm:
+		case ERHIResourceFormat::BC6HUFloat:
+		case ERHIResourceFormat::BC6HSFloat:
+		case ERHIResourceFormat::BC7Unorm:
+		case ERHIResourceFormat::BC7UnormSRGB:
+			return 16;
+
+		default:
+			return 0;
+		}
+	}
+
+	constexpr ERHIResourceFormat ToSRGBFormat(ERHIResourceFormat format)
+	{
+		switch (format)
+		{
+		case ERHIResourceFormat::RGBAUnorm:
+			return ERHIResourceFormat::RGBAUnormSRGB;
+
+		case ERHIResourceFormat::BGRA8Unorm:
+			return ERHIResourceFormat::BGRA8UnormSRGB;
+
+		case ERHIResourceFormat::BC1Unorm:
+			return ERHIResourceFormat::BC1UnormSRGB;
+
+		case ERHIResourceFormat::BC2Unorm:
+			return ERHIResourceFormat::BC2UnormSRGB;
+
+		case ERHIResourceFormat::BC3Unorm:
+			return ERHIResourceFormat::BC3UnormSRGB;
+
+		case ERHIResourceFormat::BC7Unorm:
+			return ERHIResourceFormat::BC7UnormSRGB;
+
+		default:
+			return format;
+		}
+	}
+
+	constexpr ERHIResourceFormat ToLinearFormat(ERHIResourceFormat format)
+	{
+		switch (format)
+		{
+		case ERHIResourceFormat::RGBAUnormSRGB:
+			return ERHIResourceFormat::RGBAUnorm;
+
+		case ERHIResourceFormat::BGRA8UnormSRGB:
+			return ERHIResourceFormat::BGRA8Unorm;
+
+		case ERHIResourceFormat::BC1UnormSRGB:
+			return ERHIResourceFormat::BC1Unorm;
+
+		case ERHIResourceFormat::BC2UnormSRGB:
+			return ERHIResourceFormat::BC2Unorm;
+
+		case ERHIResourceFormat::BC3UnormSRGB:
+			return ERHIResourceFormat::BC3Unorm;
+
+		case ERHIResourceFormat::BC7UnormSRGB:
+			return ERHIResourceFormat::BC7Unorm;
+
+		default:
+			return format;
+		}
+	}
 
 	enum class ERHIIndexFormat
 	{

@@ -6,7 +6,7 @@
 #include <dxgidebug.h>
 #include <windows.h>
 
-
+#include "Source/Core/Common.h"
 #include "Source/Core/Window/WindowSystem.h"
 
 #include "Source/Runtime/RenderCore/Module.h"
@@ -53,8 +53,207 @@ using namespace Alpha::Renderer;
 using namespace Alpha::Particle;
 using namespace Alpha::Animation;
 
+struct FBXImportContext
+{
+    String asset_prefix;
 
-TShared<ModelHandle> ConvertModel(ufbx_mesh* mesh)
+    TMap<const ufbx_material*, TShared<MaterialHandle>> materials;
+    TMap<const ufbx_texture*, TShared<TextureHandle>> textures;
+};
+ESamplerPresetType ConvertSampler(ufbx_wrap_mode wrap_u, ufbx_wrap_mode wrap_v)
+{
+    const bool u_wrap = wrap_u == UFBX_WRAP_REPEAT;
+    const bool v_wrap = wrap_v == UFBX_WRAP_REPEAT;
+
+    if (u_wrap && v_wrap)
+        return ESamplerPresetType::LinearWrap;
+
+    if (u_wrap)
+        return ESamplerPresetType::LinearWrapClampClamp;
+
+    if (v_wrap)
+        return ESamplerPresetType::LinearClampWrapClamp;
+
+    return ESamplerPresetType::LinearClamp;
+}
+
+TShared<TextureHandle> ConvertTexture(
+    ufbx_texture* texture,
+    FBXImportContext& context)
+{
+    if (!texture)
+        return nullptr;
+
+    auto found = context.textures.find(texture);
+    if (found != context.textures.end())
+        return found->second;
+
+    // shader/layered textureの場合も、実ファイルへ辿れるなら最初のものを使う
+    ufbx_texture* file_texture = texture;
+
+    if (file_texture->type != UFBX_TEXTURE_FILE)
+    {
+        if (file_texture->file_textures.count == 0)
+            return nullptr;
+
+        file_texture =
+            file_texture->file_textures.data[0];
+    }
+
+    if (file_texture->filename.length == 0)
+        return nullptr;
+
+    std::string path_utf8(
+        file_texture->filename.data,
+        file_texture->filename.length);
+
+    std::filesystem::path fs_path(path_utf8);
+    fs_path = fs_path.lexically_normal();
+    fs_path.make_preferred();
+
+    String path = fs_path.native();
+
+    auto handle =
+        AssetManager::Get().Load<TextureHandle>(path);
+    handle->SetName(path);
+
+    if (!handle)
+        return nullptr;
+
+    context.textures.emplace(texture, handle);
+
+    return handle;
+}
+
+TShared<MaterialHandle> ConvertMaterial(
+    ufbx_material* material,
+    FBXImportContext& context)
+{
+    if (!material)
+        return AssetManager::Get().GetDefaultMaterial();
+
+    auto found = context.materials.find(material);
+    if (found != context.materials.end())
+        return found->second;
+
+    auto handle =
+        std::make_shared<MaterialHandle>();
+
+    const String name =
+        context.asset_prefix +
+        L"/Material/" +
+        std::to_wstring(material->typed_id);
+
+    handle->SetName(name);
+
+    const auto& pbr = material->pbr;
+
+    // BaseColor
+    if (pbr.base_color.texture &&
+        pbr.base_color.texture_enabled)
+    {
+        auto texture =
+            ConvertTexture(
+            pbr.base_color.texture,
+            context);
+        auto tex = pbr.base_color.texture;
+        if (texture)
+        {
+            auto format = texture->GetFormat();
+
+            texture->SetFormat(ToSRGBFormat(format));
+
+            ESamplerPresetType sampler = ConvertSampler(pbr.base_color.texture->wrap_u, pbr.base_color.texture->wrap_v);
+            handle->AddTexture(
+                ETextureAttribute::BaseColor,
+                texture, sampler);
+
+        }
+    }
+
+    // Normal
+    if (pbr.normal_map.texture &&
+        pbr.normal_map.texture_enabled)
+    {
+        auto texture =
+            ConvertTexture(
+            pbr.normal_map.texture,
+            context);
+
+        if (texture)
+        {
+            ESamplerPresetType sampler = ConvertSampler(pbr.normal_map.texture->wrap_u, pbr.normal_map.texture->wrap_v);
+            handle->AddTexture(
+                ETextureAttribute::Normal,
+                texture, sampler);
+        }
+    }
+
+    // Metalness
+    if (pbr.metalness.texture &&
+        pbr.metalness.texture_enabled)
+    {
+
+        auto texture =
+            ConvertTexture(
+            pbr.metalness.texture,
+            context);
+
+        if (texture)
+        {
+            ESamplerPresetType sampler = ConvertSampler(pbr.metalness.texture->wrap_u, pbr.metalness.texture->wrap_v);
+
+            handle->AddTexture(
+                ETextureAttribute::Metallic,
+                texture, sampler);
+        }
+    }
+
+    // Emissive
+    if (pbr.emission_color.texture &&
+        pbr.emission_color.texture_enabled)
+    {
+        auto texture =
+            ConvertTexture(
+            pbr.emission_color.texture,
+            context);
+
+        if (texture)
+        {
+            ESamplerPresetType sampler = ConvertSampler(pbr.emission_color.texture->wrap_u, pbr.emission_color.texture->wrap_v);
+            handle->AddTexture(
+                ETextureAttribute::Emissive,
+                texture, sampler);
+        }
+    }
+
+    // AO
+    if (pbr.ambient_occlusion.texture &&
+        pbr.ambient_occlusion.texture_enabled)
+    {
+        auto texture =
+            ConvertTexture(
+            pbr.ambient_occlusion.texture,
+            context);
+
+        if (texture)
+        {
+            ESamplerPresetType sampler = ConvertSampler(pbr.ambient_occlusion.texture->wrap_u, pbr.ambient_occlusion.texture->wrap_v);
+            handle->AddTexture(
+                ETextureAttribute::Occlusion,
+                texture, sampler);
+        }
+    }
+
+    AssetManager::Get().RegisterAsset(name, handle);
+
+    context.materials.emplace(material, handle);
+
+    return handle;
+}
+
+
+TShared<ModelHandle> ConvertModel(ufbx_mesh* mesh, FBXImportContext& context)
 {
     if (!mesh || mesh->num_triangles == 0)
         return nullptr;
@@ -76,7 +275,21 @@ TShared<ModelHandle> ConvertModel(ufbx_mesh* mesh)
         float v;
     };
 
+    String mesh_name = std::filesystem::path(std::string(
+        mesh->name.data,
+        mesh->name.length)).c_str();
+
+
+    String name =
+        context.asset_prefix +
+        L"/Mesh/" +
+        mesh_name +
+        L"_" +
+        std::to_wstring(mesh->typed_id);
+
+
     auto model = std::make_shared<ModelHandle>();
+    model->SetName(name);
 
     TArray<Vertex> vertices;
     TArray<UInt32> indices;
@@ -87,6 +300,7 @@ TShared<ModelHandle> ConvertModel(ufbx_mesh* mesh)
 
     auto material_table =
         std::make_shared<MaterialTableHandle>();
+    material_table->SetName(model->GetName() + L"/MaterialTable");
 
     auto default_material =
         AssetManager::Get().GetDefaultMaterial();
@@ -159,7 +373,7 @@ TShared<ModelHandle> ConvertModel(ufbx_mesh* mesh)
                         static_cast<float>(normal.z),
 
                         static_cast<float>(uv.x),
-                        static_cast<float>(uv.y),
+                        1.0f - static_cast<float>(uv.y),
                     });
             }
         }
@@ -169,7 +383,22 @@ TShared<ModelHandle> ConvertModel(ufbx_mesh* mesh)
             submesh.index_element_offset;
 
         submeshes.push_back(submesh);
-        material_table->AddMaterial(default_material);
+
+
+        TShared<MaterialHandle> material = default_material;
+
+        if (part.index < mesh->materials.count)
+        {
+            if (ufbx_material* fbx_material = mesh->materials[part.index])
+            {
+                material =
+                    ConvertMaterial(
+                    fbx_material,
+                    context);
+            }
+        }
+
+        material_table->AddMaterial(material);
     }
 
     if (vertices.empty())
@@ -277,6 +506,13 @@ void TestLoader(
     opts.target_axes.up = UFBX_COORDINATE_AXIS_POSITIVE_Y;
     opts.target_axes.front = UFBX_COORDINATE_AXIS_POSITIVE_Z;
 
+    opts.target_light_axes.right = UFBX_COORDINATE_AXIS_POSITIVE_X;
+    opts.target_light_axes.up = UFBX_COORDINATE_AXIS_POSITIVE_Y;
+    opts.target_light_axes.front = UFBX_COORDINATE_AXIS_POSITIVE_Z;
+    opts.geometry_transform_handling = UFBX_GEOMETRY_TRANSFORM_HANDLING_HELPER_NODES;
+
+    opts.inherit_mode_handling = UFBX_INHERIT_MODE_HANDLING_HELPER_NODES;
+
     opts.target_unit_meters = 1.0f;
 
     opts.generate_missing_normals = true;
@@ -308,22 +544,18 @@ void TestLoader(
     UInt64 total_fbx_vertices = 0;
     UInt64 total_generated_vertices = 0;
 
+    FBXImportContext context{};
+    context.asset_prefix = L"BistroExterior";
+
     for (ufbx_mesh* mesh : fbx_scene->meshes)
     {
-        auto model = ConvertModel(mesh);
+        auto model = ConvertModel(mesh, context);
         if (!model)
             continue;
 
-        // 同名の FBX mesh があっても識別できる名前にする。
-        const String name =
-            asset_prefix +
-            L"/Mesh/" +
-            std::to_wstring(model_number++);
-
-        model->SetName(name);
 
         // AssetManager は生成済みモデルを保持するだけ。
-        AssetManager::Get().RegisterAsset(name, model);
+        AssetManager::Get().RegisterAsset(model->GetName(), model);
 
         const UInt32 mesh_index =
             RenderResourceManager::Get().RegisterMesh(model);
@@ -331,11 +563,6 @@ void TestLoader(
         models.emplace(mesh, model);
         mesh_indices.emplace(mesh, mesh_index);
 
-        ALPHA_LOG_INFO(
-            L"Mesh {}: vertices={}, indices={}",
-            model->GetName().c_str(),
-            model->GetPositions().size(),
-            model->GetIndices().size());
 
         total_fbx_vertices += mesh->num_vertices;
         total_generated_vertices += model->GetPositions().size();
@@ -343,59 +570,126 @@ void TestLoader(
 
 
     }
-    ALPHA_LOG_INFO(
-        L"FBX vertices: {}",
-        total_fbx_vertices);
-
-    ALPHA_LOG_INFO(
-        L"Generated vertices: {}",
-        total_generated_vertices);
-
-    ALPHA_LOG_INFO(
-        L"Generated indices: {}",
-        total_indices);
     UInt32 object_number = 0;
 
-    // 2. Node ごとにオブジェクトを生成。
-    // 同じ mesh を参照する Node は同じ GPU mesh を使う。
+    TMap<ufbx_node*, SceneObject*> node_objects;
+
     for (ufbx_node* node : fbx_scene->nodes)
     {
-        if (!node->mesh)
-            continue;
-
-        const auto found = mesh_indices.find(node->mesh);
-        if (found == mesh_indices.end())
-            continue;
-
         const String name =
             asset_prefix +
             L"/Object/" +
             std::to_wstring(object_number++);
 
         SceneObject& object = scene.CreateObject(name);
+        node_objects[node] = &object;
 
-        auto& transform =
-            object.GetComponent<TransformComponent>();
+        auto& transform = object.GetComponent<TransformComponent>();
 
-        Vector3 scale = Vector3::One;
-        Quaternion rotation = Quaternion::Identity;
-        Vector3 position = Vector3::Zero;
-        MatrixDecompose(ConvertMatrix(node->geometry_to_world), &scale, &rotation, &position);
+        const ufbx_transform& src_transform = node->local_transform;
+
+        Vector3 position(
+            static_cast<float>(src_transform.translation.x),
+            static_cast<float>(src_transform.translation.y),
+            static_cast<float>(src_transform.translation.z));
+
+        Quaternion rotation(
+            static_cast<float>(src_transform.rotation.x),
+            static_cast<float>(src_transform.rotation.y),
+            static_cast<float>(src_transform.rotation.z),
+            static_cast<float>(src_transform.rotation.w));
+
+        Vector3 scale(
+            static_cast<float>(src_transform.scale.x),
+            static_cast<float>(src_transform.scale.y),
+            static_cast<float>(src_transform.scale.z));
 
         transform.SetLocalPosition(position);
         transform.SetLocalRotation(rotation);
         transform.SetLocalScale(scale);
 
-        auto& mesh_component =
-            object.AddComponent<MeshComponent>();
+        if (node->mesh)
+        {
+            const auto found = mesh_indices.find(node->mesh);
+            if (found != mesh_indices.end())
+            {
+                auto& mesh_component = object.AddComponent<MeshComponent>();
+                mesh_component.mesh_index = found->second;
+                mesh_component.enabled = true;
+                mesh_component.visible = true;
+            }
+        }
 
-        mesh_component.mesh_index = found->second;
-        mesh_component.enabled = true;
-        mesh_component.visible = true;
+        if (node->light)
+        {
+            ufbx_light* src_light = node->light;
+
+            if (!src_light->cast_light)
+                continue;
+
+            UInt32 light_type = 0;
+
+            switch (src_light->type)
+            {
+            case UFBX_LIGHT_POINT:
+                light_type = 0;
+                break;
+
+            case UFBX_LIGHT_SPOT:
+                light_type = 1;
+                break;
+
+            case UFBX_LIGHT_DIRECTIONAL:
+                light_type = 2;
+                object.AddComponent<MainLight>();
+
+                break;
+
+            default:
+                continue;
+            }
+
+            String name = std::filesystem::path(std::string(node->name.data, node->name.length)).c_str();
+
+            auto& light = object.AddComponent<LightComponent>();
+
+            const ufbx_vec3 direction = ufbx_transform_direction(&node->node_to_world, src_light->local_direction);
+
+            light.type = light_type;
+
+            light.direction = VectorNormalize(Vector3(
+                static_cast<float>(direction.x),
+                static_cast<float>(direction.y),
+                static_cast<float>(direction.z)));
+
+            light.SetColor(float3(
+                static_cast<float>(src_light->color.x),
+                static_cast<float>(src_light->color.y),
+                static_cast<float>(src_light->color.z)));
+
+            light.SetIntensity(static_cast<float>(src_light->intensity));
+            light.SetIntensity(1.0f);
+
+            if (src_light->type == UFBX_LIGHT_SPOT)
+            {
+                light.SetSpotAngleDegree(
+                    static_cast<float>(src_light->inner_angle),
+                    static_cast<float>(src_light->outer_angle));
+            }
+        }
+
     }
 
-    // ufbx のポインタを Scene や ModelHandle に残していないので、
-    // この関数の終了時に fbx_scene を解放できる。
+    for (ufbx_node* node : fbx_scene->nodes)
+    {
+        auto child_it = node_objects.find(node);
+        auto parent_it = node_objects.find(node->parent);
+
+        if (child_it == node_objects.end() || parent_it == node_objects.end())
+            continue;
+
+        child_it->second->SetParent(parent_it->second);
+    }
 }
 
 
@@ -487,17 +781,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     auto blueprint = MakeLocomotionBlueprint(walk->GetSkeletalClip(), run->GetSkeletalClip(), dash->GetSkeletalClip());
 
 
-
-
-    //   auto texture1 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/church_bricks_03_4k.blend/textures/church_bricks_03_diff_4k.jpg");
-       //texture1->SetName(L"church_bricks_03_diff_4k");
-    //   auto texture2 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/concrete_floor_4k.blend/textures/concrete_floor_diff_4k.jpg");
-       //texture2->SetName(L"concrete_floor_diff_4k");
-    //   auto texture3 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/metal_plate_02_4k.blend/textures/metal_plate_02_diff_4k.jpg");
-    //   texture3->SetName(L"metal_plate_02_4k");
-    //   auto texture4 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/rocks_ground_06_4k.blend/textures/rocks_ground_06_diff_4k.jpg");
-    //   texture4->SetName(L"rocks_ground_06_4k");
-
     RenderCore::Args render_core_args = {};
     render_core_args.hWnd = (HWND)WindowSystem::Get().GetNativeHandle();
     render_core_args.transient_buffer_size = 1_MB;
@@ -514,11 +797,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     UInt32 patchouli_index = RenderResourceManager::Get().RegisterMesh(model2);
     UInt32 sphere_index = RenderResourceManager::Get().RegisterMesh(model3);
     UInt32 cube_index = RenderResourceManager::Get().RegisterMesh(model4);
-
-    //UInt32 bricks_index = RenderResourceManager::Get().RegisterTexture(texture1);
-    //UInt32 concrete_index = RenderResourceManager::Get().RegisterTexture(texture2);
-    //UInt32 metal_index = RenderResourceManager::Get().RegisterTexture(texture3);
-    //UInt32 rocks_index = RenderResourceManager::Get().RegisterTexture(texture4);
 
     RenderSystem::Args rs_args = {
         .render_core = RenderCore::GetPtr(),
@@ -556,7 +834,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         auto& transform = object.GetComponent<TransformComponent>();
 
-        transform.SetLocalPosition( Vector3(0.0f, 8.8f, -54.0f));
+        transform.SetLocalPosition( Vector3(-10.0f, 5.f, -10.0f));
 
         transform.LookAt(Vector3(0.0f, -0.023f, 1.0f));
 
@@ -568,11 +846,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         "C:/Users/owner/Desktop/Asset/Bistro_v5_2/BistroExterior.fbx",
         L"BistroExterior");
 
-    //TestLoader(
-    //    scene,
-    //    "C:/Users/owner/Desktop/Asset/Bistro_v5_2/BistroInterior.fbx",
-    //    L"BistroInterior");
-
     using namespace std::chrono;
 
     // 60FPSの1フレームあたりの時間（約16.66ms）
@@ -582,6 +855,24 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     AnimationSystem anim_sys;
 
     static float speed = 2.0f;
+
+    int debug_value = 0;
+
+    static const char* debug_view_names[] =
+    {
+        "None",
+        "BaseColor",
+        "WorldNormal",
+        "UV",
+        "MaterialID",
+        "MaterialTableID",
+        "NormalTexture",
+        "BaseColorIndex",
+        "UVRaw",
+        "UVRange",
+    };
+
+    float intensity = 1.0f;
 
     while (WindowSystem::Get().ProcessMessages() && !WindowSystem::Get().ShouldClose())
     {
@@ -612,11 +903,30 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         ImGui::End();
 
         ImGui::Begin("Inspector");
-        static float pos[3] = { 0.0f, 0.0f, 0.0f };
-        ImGui::DragFloat3("Position", pos, 0.1f);
 
-        ImGui::SliderFloat("Speed", &speed, 0.1f, 5.0f);
-        anim.SetParameter(L"Speed", speed);
+        auto camera_view = registry.view<CameraComponent, TransformComponent>();
+
+        entt::entity camera_entity = camera_view.front();
+        auto& camera = camera_view.get<CameraComponent>(camera_entity);
+        auto& camera_t = camera_view.get<TransformComponent>(camera_entity);
+
+        float* pos = camera_t.GetWorldMatrix()._4().data();
+
+        ImGui::InputFloat3("Position", pos, "%.2f", ImGuiInputTextFlags_ReadOnly);
+
+        ImGui::SeparatorText("Render Debug");
+
+        ImGui::Combo(
+            "Debug View",
+            &debug_value,
+            debug_view_names,
+            IM_ARRAYSIZE(debug_view_names));
+
+        auto main_light_entity = registry.view<MainLight, LightComponent>().front();
+        auto& maint_light = registry.get<LightComponent>(main_light_entity);
+        ImGui::SliderFloat("Intensity", &intensity, 0.0f, 120.0f);
+        maint_light.SetIntensity(intensity);
+
         ImGui::End();
 
 
@@ -640,6 +950,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         ctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
         ctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
         ctx.current_back_buffer = RenderCore::Get().GetCurrentRenderTarget();
+        ctx.debug_value = debug_value;
 
         // 暫定でここに置いてるけどどこにおこう
         RenderCore::Get().GetASBuilder()->RecordBuildCommands(ctx.command_list);

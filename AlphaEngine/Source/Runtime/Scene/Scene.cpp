@@ -24,9 +24,20 @@ namespace
 
 	bool IsDescendant(SceneObject* object, SceneObject* new_parent)
 	{
+		if (!object || !new_parent)
+			return false;
 
+		SceneObject* current = new_parent;
 
-		return true;
+		while (current)
+		{
+			if (current == object)
+				return true;
+
+			current = current->GetParent();
+		}
+
+		return false;
 	}
 }
 

@@ -218,16 +218,11 @@ namespace Alpha
 
         for (auto& material : materials)
         {
-            resolve(material.base_color_tex_idx);
+            resolve(material.base_color.texture_index);
+            resolve(material.normal.texture_index);
+            resolve(material.metallic_roughness.texture_index);
+            resolve(material.emissive.texture_index);
 
-            resolve(
-                material.normal_tex_idx);
-
-            resolve(
-                material.metallic_roughness_tex_idx);
-
-            resolve(
-                material.emissive_tex_idx);
         }
     }
 
@@ -252,7 +247,7 @@ namespace Alpha
             if (light_com.type == 2)
             {
                 // Directional
-                light.direction = light_com.direction;
+                light.direction = Matrix4x4Forward(world_matrix);
             }
             else if (light_com.type == 1)
             {
@@ -267,6 +262,10 @@ namespace Alpha
             light.inner_cone = light_com.GetInnerCone();
             light.outer_cone = light_com.GetOuterCone();
 
+            if (auto* main = registry.try_get<MainLight>(entity))
+            {
+                main->index = static_cast<UInt32>(m_lights.size());
+            }
 
             m_lights.push_back(light);
         }

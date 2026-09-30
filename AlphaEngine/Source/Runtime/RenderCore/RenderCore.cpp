@@ -93,7 +93,7 @@ namespace Alpha
 		{
 			GPUDataTransfer::Args desc = {
 				.render_core = this,
-				.staging_buffer_size = 512_MB,
+				.staging_buffer_size = 1024_MB,
 			};
 			m_gpu_data_transfer->Initialize(desc);
 		}
@@ -103,12 +103,40 @@ namespace Alpha
 
 		m_preset_samplers.resize(+ESamplerPresetType::Count);
 
-		m_preset_samplers[+ESamplerPresetType::PointClamp]	= CreateSamplerState(ERHIFilter::Point, ERHIAddressMode::Clamp);
-		m_preset_samplers[+ESamplerPresetType::LinearClamp]	= CreateSamplerState(ERHIFilter::Linear, ERHIAddressMode::Clamp);
-		m_preset_samplers[+ESamplerPresetType::LinearWrap]	= CreateSamplerState(ERHIFilter::Linear, ERHIAddressMode::Wrap);
-		m_preset_samplers[+ESamplerPresetType::AnisoWrap]	= CreateSamplerState(ERHIFilter::Anisotropic, ERHIAddressMode::Wrap);
-		m_preset_samplers[+ESamplerPresetType::Shadow]		= CreateSamplerState(ERHIFilter::ComparisonLinear, ERHIAddressMode::Border);
+		// Point
+		m_preset_samplers[+ESamplerPresetType::PointClamp] = CreateSamplerState(ERHIFilter::Point, ERHIAddressMode::Clamp, ERHIAddressMode::Clamp, ERHIAddressMode::Clamp);
+		m_preset_samplers[+ESamplerPresetType::PointClampClampWrap] = CreateSamplerState(ERHIFilter::Point, ERHIAddressMode::Clamp, ERHIAddressMode::Clamp, ERHIAddressMode::Wrap);
+		m_preset_samplers[+ESamplerPresetType::PointClampWrapClamp] = CreateSamplerState(ERHIFilter::Point, ERHIAddressMode::Clamp, ERHIAddressMode::Wrap, ERHIAddressMode::Clamp);
+		m_preset_samplers[+ESamplerPresetType::PointClampWrapWrap] = CreateSamplerState(ERHIFilter::Point, ERHIAddressMode::Clamp, ERHIAddressMode::Wrap, ERHIAddressMode::Wrap);
+		m_preset_samplers[+ESamplerPresetType::PointWrapClampClamp] = CreateSamplerState(ERHIFilter::Point, ERHIAddressMode::Wrap, ERHIAddressMode::Clamp, ERHIAddressMode::Clamp);
+		m_preset_samplers[+ESamplerPresetType::PointWrapClampWrap] = CreateSamplerState(ERHIFilter::Point, ERHIAddressMode::Wrap, ERHIAddressMode::Clamp, ERHIAddressMode::Wrap);
+		m_preset_samplers[+ESamplerPresetType::PointWrapWrapClamp] = CreateSamplerState(ERHIFilter::Point, ERHIAddressMode::Wrap, ERHIAddressMode::Wrap, ERHIAddressMode::Clamp);
+		m_preset_samplers[+ESamplerPresetType::PointWrap] = CreateSamplerState(ERHIFilter::Point, ERHIAddressMode::Wrap, ERHIAddressMode::Wrap, ERHIAddressMode::Wrap);
 
+		// Linear
+		m_preset_samplers[+ESamplerPresetType::LinearClamp] = CreateSamplerState(ERHIFilter::Linear, ERHIAddressMode::Clamp, ERHIAddressMode::Clamp, ERHIAddressMode::Clamp);
+		m_preset_samplers[+ESamplerPresetType::LinearClampClampWrap] = CreateSamplerState(ERHIFilter::Linear, ERHIAddressMode::Clamp, ERHIAddressMode::Clamp, ERHIAddressMode::Wrap);
+		m_preset_samplers[+ESamplerPresetType::LinearClampWrapClamp] = CreateSamplerState(ERHIFilter::Linear, ERHIAddressMode::Clamp, ERHIAddressMode::Wrap, ERHIAddressMode::Clamp);
+		m_preset_samplers[+ESamplerPresetType::LinearClampWrapWrap] = CreateSamplerState(ERHIFilter::Linear, ERHIAddressMode::Clamp, ERHIAddressMode::Wrap, ERHIAddressMode::Wrap);
+		m_preset_samplers[+ESamplerPresetType::LinearWrapClampClamp] = CreateSamplerState(ERHIFilter::Linear, ERHIAddressMode::Wrap, ERHIAddressMode::Clamp, ERHIAddressMode::Clamp);
+		m_preset_samplers[+ESamplerPresetType::LinearWrapClampWrap] = CreateSamplerState(ERHIFilter::Linear, ERHIAddressMode::Wrap, ERHIAddressMode::Clamp, ERHIAddressMode::Wrap);
+		m_preset_samplers[+ESamplerPresetType::LinearWrapWrapClamp] = CreateSamplerState(ERHIFilter::Linear, ERHIAddressMode::Wrap, ERHIAddressMode::Wrap, ERHIAddressMode::Clamp);
+		m_preset_samplers[+ESamplerPresetType::LinearWrap] = CreateSamplerState(ERHIFilter::Linear, ERHIAddressMode::Wrap, ERHIAddressMode::Wrap, ERHIAddressMode::Wrap);
+
+		// Anisotropic
+		m_preset_samplers[+ESamplerPresetType::AnisoClamp] = CreateSamplerState(ERHIFilter::Anisotropic, ERHIAddressMode::Clamp, ERHIAddressMode::Clamp, ERHIAddressMode::Clamp);
+		m_preset_samplers[+ESamplerPresetType::AnisoClampClampWrap] = CreateSamplerState(ERHIFilter::Anisotropic, ERHIAddressMode::Clamp, ERHIAddressMode::Clamp, ERHIAddressMode::Wrap);
+		m_preset_samplers[+ESamplerPresetType::AnisoClampWrapClamp] = CreateSamplerState(ERHIFilter::Anisotropic, ERHIAddressMode::Clamp, ERHIAddressMode::Wrap, ERHIAddressMode::Clamp);
+		m_preset_samplers[+ESamplerPresetType::AnisoClampWrapWrap] = CreateSamplerState(ERHIFilter::Anisotropic, ERHIAddressMode::Clamp, ERHIAddressMode::Wrap, ERHIAddressMode::Wrap);
+		m_preset_samplers[+ESamplerPresetType::AnisoWrapClampClamp] = CreateSamplerState(ERHIFilter::Anisotropic, ERHIAddressMode::Wrap, ERHIAddressMode::Clamp, ERHIAddressMode::Clamp);
+		m_preset_samplers[+ESamplerPresetType::AnisoWrapClampWrap] = CreateSamplerState(ERHIFilter::Anisotropic, ERHIAddressMode::Wrap, ERHIAddressMode::Clamp, ERHIAddressMode::Wrap);
+		m_preset_samplers[+ESamplerPresetType::AnisoWrapWrapClamp] = CreateSamplerState(ERHIFilter::Anisotropic, ERHIAddressMode::Wrap, ERHIAddressMode::Wrap, ERHIAddressMode::Clamp);
+		m_preset_samplers[+ESamplerPresetType::AnisoWrap] = CreateSamplerState(ERHIFilter::Anisotropic, ERHIAddressMode::Wrap, ERHIAddressMode::Wrap, ERHIAddressMode::Wrap);
+
+		// Shadow
+		m_preset_samplers[+ESamplerPresetType::Shadow] = CreateSamplerState(ERHIFilter::ComparisonLinear, ERHIAddressMode::Border, ERHIAddressMode::Border, ERHIAddressMode::Border);
+		
+		
 		m_as_builder = std::make_unique<ASBuilder>();
 		{
 			ASBuilder::Args desc = {
@@ -163,7 +191,7 @@ namespace Alpha
 	{
 		if (m_timeline)
 		{
-			m_timeline->WaitCPU();
+			m_timeline->WaitCPULatest();
 		}
 
 		m_transient_allocator.reset();
@@ -383,6 +411,24 @@ namespace Alpha
 			.address_u = address,
 			.address_v = address,
 			.address_w = address
+		};
+
+		sampler->Initialize(args);
+
+		return sampler;
+	}
+
+	TUnique<SamplerState> RenderCore::CreateSamplerState(ERHIFilter filter, ERHIAddressMode address_u, ERHIAddressMode address_v, ERHIAddressMode address_w)
+	{
+		auto sampler = std::make_unique<SamplerState>();
+
+		SamplerState::Args args = {
+			.rhi = m_rhi.get(),
+			.sampler_heap = m_sampler_heap.get(),
+			.filter = filter,
+			.address_u = address_u,
+			.address_v = address_v,
+			.address_w = address_w
 		};
 
 		sampler->Initialize(args);

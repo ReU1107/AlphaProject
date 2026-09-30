@@ -18,19 +18,21 @@ struct MaterialProperties
     float3 specular_tint;       // 鏡面反射
 };
 
+struct TextureBindingData
+{
+    uint texture_index;
+    uint sampler_index;
+};
+
 struct MaterialData
 {
-    MaterialProperties props; // 
+    MaterialProperties props;
 
-    uint base_color_tex_idx;            // テクスチャバインドレスインデックス
-    uint normal_tex_idx;                // 法線マップインデックス
-    uint metallic_roughness_tex_idx;    // 
-    uint emissive_tex_idx;              //  
-
-    uint occlusion_tex_idx;             // 
-    uint toon_tex_idx;                  // MMD等のトゥーンテクスチャ用
-    uint sphere_tex_idx;                // MMD等のスフィアマップ用
-    uint flags;                         // マテリアル判別フラグ
+    TextureBindingData base_color;
+    TextureBindingData normal;
+    TextureBindingData metallic_roughness;
+    TextureBindingData emissive;
+    TextureBindingData occlusion;
 };
 
 struct Meshlet
@@ -153,7 +155,8 @@ struct FrameRenderConstants
     
     float3 camera_right;
     uint light_count;
-
+    uint main_light;
+    uint debug_value;
 };
 
 
@@ -184,11 +187,34 @@ struct FrameRenderConstants
 #define VERTEX_ATTR_TEXCOORDS3      (1 << 11)
 
 // サンプラー (ESamplerPresetTypeと同じ順序)
-#define SAMPLER_PRESET_POINT_CLAMP  0
-#define SAMPLER_PRESET_LINEAR_CLAMP 1
-#define SAMPLER_PRESET_LINEAR_WRAP  2
-#define SAMPLER_PRESET_ANISO_WRAP   3
-#define SAMPLER_PRESET_SHADOW       4
+static const uint SAMPLER_PRESET_POINT_CLAMP = 0;
+static const uint SAMPLER_PRESET_POINT_CLAMP_CLAMP_WRAP = 1;
+static const uint SAMPLER_PRESET_POINT_CLAMP_WRAP_CLAMP = 2;
+static const uint SAMPLER_PRESET_POINT_CLAMP_WRAP_WRAP = 3;
+static const uint SAMPLER_PRESET_POINT_WRAP_CLAMP_CLAMP = 4;
+static const uint SAMPLER_PRESET_POINT_WRAP_CLAMP_WRAP = 5;
+static const uint SAMPLER_PRESET_POINT_WRAP_WRAP_CLAMP = 6;
+static const uint SAMPLER_PRESET_POINT_WRAP = 7;
+
+static const uint SAMPLER_PRESET_LINEAR_CLAMP = 8;
+static const uint SAMPLER_PRESET_LINEAR_CLAMP_CLAMP_WRAP = 9;
+static const uint SAMPLER_PRESET_LINEAR_CLAMP_WRAP_CLAMP = 10;
+static const uint SAMPLER_PRESET_LINEAR_CLAMP_WRAP_WRAP = 11;
+static const uint SAMPLER_PRESET_LINEAR_WRAP_CLAMP_CLAMP = 12;
+static const uint SAMPLER_PRESET_LINEAR_WRAP_CLAMP_WRAP = 13;
+static const uint SAMPLER_PRESET_LINEAR_WRAP_WRAP_CLAMP = 14;
+static const uint SAMPLER_PRESET_LINEAR_WRAP = 15;
+
+static const uint SAMPLER_PRESET_ANISO_CLAMP = 16;
+static const uint SAMPLER_PRESET_ANISO_CLAMP_CLAMP_WRAP = 17;
+static const uint SAMPLER_PRESET_ANISO_CLAMP_WRAP_CLAMP = 18;
+static const uint SAMPLER_PRESET_ANISO_CLAMP_WRAP_WRAP = 19;
+static const uint SAMPLER_PRESET_ANISO_WRAP_CLAMP_CLAMP = 20;
+static const uint SAMPLER_PRESET_ANISO_WRAP_CLAMP_WRAP = 21;
+static const uint SAMPLER_PRESET_ANISO_WRAP_WRAP_CLAMP = 22;
+static const uint SAMPLER_PRESET_ANISO_WRAP = 23;
+
+static const uint SAMPLER_PRESET_SHADOW = 24;
 
 
 ConstantBuffer<RenderBufferIndices> render_buffers : register(b0);

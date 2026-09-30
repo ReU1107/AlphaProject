@@ -27,6 +27,8 @@ namespace Alpha
 
         void AddChild(SceneObject* child);
 
+        void SetParent(SceneObject* parent);
+
         void Unparent();
 
         template<class T>

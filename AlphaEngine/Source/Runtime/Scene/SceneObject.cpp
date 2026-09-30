@@ -16,6 +16,11 @@ namespace Alpha
 		m_scene->Reparent(child, this);
 	}
 
+	void SceneObject::SetParent(SceneObject* parent)
+	{
+		m_scene->Reparent(this, parent);
+	}
+
 	void SceneObject::Unparent()
 	{
 		m_scene->Reparent(this, nullptr);

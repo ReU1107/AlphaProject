@@ -112,6 +112,10 @@ namespace Alpha
 		auto& camera = camera_view.get<CameraComponent>(camera_entity);
 		auto& camera_t = camera_view.get<TransformComponent>(camera_entity);
 
+		auto main_light_entity = registry.view<MainLight>().front();
+		auto& maint_light = registry.get<MainLight>(main_light_entity);
+
+
 		FrameRenderContext constants = {};
 		constants.view = camera.view_matrix;
 		constants.view_proj = MatrixMultiply(camera.view_matrix, camera.GetProjectionMatrix());
@@ -119,6 +123,8 @@ namespace Alpha
 		constants.camera_pos = camera_t.GetWorldMatrix()._4();
 		constants.camera_right = Matrix4x4Right(camera_t.GetWorldMatrix());
 		constants.camera_up = Matrix4x4Up(camera_t.GetWorldMatrix());
+		constants.debug_value = ctx.debug_value;
+		constants.main_light = maint_light.index;
 
 		ctx.inv_view_proj = constants.inv_view_proj;
 

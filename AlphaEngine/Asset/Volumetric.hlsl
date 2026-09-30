@@ -71,7 +71,7 @@ void RayGenerate()
     float3 radiance = 0.0;          // 深度値までの空間の色
     float3 transmittance = 1.0;     // 深度値までで残った透過度
     
-    LightData light = light_buffer[0];  // とりあえず固定値でしてるけど今後directional lightのindexか一番影響の高いライト番号を渡す
+    LightData light = light_buffer[render_frame.main_light];
     
     float3 light_dir = -light.direction;
 
@@ -125,10 +125,13 @@ void RayGenerate()
         radiance += transmittance * volume_radiance * IsotropicPhase() * step_size * sigma_s;
         
         float3 scattering = sigma_r * phase_r + sigma_m * phase_m;
-        float3 dominant = light.color * light.intensity * payload.visibility;
+        float3 dominant = light.color * light.intensity * payload.visibility * scattering;
+        
+        
+        float3 ambient_scattering = float3(0.02f, 0.025f, 0.035f) * scattering;
         
         // メインライト(DirectionalLight)だけ
-        radiance += transmittance * dominant * scattering * step_size;
+        radiance += transmittance * (dominant + ambient_scattering) * step_size;
         
         
         // ランベルトベールで減衰

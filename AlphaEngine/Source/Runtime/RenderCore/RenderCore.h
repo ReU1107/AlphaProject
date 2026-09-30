@@ -117,6 +117,7 @@ namespace Alpha
 		ASBuildSize PreBuildTLAS(const TLASRequest& request);
 
 		TUnique<SamplerState> CreateSamplerState(ERHIFilter filter, ERHIAddressMode address);
+		TUnique<SamplerState> CreateSamplerState(ERHIFilter filter, ERHIAddressMode address_u, ERHIAddressMode address_v, ERHIAddressMode address_w);
 
 		TUnique<Texture> CreateTexture(UInt32 width, UInt32 height, UInt32 depth, ERHIResourceFormat format, ETexturePresetType type);
 

@@ -232,7 +232,9 @@ namespace Alpha
     {
         tinyddsloader::DDSFile dds;
 
-        auto result = dds.Load("texture.dds");
+		std::filesystem::path path(file_path.c_str());
+
+        auto result = dds.Load(path.string().c_str());
         if (result != tinyddsloader::Result::Success)
         {
             // 読み込み失敗
@@ -306,5 +308,7 @@ namespace Alpha
 			format,
 			std::move(pixels),
 			std::move(mips));
+
+		return texture;
     }
 }
