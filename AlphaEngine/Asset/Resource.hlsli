@@ -155,6 +155,7 @@ struct FrameRenderConstants
     
     float3 camera_right;
     uint light_count;
+    uint main_light;
     uint debug_value;
 };
 

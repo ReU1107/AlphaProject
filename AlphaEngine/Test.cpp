@@ -506,6 +506,13 @@ void TestLoader(
     opts.target_axes.up = UFBX_COORDINATE_AXIS_POSITIVE_Y;
     opts.target_axes.front = UFBX_COORDINATE_AXIS_POSITIVE_Z;
 
+    opts.target_light_axes.right = UFBX_COORDINATE_AXIS_POSITIVE_X;
+    opts.target_light_axes.up = UFBX_COORDINATE_AXIS_POSITIVE_Y;
+    opts.target_light_axes.front = UFBX_COORDINATE_AXIS_POSITIVE_Z;
+    opts.geometry_transform_handling = UFBX_GEOMETRY_TRANSFORM_HANDLING_HELPER_NODES;
+
+    opts.inherit_mode_handling = UFBX_INHERIT_MODE_HANDLING_HELPER_NODES;
+
     opts.target_unit_meters = 1.0f;
 
     opts.generate_missing_normals = true;
@@ -556,11 +563,6 @@ void TestLoader(
         models.emplace(mesh, model);
         mesh_indices.emplace(mesh, mesh_index);
 
-        //ALPHA_LOG_INFO(
-        //    L"Mesh {}: vertices={}, indices={}",
-        //    model->GetName().c_str(),
-        //    model->GetPositions().size(),
-        //    model->GetIndices().size());
 
         total_fbx_vertices += mesh->num_vertices;
         total_generated_vertices += model->GetPositions().size();
@@ -568,72 +570,126 @@ void TestLoader(
 
 
     }
-    //ALPHA_LOG_INFO(
-    //    L"FBX vertices: {}",
-    //    total_fbx_vertices);
-
-    //ALPHA_LOG_INFO(
-    //    L"Generated vertices: {}",
-    //    total_generated_vertices);
-
-    //ALPHA_LOG_INFO(
-    //    L"Generated indices: {}",
-    //    total_indices);
     UInt32 object_number = 0;
 
-    //for (auto& tex : context.textures)
-    //{
-    //    
-    //    String path = std::filesystem::path(std::string(
-    //        tex.first->filename.data,
-    //        tex.first->filename.length)).c_str();
+    TMap<ufbx_node*, SceneObject*> node_objects;
 
-    //    ALPHA_LOG_INFO(
-    //        L"Texture: {} Format={}",
-    //        path.c_str(),
-    //        ToString(tex.second->GetFormat()).c_str());
-    //}
-
-    // 2. Node ごとにオブジェクトを生成。
-    // 同じ mesh を参照する Node は同じ GPU mesh を使う。
     for (ufbx_node* node : fbx_scene->nodes)
     {
-        if (!node->mesh)
-            continue;
-
-        const auto found = mesh_indices.find(node->mesh);
-        if (found == mesh_indices.end())
-            continue;
-
         const String name =
             asset_prefix +
             L"/Object/" +
             std::to_wstring(object_number++);
 
         SceneObject& object = scene.CreateObject(name);
+        node_objects[node] = &object;
 
-        auto& transform =
-            object.GetComponent<TransformComponent>();
+        auto& transform = object.GetComponent<TransformComponent>();
 
-        Vector3 scale = Vector3::One;
-        Quaternion rotation = Quaternion::Identity;
-        Vector3 position = Vector3::Zero;
-        MatrixDecompose(ConvertMatrix(node->geometry_to_world), &scale, &rotation, &position);
+        const ufbx_transform& src_transform = node->local_transform;
+
+        Vector3 position(
+            static_cast<float>(src_transform.translation.x),
+            static_cast<float>(src_transform.translation.y),
+            static_cast<float>(src_transform.translation.z));
+
+        Quaternion rotation(
+            static_cast<float>(src_transform.rotation.x),
+            static_cast<float>(src_transform.rotation.y),
+            static_cast<float>(src_transform.rotation.z),
+            static_cast<float>(src_transform.rotation.w));
+
+        Vector3 scale(
+            static_cast<float>(src_transform.scale.x),
+            static_cast<float>(src_transform.scale.y),
+            static_cast<float>(src_transform.scale.z));
 
         transform.SetLocalPosition(position);
         transform.SetLocalRotation(rotation);
         transform.SetLocalScale(scale);
 
-        auto& mesh_component =
-            object.AddComponent<MeshComponent>();
+        if (node->mesh)
+        {
+            const auto found = mesh_indices.find(node->mesh);
+            if (found != mesh_indices.end())
+            {
+                auto& mesh_component = object.AddComponent<MeshComponent>();
+                mesh_component.mesh_index = found->second;
+                mesh_component.enabled = true;
+                mesh_component.visible = true;
+            }
+        }
 
-        mesh_component.mesh_index = found->second;
-        mesh_component.enabled = true;
-        mesh_component.visible = true;
+        if (node->light)
+        {
+            ufbx_light* src_light = node->light;
+
+            if (!src_light->cast_light)
+                continue;
+
+            UInt32 light_type = 0;
+
+            switch (src_light->type)
+            {
+            case UFBX_LIGHT_POINT:
+                light_type = 0;
+                break;
+
+            case UFBX_LIGHT_SPOT:
+                light_type = 1;
+                break;
+
+            case UFBX_LIGHT_DIRECTIONAL:
+                light_type = 2;
+                object.AddComponent<MainLight>();
+
+                break;
+
+            default:
+                continue;
+            }
+
+            String name = std::filesystem::path(std::string(node->name.data, node->name.length)).c_str();
+
+            auto& light = object.AddComponent<LightComponent>();
+
+            const ufbx_vec3 direction = ufbx_transform_direction(&node->node_to_world, src_light->local_direction);
+
+            light.type = light_type;
+
+            light.direction = VectorNormalize(Vector3(
+                static_cast<float>(direction.x),
+                static_cast<float>(direction.y),
+                static_cast<float>(direction.z)));
+
+            light.SetColor(float3(
+                static_cast<float>(src_light->color.x),
+                static_cast<float>(src_light->color.y),
+                static_cast<float>(src_light->color.z)));
+
+            light.SetIntensity(static_cast<float>(src_light->intensity));
+            light.SetIntensity(1.0f);
+
+            if (src_light->type == UFBX_LIGHT_SPOT)
+            {
+                light.SetSpotAngleDegree(
+                    static_cast<float>(src_light->inner_angle),
+                    static_cast<float>(src_light->outer_angle));
+            }
+        }
+
     }
 
-    // ufbx のポインタを Scene や ModelHandle に残していないので、
-    // この関数の終了時に fbx_scene を解放できる。
+    for (ufbx_node* node : fbx_scene->nodes)
+    {
+        auto child_it = node_objects.find(node);
+        auto parent_it = node_objects.find(node->parent);
+
+        if (child_it == node_objects.end() || parent_it == node_objects.end())
+            continue;
+
+        child_it->second->SetParent(parent_it->second);
+    }
 }
 
 
@@ -725,17 +781,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     auto blueprint = MakeLocomotionBlueprint(walk->GetSkeletalClip(), run->GetSkeletalClip(), dash->GetSkeletalClip());
 
 
-
-
-    //   auto texture1 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/church_bricks_03_4k.blend/textures/church_bricks_03_diff_4k.jpg");
-       //texture1->SetName(L"church_bricks_03_diff_4k");
-    //   auto texture2 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/concrete_floor_4k.blend/textures/concrete_floor_diff_4k.jpg");
-       //texture2->SetName(L"concrete_floor_diff_4k");
-    //   auto texture3 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/metal_plate_02_4k.blend/textures/metal_plate_02_diff_4k.jpg");
-    //   texture3->SetName(L"metal_plate_02_4k");
-    //   auto texture4 = AssetManager::Get().Load<TextureHandle>(L"C:/Users/owner/Desktop/Asset/rocks_ground_06_4k.blend/textures/rocks_ground_06_diff_4k.jpg");
-    //   texture4->SetName(L"rocks_ground_06_4k");
-
     RenderCore::Args render_core_args = {};
     render_core_args.hWnd = (HWND)WindowSystem::Get().GetNativeHandle();
     render_core_args.transient_buffer_size = 1_MB;
@@ -752,11 +797,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     UInt32 patchouli_index = RenderResourceManager::Get().RegisterMesh(model2);
     UInt32 sphere_index = RenderResourceManager::Get().RegisterMesh(model3);
     UInt32 cube_index = RenderResourceManager::Get().RegisterMesh(model4);
-
-    //UInt32 bricks_index = RenderResourceManager::Get().RegisterTexture(texture1);
-    //UInt32 concrete_index = RenderResourceManager::Get().RegisterTexture(texture2);
-    //UInt32 metal_index = RenderResourceManager::Get().RegisterTexture(texture3);
-    //UInt32 rocks_index = RenderResourceManager::Get().RegisterTexture(texture4);
 
     RenderSystem::Args rs_args = {
         .render_core = RenderCore::GetPtr(),
@@ -794,7 +834,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         auto& transform = object.GetComponent<TransformComponent>();
 
-        transform.SetLocalPosition( Vector3(-20.0f, 5.f, -10.0f));
+        transform.SetLocalPosition( Vector3(-10.0f, 5.f, -10.0f));
 
         transform.LookAt(Vector3(0.0f, -0.023f, 1.0f));
 
@@ -805,11 +845,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         scene,
         "C:/Users/owner/Desktop/Asset/Bistro_v5_2/BistroExterior.fbx",
         L"BistroExterior");
-
-    //TestLoader(
-    //    scene,
-    //    "C:/Users/owner/Desktop/Asset/Bistro_v5_2/BistroInterior.fbx",
-    //    L"BistroInterior");
 
     using namespace std::chrono;
 
@@ -836,6 +871,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         "UVRaw",
         "UVRange",
     };
+
+    float intensity = 1.0f;
 
     while (WindowSystem::Get().ProcessMessages() && !WindowSystem::Get().ShouldClose())
     {
@@ -885,6 +922,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
             debug_view_names,
             IM_ARRAYSIZE(debug_view_names));
 
+        auto main_light_entity = registry.view<MainLight, LightComponent>().front();
+        auto& maint_light = registry.get<LightComponent>(main_light_entity);
+        ImGui::SliderFloat("Intensity", &intensity, 0.0f, 120.0f);
+        maint_light.SetIntensity(intensity);
 
         ImGui::End();
 

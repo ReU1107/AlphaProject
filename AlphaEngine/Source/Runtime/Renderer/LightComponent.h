@@ -34,4 +34,11 @@ namespace Alpha::Renderer
         float GetOuterCone() const { return m_outer_cone; }
 
 	};
+
+	// タグ用
+	struct MainLight
+	{
+		UInt32 index{ 0 };
+	};
+
 }
