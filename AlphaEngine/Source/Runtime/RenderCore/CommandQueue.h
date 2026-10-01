@@ -46,6 +46,9 @@ namespace Alpha
 
 
 		void SetName(StringView name);
+
+		UInt64 GetTimestampFrequency();
+
 	};
 }
 /*

@@ -22,6 +22,7 @@ namespace Alpha
 	class TransientBufferAllocator;
 
 	class Texture;
+	class GPUProfiler;
 }
 
 namespace Alpha::Renderer
@@ -397,6 +398,7 @@ namespace Alpha::Renderer
 	{
 		CommandList* command_list{ nullptr };
 		TransientBufferAllocator* transient_buffer{ nullptr };
+		GPUProfiler* profiler{ nullptr };
 		Texture* current_back_buffer{ nullptr };
 		UInt32 current_frame_index{ 0 };
 

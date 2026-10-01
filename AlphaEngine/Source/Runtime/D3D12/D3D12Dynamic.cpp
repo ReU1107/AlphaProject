@@ -15,6 +15,7 @@
 #include "D3D12SwapChain.h"
 #include "D3D12Texture.h"
 #include "D3D12Timeline.h"
+#include "D3D12QueryHeap.h"
 
 #if RHI_D3D12
 
@@ -63,6 +64,11 @@ namespace Alpha
     TUnique<RHICommandLayout> D3D12Dynamic::CreateCommandLayout(const RHICommandLayoutDesc& desc)
     {
         return CreateRHIObject<D3D12CommandLayout>(m_device.get(), desc);
+    }
+
+    TUnique<RHIQueryHeap> D3D12Dynamic::CreateQueryHeap(const RHIQueryHeapDesc& desc)
+    {
+        return CreateRHIObject<D3D12QueryHeap>(m_device.get(), desc);
     }
 
     TUnique<RHITimeline> D3D12Dynamic::CreateTimeline(const RHITimelineDesc& desc)

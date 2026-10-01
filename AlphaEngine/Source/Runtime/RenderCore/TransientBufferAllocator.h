@@ -76,6 +76,7 @@ namespace Alpha
 		}
 
 		UInt8* Allocate(UInt64 size, UInt64* out_offset);
+		UInt8* GetMappedPtr();
 
 		UInt64 AllocateOffset(UInt64 size);
 

@@ -44,6 +44,9 @@ namespace Alpha
 	class ShaderCache;
 	class PipelineCache;
 
+	class GPUQueryHeap;
+	class GPUProfiler;
+
 	class RenderCore : public Subsystem<RenderCore>
 	{
 	private:
@@ -71,6 +74,7 @@ namespace Alpha
 		TUnique<ShaderCache> m_shader_cache{};
 		TUnique<PipelineCache> m_pipeline_cache{};
 
+		TUnique<GPUProfiler> m_profiler{};
 
 		TUnique<TransientBufferAllocator> m_transient_allocator{};
 
@@ -107,6 +111,8 @@ namespace Alpha
 		TUnique<CommandList> CreateCommandList(StringView name, ERHICommandType type);
 		TUnique<Timeline> CreateTimeline();
 
+		TUnique<GPUQueryHeap> CreateQueryHeap(UInt32 count, ERHIQueryType type);
+
 		TUnique<DescriptorHeap> CreateDescriptorHeap(UInt64 num, ERHIDescriptorType type);
 
 		TUnique<Buffer> CreateBuffer(UInt64 stride, UInt64 size, EBufferPresetType type);
@@ -142,7 +148,7 @@ namespace Alpha
 
 		RayTracePipeline* CreateRayTracePipeline(const RayTracePipelineArgs& args);
 
-		CommandLayout* CreateCommandLayout(const CommandLayoutArgs& args);
+		CommandLayout* CreateCommandLayout(const CommandLayoutArgs& args);		
 
 		ERHIResourceFormat GetBackBufferFormat() const { return m_back_buffer_format; }
 
@@ -164,6 +170,8 @@ namespace Alpha
 		ASBuilder* GetASBuilder() const { return m_as_builder.get(); }
 
 		TransientBufferAllocator* GetTransientAllocator() const { return m_transient_allocator.get(); }
+
+		GPUProfiler* GetGPUProfiler() const { return m_profiler.get(); }
 
 		UInt32 GetWidth() const { return m_width; }
 		UInt32 GetHeight() const { return m_height; }

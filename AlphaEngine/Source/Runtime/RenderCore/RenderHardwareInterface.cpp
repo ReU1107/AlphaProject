@@ -14,6 +14,8 @@
 #include "RHI/RHIGraphicsPipeline.h"
 #include "RHI/RHIComputePipeline.h"
 #include "RHI/RHIRayTracePipeline.h"
+#include "RHI/RHIQueryHeap.h"
+
 
 #if RHI_D3D12
 #include "D3D12/D3D12Dynamic.h"
@@ -70,6 +72,11 @@ namespace Alpha
 	TUnique<RHICommandLayout> RenderHardwareInterface::CreateCommandLayout(const RHICommandLayoutDesc& desc)
 	{
 		return m_dynamic->CreateCommandLayout(desc);
+	}
+
+	TUnique<RHIQueryHeap> RenderHardwareInterface::CreateQueryHeap(const RHIQueryHeapDesc& desc)
+	{
+		return m_dynamic->CreateQueryHeap(desc);
 	}
 
 	TUnique<RHITimeline> RenderHardwareInterface::CreateTimeline(const RHITimelineDesc& desc)

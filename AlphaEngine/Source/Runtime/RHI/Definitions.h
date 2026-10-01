@@ -384,4 +384,10 @@ namespace Alpha
 		UInt32 depth{ 0 };
 	};
 
+	struct RHIQueryHeapDesc
+	{
+		UInt32 count{ 2 };
+		ERHIQueryType type{ ERHIQueryType::Timestamp };
+	};
+
 }

@@ -217,7 +217,8 @@ namespace Alpha
 
 	UInt8* D3D12Buffer::Map(UInt64 read_begin, UInt64 read_end)
 	{
-		if (GetAccessType() != ERHIResourceAccessType::Dynamic)
+		ERHIResourceAccessType access_type = GetAccessType();
+		if (access_type != ERHIResourceAccessType::Dynamic && access_type != ERHIResourceAccessType::Staging)
 			return nullptr;
 
 		uint8_t* map_data = nullptr;

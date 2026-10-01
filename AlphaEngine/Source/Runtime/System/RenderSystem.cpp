@@ -68,6 +68,7 @@ namespace Alpha
 		GUISystem::Args gui_args = {
 			.render_core = RenderCore::GetPtr(),
 			.graph = m_graph.get(),
+			.max_vertex_num = 1024 * 64,
 		};
 		GUISystem::Startup(gui_args);
 
@@ -151,6 +152,7 @@ namespace Alpha
 		pctx.command_list = ctx.command_list;
 		pctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
 		pctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
+		pctx.profiler = RenderCore::Get().GetGPUProfiler();
 		pctx.delta_time = 1.0f / 60;
 
 		m_particle_system->Update(registry, pctx);

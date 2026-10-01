@@ -171,20 +171,29 @@ namespace Alpha::Particle
 		ctx.command_list->UAVBarrier(write_allocator->GetBuffer());
 		ctx.command_list->UAVBarrier(m_particle_counter.get());
 
-		// 生存中のパーティクル更新
-		ctx.command_list->SetComputePipeline(m_update_pipeline);
+		{
+			auto handle = ctx.profiler->Begin(L"ParticleUpdate", ctx.command_list);
 
-		// 更新パス(パーティクル単位)
-		const UInt32 update_groups = RoundUp(constants.max_particle_count, 64);
+			// 生存中のパーティクル更新
+			ctx.command_list->SetComputePipeline(m_update_pipeline);
 
-		ctx.command_list->Dispatch(update_groups, 1, 1);
+			// 更新パス(パーティクル単位)
+			const UInt32 update_groups = RoundUp(constants.max_particle_count, 64);
 
-		ctx.command_list->UAVBarrier(write_allocator->GetBuffer());
-		ctx.command_list->UAVBarrier(m_particle_counter.get());
+			ctx.command_list->Dispatch(update_groups, 1, 1);
+
+			ctx.command_list->UAVBarrier(write_allocator->GetBuffer());
+			ctx.command_list->UAVBarrier(m_particle_counter.get());
+
+
+			ctx.profiler->End(handle, ctx.command_list);
+		}
+
 
 		// 生成パス
 		if (constants.emit_command_count > 0)
 		{
+			auto handle = ctx.profiler->Begin(L"ParticleEmit", ctx.command_list);
 			ctx.command_list->SetComputePipeline(m_emit_pipeline);
 
 			const UInt32 dispatch_x = RoundUp(m_emit_commands.size(), 64);
@@ -193,6 +202,8 @@ namespace Alpha::Particle
 
 			ctx.command_list->UAVBarrier(write_allocator->GetBuffer());
 			ctx.command_list->UAVBarrier(m_particle_counter.get());
+
+			ctx.profiler->End(handle, ctx.command_list);
 		}
 
 		// 描画用、かつ次のフレームのreadになる

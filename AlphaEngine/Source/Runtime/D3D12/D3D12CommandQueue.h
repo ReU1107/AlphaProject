@@ -27,6 +27,8 @@ namespace Alpha
 
 		void SetName(StringView name) final;
 
+		UInt64 GetTimestampFrequency() final;
+
 		ID3D12CommandQueue* GetNativeHandle() const { return m_queue.Get(); }
 
 	};

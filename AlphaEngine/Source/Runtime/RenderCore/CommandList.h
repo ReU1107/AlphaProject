@@ -22,6 +22,8 @@ namespace Alpha
 	class Texture;
 	class SamplerState;
 
+	class GPUQueryHeap;
+
 	struct RayTraceDispatchArgs;
 
 
@@ -49,6 +51,13 @@ namespace Alpha
 
 		void End();
 
+		void BeginEvent(StringView name, GPUQueryHeap* query, UInt32 index);
+
+		void EndEvent(StringView name, GPUQueryHeap* query, UInt32 index);
+
+		void ResolveEvent(GPUQueryHeap* query, UInt32 start_index, UInt32 count, Buffer* buffer, UInt64 buffer_offset);
+
+
 		void SetDescriptorHeap(DescriptorHeap* srv_uav_cbv_heap, DescriptorHeap* sampler_heap = nullptr);
 
 		void SetViewport(const Viewport& viewport);
@@ -71,9 +80,9 @@ namespace Alpha
 
 		void SetPrimitiveTopology(ERHIPrimitiveTopology topology);
 
-		void SetVertexBuffer(Buffer* rb, UInt32 slot);
+		void SetVertexBuffer(Buffer* rb, UInt32 slot, UInt64 buffer_offset = 0);
 
-		void SetIndexBuffer(Buffer* rb, ERHIIndexFormat format);
+		void SetIndexBuffer(Buffer* rb, ERHIIndexFormat format, UInt64 buffer_offset = 0);
 
 		// こいつらはバインドレス経由じゃなく従来の方法のパターン用
 		void SetGraphicsTexture(Texture* texture, UInt32 slot);

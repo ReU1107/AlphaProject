@@ -17,6 +17,8 @@
 #include "PipelineLayout.h"
 #include "CommandLayout.h"
 
+#include "GPUQueryHeap.h"
+
 #include "Definitions.h"
 
 namespace Alpha
@@ -46,6 +48,21 @@ namespace Alpha
 	void CommandList::End()
 	{
 		m_rhi->End();
+	}
+
+	void CommandList::BeginEvent(StringView name, GPUQueryHeap* query, UInt32 index)
+	{
+		m_rhi->BeginEvent(name, query->GetRHI(), index);
+	}
+
+	void CommandList::EndEvent(StringView name, GPUQueryHeap* query, UInt32 index)
+	{
+		m_rhi->EndEvent(name, query->GetRHI(), index);
+	}
+
+	void CommandList::ResolveEvent(GPUQueryHeap* query, UInt32 start_index, UInt32 count, Buffer* buffer, UInt64 buffer_offset)
+	{
+		m_rhi->ResolveEvent(query->GetRHI(), start_index, count, buffer->GetRHI(), buffer_offset);
 	}
 
 	void CommandList::SetDescriptorHeap(DescriptorHeap* srv_uav_cbv_heap, DescriptorHeap* sampler_heap)
@@ -153,14 +170,14 @@ namespace Alpha
 		m_rhi->SetPrimitiveTopology(topology);
 	}
 
-	void CommandList::SetVertexBuffer(Buffer* rb, UInt32 slot)
+	void CommandList::SetVertexBuffer(Buffer* rb, UInt32 slot, UInt64 buffer_offset)
 	{
-		m_rhi->SetVertexBuffer(rb->GetRHI(), slot);
+		m_rhi->SetVertexBuffer(rb->GetRHI(), slot, buffer_offset);
 	}
 
-	void CommandList::SetIndexBuffer(Buffer* rb, ERHIIndexFormat format)
+	void CommandList::SetIndexBuffer(Buffer* rb, ERHIIndexFormat format, UInt64 buffer_offset)
 	{
-		m_rhi->SetIndexBuffer(rb->GetRHI(), format);
+		m_rhi->SetIndexBuffer(rb->GetRHI(), format, buffer_offset);
 	}
 
 	void CommandList::SetGraphicsTexture(Texture* texture, UInt32 slot)

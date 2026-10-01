@@ -83,9 +83,23 @@ namespace Alpha
 			render_scene.WriteProceduralPrimitives(m_procedural_primitives.data(), static_cast<UInt32>(m_procedural_primitives.size()));
         }
 
-        m_vertex_compute_pass->Execute(ctx, render_scene.GetDynamicVertexAllocator()->GetBuffer(), vertex_count);
 
-        BuildAccelerationStructures(ctx, render_scene);
+        {
+            auto handle = ctx.profiler->Begin(L"VertexComputePass", ctx.command_list);
+
+            m_vertex_compute_pass->Execute(ctx, render_scene.GetDynamicVertexAllocator()->GetBuffer(), vertex_count);
+
+            ctx.profiler->End(handle, ctx.command_list);
+        }
+
+        {
+            auto handle = ctx.profiler->Begin(L"BuildAccelerationStructures", ctx.command_list);
+
+            BuildAccelerationStructures(ctx, render_scene);
+
+            ctx.profiler->End(handle, ctx.command_list);
+        }
+
     }
 
     UInt64 RenderSceneBuilder::BuildMeshes(entt::registry& registry, RenderContext& ctx, RenderScene& render_scene)

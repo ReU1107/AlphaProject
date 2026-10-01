@@ -19,6 +19,12 @@ namespace Alpha
 
 		virtual void End() = 0;
 
+		virtual void BeginEvent(StringView name, RHIQueryHeap* query, UInt32 index) = 0;
+		virtual void EndEvent(StringView name, RHIQueryHeap* query, UInt32 index) = 0;
+
+		virtual void ResolveEvent(RHIQueryHeap* query, UInt32 start_index, UInt32 count, RHIBuffer* buffer, UInt64 buffer_offset) = 0;
+
+
 		virtual void SetGraphicsPipelineLayout(RHIPipelineLayout* layout) = 0;
 		virtual void SetComputePipelineLayout(RHIPipelineLayout* layout) = 0;
 
@@ -43,11 +49,11 @@ namespace Alpha
 		virtual void CopyBuffer(RHIBuffer* src, RHIBuffer* dst) = 0;
 		virtual void CopyBufferRegion(RHIBuffer* src, UInt64 src_offset, RHIBuffer* dst, UInt64 dst_offset, UInt64 size) = 0;
 
-		virtual void SetVertexBuffer(RHIBuffer* vb, UInt32 slot) = 0;
+		virtual void SetVertexBuffer(RHIBuffer* vb, UInt32 slot, UInt64 buffer_offset) = 0;
 
 		virtual void SetPrimitiveTopology(ERHIPrimitiveTopology topology) = 0;
 
-		virtual void SetIndexBuffer(RHIBuffer* ib, ERHIIndexFormat format) = 0;
+		virtual void SetIndexBuffer(RHIBuffer* ib, ERHIIndexFormat format, UInt64 buffer_offset) = 0;
 
 		virtual void SetUniformBuffer(RHIBuffer* cb, UInt32 slot, ERHIPipelineType type = ERHIPipelineType::Graphics) = 0;
 

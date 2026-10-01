@@ -56,4 +56,9 @@ namespace Alpha
 	{
 		m_rhi->SetName(name);
 	}
+
+	UInt64 CommandQueue::GetTimestampFrequency()
+	{
+		return m_rhi->GetTimestampFrequency();
+	}
 }
