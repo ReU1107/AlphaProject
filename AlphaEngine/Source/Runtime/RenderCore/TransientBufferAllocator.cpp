@@ -29,6 +29,10 @@ namespace Alpha
 
 		UInt64 aligned_size = Alignment(size, m_alignment);
 
+		ALPHA_CHECK_ERROR(
+			aligned_offset + aligned_size <= m_capacity,
+			L"TransientBufferAllocator overflow.");
+
 		*out_offset = aligned_offset;
 
 		UInt8* dest = block.map_ptr + aligned_offset;
@@ -42,6 +46,11 @@ namespace Alpha
 		return dest;
 	}
 
+	UInt8* TransientBufferAllocator::GetMappedPtr()
+	{
+		return m_blocks[m_current_block_index].map_ptr;
+	}
+
 	UInt64 TransientBufferAllocator::AllocateOffset(UInt64 size)
 	{
 		auto& block = m_blocks[m_current_block_index];
@@ -49,6 +58,10 @@ namespace Alpha
 		UInt64 aligned_offset = Alignment(block.current_offset, m_alignment);
 
 		UInt64 aligned_size = Alignment(size, m_alignment);
+
+		ALPHA_CHECK_ERROR(
+			aligned_offset + aligned_size <= m_capacity,
+			L"TransientBufferAllocator overflow.");
 
 		block.current_offset = aligned_offset + aligned_size;
 

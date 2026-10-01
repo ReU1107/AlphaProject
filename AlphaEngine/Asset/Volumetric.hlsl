@@ -127,11 +127,9 @@ void RayGenerate()
         float3 scattering = sigma_r * phase_r + sigma_m * phase_m;
         float3 dominant = light.color * light.intensity * payload.visibility * scattering;
         
-        
-        float3 ambient_scattering = float3(0.02f, 0.025f, 0.035f) * scattering;
-        
+                
         // メインライト(DirectionalLight)だけ
-        radiance += transmittance * (dominant + ambient_scattering) * step_size;
+        radiance += transmittance * (dominant) * step_size;
         
         
         // ランベルトベールで減衰

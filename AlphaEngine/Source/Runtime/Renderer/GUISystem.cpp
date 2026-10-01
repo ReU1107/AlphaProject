@@ -228,6 +228,16 @@ namespace Alpha::Renderer
 				if (!draw_data)
 					return;
 
+				ALPHA_CHECK_ERROR(
+					static_cast<UInt64>(draw_data->TotalVtxCount) * sizeof(ImDrawVert)
+					<= m_vertex_buffer->GetCapacity(),
+					L"ImGui vertex buffer capacity exceeded.");
+
+				ALPHA_CHECK_ERROR(
+					static_cast<UInt64>(draw_data->TotalIdxCount) * sizeof(ImDrawIdx)
+					<= m_index_buffer->GetCapacity(),
+					L"ImGui index buffer capacity exceeded.");
+
 				ctx.command_list->Transition(ctx.current_back_buffer, ERHIResourceState::RenderTarget);
 
 
@@ -291,12 +301,16 @@ namespace Alpha::Renderer
 						float clip_max_x = cmd->ClipRect.z - clip_off.x;
 						float clip_max_y = cmd->ClipRect.w - clip_off.y;
 
-						ctx.command_list->SetScissorRect(clip_min_x, clip_min_y, clip_max_x, clip_max_y);
+						ctx.command_list->SetScissorRect(
+							static_cast<int32_t>(clip_min_x),
+							static_cast<int32_t>(clip_min_y),
+							static_cast<UInt32>(clip_max_x - clip_min_x),
+							static_cast<UInt32>(clip_max_y - clip_min_y));
 
 						ctx.command_list->DrawIndexed(cmd->ElemCount, (index_offset / sizeof(ImDrawIdx)) + cmd->IdxOffset, (vertex_offset / sizeof(ImDrawVert)) + cmd->VtxOffset);
 					}
 				}
-
+				ctx.command_list->SetScissorRect(0, 0, 1920, 1080);
 			}
 		);
 

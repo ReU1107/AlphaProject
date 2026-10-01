@@ -11,6 +11,8 @@
 #include "D3D12CommandLayout.h"
 #include "D3D12DescriptorHeap.h"
 
+#include "D3D12QueryHeap.h"
+
 #include "Core/Assertion.h"
 
 #if RHI_D3D12
@@ -87,6 +89,17 @@ namespace
 		return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	}
 
+	inline D3D12_QUERY_TYPE ConvertD3D12QueryType(Alpha::ERHIQueryType rhiType)
+	{
+		switch (rhiType)
+		{
+		case Alpha::ERHIQueryType::Timestamp:          return D3D12_QUERY_TYPE_TIMESTAMP;
+		case Alpha::ERHIQueryType::Occlusion:          return D3D12_QUERY_TYPE_OCCLUSION;
+		case Alpha::ERHIQueryType::BinaryOcclusion:    return D3D12_QUERY_TYPE_BINARY_OCCLUSION;
+		case Alpha::ERHIQueryType::PipelineStatistics: return D3D12_QUERY_TYPE_PIPELINE_STATISTICS;
+		default: throw std::invalid_argument("Invalid ERHIQueryType");
+		}
+	}
 }
 
 namespace Alpha
@@ -214,6 +227,38 @@ namespace Alpha
 		}
 	}
 
+	void D3D12CommandBuffer::BeginEvent(StringView name, RHIQueryHeap* query, UInt32 index)
+	{
+		auto type = ConvertD3D12QueryType(query->GetType());
+
+		auto* d3d_heap = static_cast<D3D12QueryHeap*>(query)->GetNativeHandle();
+
+		if (type == D3D12_QUERY_TYPE_TIMESTAMP)
+			m_list->EndQuery(d3d_heap, type, index);
+		else
+			m_list->BeginQuery(d3d_heap, type, index);
+	}
+
+	void D3D12CommandBuffer::EndEvent(StringView name, RHIQueryHeap* query, UInt32 index)
+	{
+		auto type = ConvertD3D12QueryType(query->GetType());
+
+		auto* d3d_heap = static_cast<D3D12QueryHeap*>(query)->GetNativeHandle();
+
+		m_list->EndQuery(d3d_heap, type, index);
+	}
+
+	void D3D12CommandBuffer::ResolveEvent(RHIQueryHeap* query, UInt32 start_index, UInt32 count, RHIBuffer* buffer, UInt64 buffer_offset)
+	{
+		auto type = ConvertD3D12QueryType(query->GetType());
+		auto* d3d_heap = static_cast<D3D12QueryHeap*>(query)->GetNativeHandle();
+
+		auto d3d_buffer = static_cast<ID3D12Resource1*>(buffer->GetNative());
+
+
+		m_list->ResolveQueryData(d3d_heap, type, start_index, count, d3d_buffer, buffer_offset);
+	}
+
 	void D3D12CommandBuffer::SetGraphicsPipelineLayout(RHIPipelineLayout* layout)
 	{
 		auto d3d12_layout = static_cast<D3D12PipelineLayout*>(layout);
@@ -274,10 +319,10 @@ namespace Alpha
 			m_list->SetDescriptorHeaps(num, heaps);
 	}
 
-	void D3D12CommandBuffer::SetVertexBuffer(RHIBuffer* vb, UInt32 slot)
+	void D3D12CommandBuffer::SetVertexBuffer(RHIBuffer* vb, UInt32 slot, UInt64 buffer_offset)
 	{
 		D3D12_VERTEX_BUFFER_VIEW view = {};
-		view.BufferLocation = vb->GetGPUAddress();
+		view.BufferLocation = vb->GetGPUAddress() + buffer_offset;
 		view.SizeInBytes = (UINT)vb->GetSize();
 		view.StrideInBytes = (UINT)vb->GetStride();
 
@@ -289,10 +334,10 @@ namespace Alpha
 		m_list->IASetPrimitiveTopology(GetD3D12PrimitiveTopology(topology));
 	}
 
-	void D3D12CommandBuffer::SetIndexBuffer(RHIBuffer* ib, ERHIIndexFormat format)
+	void D3D12CommandBuffer::SetIndexBuffer(RHIBuffer* ib, ERHIIndexFormat format, UInt64 buffer_offset)
 	{
 		D3D12_INDEX_BUFFER_VIEW ibv = {};
-		ibv.BufferLocation = ib->GetGPUAddress();
+		ibv.BufferLocation = ib->GetGPUAddress() + buffer_offset;
 		ibv.Format = format == ERHIIndexFormat::UInt32 ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_R16_UINT;
 		ibv.SizeInBytes = (UINT)ib->GetSize();
 

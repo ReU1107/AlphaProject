@@ -18,6 +18,7 @@ namespace Alpha
 	class RHISwapChain;
 	class RHITexture;
 	class RHITimeline;
+	class RHIQueryHeap;
 
 	// RHIオブジェクトの生成に必要な情報をまとめた構造体群
 
@@ -39,6 +40,8 @@ namespace Alpha
 	struct RHISwapChainDesc;
 	struct RHITextureDesc;
 	struct RHITimelineDesc;
+
+	struct RHIQueryHeapDesc;
 
 	struct RHIBuildBLASDesc;
 	struct RHIBuildTLASDesc;

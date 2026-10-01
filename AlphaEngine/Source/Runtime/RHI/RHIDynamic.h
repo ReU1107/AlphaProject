@@ -32,6 +32,8 @@ namespace Alpha
 
 		virtual TUnique<RHIDescriptorHeap> CreateDescriptorHeap(const RHIDescriptorHeapDesc& desc) = 0;
 
+		virtual TUnique<RHIQueryHeap> CreateQueryHeap(const RHIQueryHeapDesc& desc) = 0;
+
 		virtual TUnique<RHIPipelineLayout> CreatePipelineLayout(const RHIPipelineLayoutDesc& desc) = 0;
 
 		//virtual TUnique<RHIDescriptorView> CreateDescriptorView(const RHIDescriptorViewDesc& desc) = 0;

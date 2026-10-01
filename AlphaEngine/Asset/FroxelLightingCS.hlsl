@@ -48,14 +48,14 @@ void main(uint3 dispatch_index : SV_DispatchThreadID)
         if (light.type == 2)
             continue;
 
-        float3 direction = light.position - world_pos;
-        float dist = length(direction);
+        float dist = length(light.position - world_pos);
         
         // ライトの範囲外なら無視
         if (dist > light.radius)
             continue;
-
-        direction /= dist;
+        
+        float3 direction = (light.position - world_pos) / max(dist, 1e-6f);
+        
         float attenuation = max(0.0f, 1.0f - (dist / light.radius));
         
         // スポットライトの円錐減衰

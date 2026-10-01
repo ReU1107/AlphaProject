@@ -30,6 +30,8 @@ namespace Alpha
 
         TUnique<RHICommandLayout> CreateCommandLayout(const RHICommandLayoutDesc& desc) final;
 
+        TUnique<RHIQueryHeap> CreateQueryHeap(const RHIQueryHeapDesc& desc) final;
+
         TUnique<RHITimeline> CreateTimeline(const RHITimelineDesc& desc) final;
 
         TUnique<RHIShader> CreateShader(const RHIShaderDesc& desc) final;

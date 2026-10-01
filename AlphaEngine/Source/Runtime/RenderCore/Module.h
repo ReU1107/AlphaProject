@@ -22,6 +22,9 @@
 #include "ASBuilder.h"
 #include "GPUDataTransfer.h"
 
+#include "GPUQueryHeap.h"
+#include "GPUProfiler.h"
+
 #include "TransientBufferAllocator.h"
 #include "PersistentBufferAllocator.h"
 

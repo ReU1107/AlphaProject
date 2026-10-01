@@ -34,8 +34,12 @@ namespace Alpha
 		void CopyBufferRegion(RHIBuffer* src, UInt64 src_offset, RHIBuffer* dst, UInt64 dst_offset, UInt64 size) final;
 
 		void Begin(UInt32) final;
-
 		void End() final;
+
+		void BeginEvent(StringView name, RHIQueryHeap* query, UInt32 index) final;
+		void EndEvent(StringView name, RHIQueryHeap* query, UInt32 index) final;
+
+		void ResolveEvent(RHIQueryHeap* query, UInt32 start_index, UInt32 count, RHIBuffer* buffer, UInt64 buffer_offset) final;
 
 		void SetGraphicsPipelineLayout(RHIPipelineLayout* layout) final;
 		void SetComputePipelineLayout(RHIPipelineLayout* layout) final;
@@ -47,11 +51,11 @@ namespace Alpha
 		void SetDescriptorHeap(RHIDescriptorHeap* heap) final;
 		void SetDescriptorHeap(RHIDescriptorHeap* srv_heap, RHIDescriptorHeap* sampler_heap) final;
 
-		void SetVertexBuffer(RHIBuffer* vb, UInt32 slot) final;
+		void SetVertexBuffer(RHIBuffer* vb, UInt32 slot, UInt64 buffer_offset) final;
 
 		void SetPrimitiveTopology(ERHIPrimitiveTopology topology) final;
 
-		void SetIndexBuffer(RHIBuffer* ib, ERHIIndexFormat format) final;
+		void SetIndexBuffer(RHIBuffer* ib, ERHIIndexFormat format, UInt64 buffer_offset) final;
 
 		void SetUniformBuffer(RHIBuffer* cb, UInt32 slot, ERHIPipelineType type) final;
 

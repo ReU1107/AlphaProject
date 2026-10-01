@@ -1,9 +1,13 @@
-﻿#include <iostream>
+﻿
+#include "BistroLocalLights.h"
+
+#include <iostream>
 #include <d3d12.h>
 #include <d3dx12.h>
 #include <wrl.h>
 #include <d3d12sdklayers.h>
 #include <dxgidebug.h>
+#define NOMINMAX
 #include <windows.h>
 
 #include "Source/Core/Common.h"
@@ -37,8 +41,8 @@
 
 #include "TestScene/Scene1.h"
 
-#include <thread>
-#include <chrono>
+#include "Source/Core/String/StringUtil.h"
+
 
 #include <limits>
 #include <stdexcept>
@@ -52,6 +56,7 @@ using namespace Alpha;
 using namespace Alpha::Renderer;
 using namespace Alpha::Particle;
 using namespace Alpha::Animation;
+#include "BistroLocalLights_Alpha.inl"
 
 struct FBXImportContext
 {
@@ -690,6 +695,16 @@ void TestLoader(
 
         child_it->second->SetParent(parent_it->second);
     }
+
+    BistroLighting::Options lighting_options{};
+    lighting_options.intensityScale = 0.1f;
+    lighting_options.stringIntensity = 40.f;
+    lighting_options.stringRadius = 3.0f;
+
+    // fbx_sceneが生きている間に実行。シーンの初回import時だけ呼ぶ。
+    auto bistro_light_rig = AddBistroLocalLights(scene, fbx_scene.get(), asset_prefix, lighting_options);
+
+
 }
 
 
@@ -742,6 +757,9 @@ AnimationBlueprint MakeLocomotionBlueprint(
     return blueprint;
 }
 
+#include <thread>
+#include <chrono>
+
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 //int main()
 {
@@ -792,7 +810,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         .asset_manager = AssetManager::GetPtr(),
     };
     RenderResourceManager::Startup(resource_args);
-
+   
     UInt32 akari_index = RenderResourceManager::Get().RegisterMesh(model1);
     UInt32 patchouli_index = RenderResourceManager::Get().RegisterMesh(model2);
     UInt32 sphere_index = RenderResourceManager::Get().RegisterMesh(model3);
@@ -929,8 +947,67 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         ImGui::End();
 
+        ImGui::Begin("Application Info");
 
+        const float fps = ImGui::GetIO().Framerate;
+        const float frame_time = fps > 0.0f ? 1000.0f / fps : 0.0f;
 
+        ImGui::Text("Application average: %.3f ms/frame (%.1f FPS)", frame_time, fps);
+
+        ImGui::Separator();
+        ImGui::Text("GPU Profile");
+
+        auto* profiler = RenderCore::Get().GetGPUProfiler();
+        auto& records = profiler->GetCollectedRecords();
+
+        float gpu_frame_total_ms = 0.0f;
+        for (auto& record : records)
+        {
+            gpu_frame_total_ms += record.elapsed_ms;
+        }
+
+        if (ImGui::BeginTable("GPU_Profile_Table", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+        {
+            // 列の設定
+            ImGui::TableSetupColumn("Pass", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("Time", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+            ImGui::TableSetupColumn("Ratio", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+            ImGui::TableHeadersRow();
+
+            for (auto& record : records)
+            {
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("%s", StringUtil::ConvertToUtf8(record.name).c_str());
+
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%.3f ms", record.elapsed_ms);
+
+                ImGui::TableSetColumnIndex(2);
+                float percentage = (gpu_frame_total_ms > 0.0f) ? (record.elapsed_ms / gpu_frame_total_ms) * 100.0f : 0.0f;
+                ImGui::Text("%.1f%%", percentage);
+            }
+
+            ImGui::EndTable();
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        ImGui::Text("GPU Frame:       %.3f ms", gpu_frame_total_ms);
+
+        const float target_60hz_ms = 1000.0f / 60.0f;
+        float headroom_ms = target_60hz_ms - gpu_frame_total_ms;
+
+        if (headroom_ms < 0.0f) {
+            ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "GPU Headroom:    %.3f ms @60Hz (Over BUDGET!)", headroom_ms);
+        }
+        else {
+            ImGui::Text("GPU Headroom:     %.3f ms @60Hz", headroom_ms);
+        }
+
+        ImGui::End();
 
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -948,6 +1025,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         RenderContext ctx = {};
         ctx.command_list = RenderCore::Get().AcquireCommandList();
         ctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
+		ctx.profiler = RenderCore::Get().GetGPUProfiler();
         ctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
         ctx.current_back_buffer = RenderCore::Get().GetCurrentRenderTarget();
         ctx.debug_value = debug_value;
@@ -959,7 +1037,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         render_system.Render(registry, ctx);
 
-
+		ctx.profiler->Flush(ctx.command_list);
 
         RenderCore::Get().EndFrame();
 

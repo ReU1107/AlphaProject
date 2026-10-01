@@ -21,6 +21,9 @@ namespace Alpha
 		virtual void Wait(RHITimeline* timeline_, uint64_t value) = 0;
 
 		virtual void SetName(StringView name) = 0;
+
+		virtual UInt64 GetTimestampFrequency() = 0;
+
 	};
 
 }

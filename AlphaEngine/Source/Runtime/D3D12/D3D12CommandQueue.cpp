@@ -104,6 +104,14 @@ namespace Alpha
 		m_queue->SetName(name.c_str());
 	}
 
+	UInt64 D3D12CommandQueue::GetTimestampFrequency()
+	{
+		UInt64 frequency = 0;
+		m_queue->GetTimestampFrequency(&frequency);
+
+		return frequency;
+	}
+
 }
 
 #endif

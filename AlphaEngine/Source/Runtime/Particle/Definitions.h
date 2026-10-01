@@ -6,6 +6,7 @@ namespace Alpha
 
     class CommandList;
     class TransientBufferAllocator;
+	class GPUProfiler;
 }
 
 namespace Alpha::Particle
@@ -89,6 +90,7 @@ namespace Alpha::Particle
     {
         CommandList* command_list{ nullptr };
         TransientBufferAllocator* transient_buffer{ nullptr };
+		GPUProfiler* profiler{ nullptr };
         UInt32 current_frame_index{ 0 };
 
         float delta_time{ 0.0f };

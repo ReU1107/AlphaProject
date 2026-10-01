@@ -233,10 +233,11 @@ namespace Alpha::Renderer
 				}
 			}, pass.pipeline.handle);
 
-
+			auto handle = ctx.profiler->Begin(pass.name, ctx.command_list);
 
 			pass.execute(graph_ctx);
 
+			ctx.profiler->End(handle, ctx.command_list);
 		}
 
 	}

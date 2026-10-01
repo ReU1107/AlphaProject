@@ -21,6 +21,14 @@ namespace Alpha
 		Sampler,
 	};
 
+	enum class ERHIQueryType
+	{
+		Timestamp,          // GPUの時刻計測用 (D3D12_QUERY_TYPE_TIMESTAMP)
+		Occlusion,          // 描画されたピクセル数のカウント用 (D3D12_QUERY_TYPE_OCCLUSION)
+		BinaryOcclusion,    // ピクセルが描画されたか否かの2値判定用 (D3D12_QUERY_TYPE_BINARY_OCCLUSION)
+		PipelineStatistics, // 頂点数やプリミティブ数などの統計用 (D3D12_QUERY_TYPE_PIPELINE_STATISTICS)
+	};
+
 	enum class ERHIResourceViewType
 	{
 		Unknown,

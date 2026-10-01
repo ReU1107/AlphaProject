@@ -32,7 +32,7 @@ namespace Alpha::Renderer
 		{
 			RenderCore* render_core{ nullptr };
 			RenderGraph* graph{ nullptr };
-			uint32_t max_vertex_num{ 1024 };
+			uint32_t max_vertex_num{ 4096 };
 
 		};
 		bool Initialize(const Args& args);

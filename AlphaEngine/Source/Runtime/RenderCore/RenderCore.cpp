@@ -33,6 +33,9 @@
 
 #include "TransientBufferAllocator.h"
 
+#include "GPUQueryHeap.h"
+#include "GPUProfiler.h"
+
 #include "Core/Math/Vector.h"
 #include "Core/Literal.h"
 #include "Core/Math/HashUtil.h"
@@ -181,6 +184,15 @@ namespace Alpha
 			m_pipeline_cache->Initialize(desc);
 		}
 
+		m_profiler = std::make_unique<GPUProfiler>();
+		{
+			GPUProfiler::Args desc = {
+				.render_core = this,
+				.timestamp_frequency = m_command_queue->GetTimestampFrequency(),
+			};
+			m_profiler->Initialize(desc);
+		}
+
 
 		m_width = args.width;
 		m_height = args.height;		
@@ -259,6 +271,19 @@ namespace Alpha
 		timeline->Initialize(desc);
 
 		return timeline;
+	}
+
+	TUnique<GPUQueryHeap> RenderCore::CreateQueryHeap(UInt32 count, ERHIQueryType type)
+	{
+		auto heap = std::make_unique<GPUQueryHeap>();
+		GPUQueryHeap::Args desc = {
+			.rhi = m_rhi.get(),
+			.type = type,
+			.count = count,
+		};
+		heap->Initialize(desc);
+
+		return heap;
 	}
 
 	TUnique<DescriptorHeap> RenderCore::CreateDescriptorHeap(UInt64 num, ERHIDescriptorType type)
@@ -791,6 +816,8 @@ namespace Alpha
 		m_direct_pool->Reset();
 
 		m_as_builder->Reset(current_buffer_index);
+
+		m_profiler->Reset(current_buffer_index);
 	}
 
 	void RenderCore::EndFrame()
