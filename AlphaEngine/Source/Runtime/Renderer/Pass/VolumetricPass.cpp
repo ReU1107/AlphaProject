@@ -17,7 +17,7 @@ namespace Alpha::Renderer
 	void AddVolumetricPass(RenderCore* render_core, PipelineLayout* layout, RenderGraph* graph)
 	{
 		TArray<String> entries = { L"RayGenerate", L"OpaqueHit", L"Miss" };
-		Shader* shader_library = render_core->CreateShaderLibrary(L"Asset/Volumetric.hlsl",
+		Shader* shader_library = render_core->CreateShaderLibrary(L"Asset/VolumetricRT.hlsl",
 			{ {
 					L"RayGenerate",
 					L"OpaqueHit",/* L"TranslucentHit", L"VolumeHit",

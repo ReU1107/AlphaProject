@@ -3,8 +3,8 @@
     float4 position : SV_Position;
     uint primitive_id : SV_PrimitiveID;
     
-    nointerpolation uint instance_id : CV_Instance_ID;
-    nointerpolation uint meshlet_id : CV_Meshlet_ID;
+    nointerpolation uint instance_id : CV_InstanceID;
+    nointerpolation uint meshlet_id : CV_MeshletID;
 
 };
 

@@ -8,7 +8,6 @@ https://github.com/GPUOpen-LibrariesAndSDKs/WorkGraphsDirectX-Graphics-Samples/b
 D3D12_SET_WORK_GRAPH_FLAG_INITIALIZE;
 workgraphの開始時点で
 
-1. 開発環境の必須条件（Agility SDK）SDKバージョン: Work Graphsを動かすには Agility SDK 720 以上が必要。C++側設定: D3D12SDKVersion = 720; を明示的にエクスポートすること。DLLの配置: .exe と同じ場所に D3D12/D3D12Core.dll (Ver 720) を配置し、OS標準のd3d12より優先させる。2. コンパイラ（DXC）の死守すべきルールDLLの固定ロード: LoadLibraryExW をフルパスで使い、確実に最新版（1.8〜1.10.x）の dxcompiler.dll と dxil.dll を読み込む。システムフォルダ（System32）の古いDLLに触れさせないのが鉄則。文字コードの罠: HLSLファイルは必ず 「UTF-8（BOMなし）」 で保存。C++側の DxcBuffer.Encoding は DXC_CP_UTF8 (65001) を指定すること。これに失敗するとコンパイラ内部でアクセス違反（0xC0000005）が発生する。3. コンパイル引数のポイントターゲット: -T lib_6_8言語仕様: -HV 2021（必須）-exh フラグの怪: 最新の1.10.x系コンパイラでは、lib_6_8 指定時に -exh が自動有効化される場合がある。その際、明示的に追加すると Unknown argument: '-exh' エラーが出るため、その場合は外して良い。4. HLSL実装の重要ルールレコードは構造体で: NodeOutput<uint> のような基本型は不可。必ず struct { uint val; } のようにラップする。命名の禁忌: 引数名に out は絶対に使わない（HLSLの予約語と衝突し、メソッド呼び出しでクラッシュする）。outputRecord などの固有の名前を付ける。ノードの起動タイプ: Entry ノードなど、1回だけ動かしたいものは [NodeLaunch("thread")] を明記する（デフォルトの broadcasting だと意図しないエラーが出る）。5. デバッグと運用のコツ二段階の絞り込み:FinishedCrossGroupSharing() で 「最後の一グループ」 を特定。if (gtid == 0) で 「その中の代表一人」 を特定。この手順で、全グループの同期と重複なしの描画（集計）が実現できる。Work Graphsの思想: 「再利用性」よりも「専用ノードの量産」と「バトン（レコード）リレー」を優先する。
 
 struct ParticleRecord
 {
