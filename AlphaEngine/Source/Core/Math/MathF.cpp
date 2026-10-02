@@ -215,7 +215,7 @@ namespace Alpha
 
 		return Matrix4x4(
 			Vector4(1.0f - y2 - z2, xy + zw, xz - yw),
-			Vector4(xy - zw, 1.0f - x2 - z2, xy + xw),
+			Vector4(xy - zw, 1.0f - x2 - z2, yz + xw),
 			Vector4(xz + yw, yz - xw, 1.0f - x2 - y2),
 			Vector4(0.0f, 0.0f, 0.0f, 1.0f)
 		);
@@ -370,32 +370,32 @@ namespace Alpha
 
 	Vector3 Matrix4x4Forward(const Matrix4x4& mat)
 	{
-		return mat._3();
+		return VectorNormalize(mat._3().XYZ());
 	}
 
 	Vector3 Matrix4x4Backward(const Matrix4x4& mat)
 	{
-		return -mat._3();
+		return -VectorNormalize(mat._3().XYZ());
 	}
 
 	Vector3 Matrix4x4Right(const Matrix4x4& mat)
 	{
-		return mat._1();
+		return VectorNormalize(mat._1().XYZ());
 	}
 
 	Vector3 Matrix4x4Left(const Matrix4x4& mat)
 	{
-		return -mat._1();
+		return -VectorNormalize(mat._1().XYZ());
 	}
 
 	Vector3 Matrix4x4Up(const Matrix4x4& mat)
 	{
-		return mat._2();
+		return VectorNormalize(mat._2().XYZ());
 	}
 
 	Vector3 Matrix4x4Down(const Matrix4x4& mat)
 	{
-		return -mat._2();
+		return -VectorNormalize(mat._2().XYZ());
 	}
 
 	float QuaternionLengthSq(const Quaternion& q)

@@ -88,6 +88,7 @@ namespace Alpha
 	{
 		const entt::entity entity = m_registry.create();
 
+
 		auto object = std::make_unique<SceneObject>(this, entity, 0, name);
 
 		SceneObject& result = *object;
@@ -148,9 +149,10 @@ namespace Alpha
 
 		auto& siblings = object->m_parent ? object->m_parent->m_children : m_root_objects;
 
-		siblings[object->m_hierarchy_index] = nullptr;
+		auto it = std::find(siblings.begin(), siblings.end(), object);
 
-		object->m_hierarchy_index = 0;
+		if (it != siblings.end())
+			*it = nullptr;
 
 		object->m_parent = nullptr;
 	}

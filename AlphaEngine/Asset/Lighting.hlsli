@@ -86,8 +86,11 @@ float3 ComputeBarycentric(float3 A, float3 B, float3 C, float3 P)
     float3 n = cross(v0, v1);
     float denom = dot(n, n);
 
-    // ゼロ除算の防止（三角形が1つの直線上に並んでいる場合など）
-    if (denom < 1e-6f)
+    float edge_scale = max(dot(v0, v0), dot(v1, v1));
+
+    float epsilon = edge_scale * edge_scale * 1e-8f;
+
+    if (denom < epsilon)
     {
         return float3(1.0f, 0.0f, 0.0f);
     }
