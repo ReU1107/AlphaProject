@@ -265,6 +265,9 @@ namespace Alpha
 		{ T::Size } -> std::convertible_to<UInt32>;
 	};
 
+	template<VectorLike Vec>
+	using VectorType = TVector<typename Vec::ValueType, Vec::Size>;
+
 	template<typename Type, typename L, typename R, typename Func>
 	requires VectorLike<L> && VectorLike<R>
 	[[nodiscard]]

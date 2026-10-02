@@ -15,8 +15,8 @@ struct PrimitiveAttribute
 {
     uint primitive_id : SV_PrimitiveID;
 
-    uint instance_id : CV_Instance_ID;
-    uint meshlet_id : CV_Meshlet_ID;        // グローバルメッシュレットにする
+    uint instance_id : CV_InstanceID;
+    uint meshlet_id : CV_MeshletID;        // グローバルメッシュレットにする
 };
 
 #include "Resource.hlsli"
@@ -46,7 +46,7 @@ void main(
     StructuredBuffer<uint> triangle_indices_buffer = ResourceDescriptorHeap[render_buffers.triangle_indices];
    
     uint instance_id = payload.instance_id;
-    uint local_mesh_id = gid;
+    uint local_meshlet_id = gid;
     
     InstanceData instance = instance_buffer[instance_id];
     
@@ -55,7 +55,7 @@ void main(
     
     MeshData mesh = mesh_buffer[instance.mesh_index];
 
-    uint meshlet_id = mesh.meshlet_element_offset + local_mesh_id;
+    uint meshlet_id = mesh.meshlet_element_offset + local_meshlet_id;
     
     Meshlet meshlet = meshlet_buffer[meshlet_id];
     
@@ -91,7 +91,7 @@ void main(
         triangles[gtid] = uint3(idx0, idx1, idx2);
         prims[gtid].primitive_id = gtid;
         prims[gtid].instance_id = instance_id;
-        prims[gtid].meshlet_id = local_mesh_id;
+        prims[gtid].meshlet_id = local_meshlet_id;
 
     }
 }

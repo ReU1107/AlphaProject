@@ -152,6 +152,7 @@ TShared<MaterialHandle> ConvertMaterial(
     handle->SetName(name);
 
     const auto& pbr = material->pbr;
+	auto& props = handle->GetProperties();
 
     // BaseColor
     if (pbr.base_color.texture &&
@@ -174,6 +175,12 @@ TShared<MaterialHandle> ConvertMaterial(
                 texture, sampler);
 
         }
+        props.base_color = Vector3(
+            static_cast<float>(pbr.base_color.value_vec4.x),
+            static_cast<float>(pbr.base_color.value_vec4.y),
+            static_cast<float>(pbr.base_color.value_vec4.z)
+        );
+        props.opacity = static_cast<float>(pbr.base_color.value_vec4.w);
     }
 
     // Normal
@@ -212,6 +219,9 @@ TShared<MaterialHandle> ConvertMaterial(
                 ETextureAttribute::Metallic,
                 texture, sampler);
         }
+
+        props.metallic = static_cast<float>(pbr.base_color.value_real);
+
     }
 
     // Emissive
@@ -230,6 +240,14 @@ TShared<MaterialHandle> ConvertMaterial(
                 ETextureAttribute::Emissive,
                 texture, sampler);
         }
+
+        props.emissive_color = Vector3(
+            static_cast<float>(pbr.emission_color.value_vec4.x),
+            static_cast<float>(pbr.emission_color.value_vec4.y),
+            static_cast<float>(pbr.emission_color.value_vec4.z)
+        );
+        props.emissive_intensity = static_cast<float>(pbr.emission_factor.value_real);
+
     }
 
     // AO
@@ -248,6 +266,7 @@ TShared<MaterialHandle> ConvertMaterial(
                 ETextureAttribute::Occlusion,
                 texture, sampler);
         }
+		props.occlusion = static_cast<float>(pbr.ambient_occlusion.value_real);
     }
 
     AssetManager::Get().RegisterAsset(name, handle);
@@ -562,8 +581,7 @@ void TestLoader(
         // AssetManager は生成済みモデルを保持するだけ。
         AssetManager::Get().RegisterAsset(model->GetName(), model);
 
-        const UInt32 mesh_index =
-            RenderResourceManager::Get().RegisterMesh(model);
+        const UInt32 mesh_index = RenderResourceManager::Get().RegisterMesh(model);
 
         models.emplace(mesh, model);
         mesh_indices.emplace(mesh, mesh_index);
@@ -660,7 +678,16 @@ void TestLoader(
 
             const ufbx_vec3 direction = ufbx_transform_direction(&node->node_to_world, src_light->local_direction);
 
+            // -Zから+Zに補正するため
+            Quaternion light_axis_correction = QuaternionRotationAxis(Vector3::YAxis, PI);
+
             light.type = light_type;
+
+            rotation *= light_axis_correction;
+
+            transform.SetLocalRotation(rotation);
+
+
 
             light.direction = VectorNormalize(Vector3(
                 static_cast<float>(direction.x),
@@ -810,7 +837,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         .asset_manager = AssetManager::GetPtr(),
     };
     RenderResourceManager::Startup(resource_args);
-   
+    
     UInt32 akari_index = RenderResourceManager::Get().RegisterMesh(model1);
     UInt32 patchouli_index = RenderResourceManager::Get().RegisterMesh(model2);
     UInt32 sphere_index = RenderResourceManager::Get().RegisterMesh(model3);
@@ -828,24 +855,27 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     auto& registry = scene.GetRegistry();
 
-    SceneObject& object = scene.CreateObject(L"akari");
 
-    auto& transform = object.GetComponent<TransformComponent>();
+    {
+        SceneObject& object = scene.CreateObject(L"akari");
 
-    transform.SetLocalPosition( Vector3(0.0f, 0.5f, 0.0f));
+        auto& transform = object.GetComponent<TransformComponent>();
 
-    auto& mesh = object.AddComponent<MeshComponent>();
+        transform.SetLocalPosition(Vector3(-5.0f, 0.5f, -10.0f));
 
-    mesh.mesh_index = akari_index;
-    mesh.visible = true;
+        auto& mesh = object.AddComponent<MeshComponent>();
 
-    auto& anim = object.AddComponent<AnimationComponent>();
-    anim.m_state_machine = blueprint.Instantiate();
-    anim.m_pose = std::make_unique<SkeletonPose>();
-    anim.m_pose->SetSkeleton(skeleton);
-    anim.m_current_pose.bone_transforms.resize(512);
+        mesh.mesh_index = akari_index;
+        mesh.visible = true;
 
-    anim.Play();
+        auto& anim = object.AddComponent<AnimationComponent>();
+        anim.m_state_machine = blueprint.Instantiate();
+        anim.m_pose = std::make_unique<SkeletonPose>();
+        anim.m_pose->SetSkeleton(skeleton);
+        anim.m_current_pose.bone_transforms.resize(512);
+
+        anim.Play();
+    }
 
     {
         SceneObject& object =  scene.CreateObject(L"MainCamera");

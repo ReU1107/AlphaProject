@@ -64,3 +64,44 @@ float3 WorldPositionToFroxelUVW(float3 world_pos, float4x4 view, float4x4 view_p
 
     return float3(uv, z);
 }
+
+float3 ScreenToWorld(float2 uv, float depth, float4x4 inv_view_proj)
+{
+
+    float2 clip_space_pos = uv * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f);
+    float4 ndc_pos = float4(clip_space_pos, depth, 1.0f);
+    
+    float4 world_pos = mul(inv_view_proj, ndc_pos);
+
+    return world_pos.xyz / world_pos.w;
+}
+
+float3 ComputeBarycentric(float3 A, float3 B, float3 C, float3 P)
+{
+    float3 v0 = B - A;
+    float3 v1 = C - A;
+    float3 v2 = P - A;
+
+    // 各三角形の法線ベクトル（外積）の大きさを利用して面積比を出す
+    float3 n = cross(v0, v1);
+    float denom = dot(n, n);
+
+    float edge_scale = max(dot(v0, v0), dot(v1, v1));
+
+    float epsilon = edge_scale * edge_scale * 1e-8f;
+
+    if (denom < epsilon)
+    {
+        return float3(1.0f, 0.0f, 0.0f);
+    }
+
+    float3 nC = cross(v0, v2);
+    float3 nB = cross(v2, v1);
+
+    // 面積比から重心座標を計算
+    float u = dot(n, nB) / denom;
+    float v = dot(n, nC) / denom;
+    float w = 1.0f - u - v;
+
+    return float3(w, u, v);
+}

@@ -3,6 +3,7 @@
 
 namespace Alpha
 {
+	constexpr float MMD_UNIT_TO_METERS = 0.08f;
 	using namespace Animation;
 
 	VMDParser::VMDParser(StringView file_name)
@@ -35,6 +36,8 @@ namespace Alpha
 			m_reader.Read(motion.boneName, sizeof(motion.boneName));
 			m_reader.Read(&motion.frameIndex, sizeof(motion.frameIndex));
 			m_reader.Read(&motion.position, sizeof(motion.position));
+			motion.position *= MMD_UNIT_TO_METERS;
+
 			m_reader.Read(&motion.rotataion, sizeof(motion.rotataion));
 			m_reader.Read(&motion.bezierControllPoint, sizeof(motion.bezierControllPoint));
 		}

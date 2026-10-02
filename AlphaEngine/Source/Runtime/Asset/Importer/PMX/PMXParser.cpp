@@ -21,6 +21,9 @@ namespace
 	{
 		return header.indexSizeTable[(uint8_t)type];
 	}
+
+	// pmxの単位は1=8cmだから
+	constexpr float PMX_UNIT_TO_METERS = 0.08f;
 }
 
 namespace Alpha
@@ -256,6 +259,7 @@ namespace Alpha
 		for (auto& vertex : m_vertices)
 		{
 			m_reader.Read(&vertex.position, sizeof(vertex.position));
+			vertex.position *= PMX_UNIT_TO_METERS;
 			m_reader.Read(&vertex.normal, sizeof(vertex.normal));
 			m_reader.Read(&vertex.texcoord, sizeof(vertex.texcoord));
 
@@ -304,6 +308,9 @@ namespace Alpha
 				m_reader.Read(&vertex.sdefC, sizeof(vertex.sdefC));
 				m_reader.Read(&vertex.sdefR0, sizeof(vertex.sdefR0));
 				m_reader.Read(&vertex.sdefR1, sizeof(vertex.sdefR1));
+				vertex.sdefC *= PMX_UNIT_TO_METERS;
+				vertex.sdefR0 *= PMX_UNIT_TO_METERS;
+				vertex.sdefR1 *= PMX_UNIT_TO_METERS;
 				break;
 			default:
 				break;
@@ -396,6 +403,7 @@ namespace Alpha
 			bone.nameEnglish = ReadString();
 
 			m_reader.Read(&bone.position, sizeof(bone.position));
+			bone.position *= PMX_UNIT_TO_METERS;
 
 			bone.parentIndex = ReadIndex(PMXIndexType::Bone);
 
@@ -406,6 +414,7 @@ namespace Alpha
 			if (((uint16_t)bone.boneFlag & (uint16_t)PMXBoneFlag::AccessShowMode) == 0)
 			{
 				m_reader.Read(&bone.offsetPosition, sizeof(bone.offsetPosition));
+				bone.offsetPosition *= PMX_UNIT_TO_METERS;
 			}
 			else
 			{

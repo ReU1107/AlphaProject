@@ -217,6 +217,10 @@ static const uint SAMPLER_PRESET_ANISO_WRAP = 23;
 static const uint SAMPLER_PRESET_SHADOW = 24;
 
 
+static const uint LIGHT_POINT = 0;
+static const uint LIGHT_SPOT = 1;
+static const uint LIGHT_DIRECTIONAL = 2;
+
 ConstantBuffer<RenderBufferIndices> render_buffers : register(b0);
 ConstantBuffer<FrameRenderConstants> render_frame : register(b1);
 

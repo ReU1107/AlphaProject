@@ -80,9 +80,12 @@ void RayGenerate()
     float3 fog_color = float3(1.0f, 1.0f, 1.0f);
     float3 phase_m = HGPhase(cossita, 0.75f); // gの部分は今後場所によって変わるように
 
+    //float3 test = float3(0.0f, 0.0f, 0.0f);
+    float3 test = light_dir;
+    
     for (uint i = 0; i < step_count; ++i)
     {
-        float t = (i + jitter) * step_size;
+        float t = (i /*+ jitter*/) * step_size;
         if (t >= max_t)
         {
             break;
@@ -94,13 +97,15 @@ void RayGenerate()
         RayDesc ray;
         ray.Origin = position + light_dir * 0.001f;
         ray.Direction = light_dir;
-        ray.TMin = 0.001;
+        ray.TMin = 0.01;
         ray.TMax = 1000.0;
 
         RayPayload payload;
         payload.visibility = 1.0f;
     
         TraceRay(tlas, 0, 0xFF, 0, 0, 0, ray, payload);
+        
+        //test.x += payload.visibility;
         
         float3 uvw = WorldPositionToFroxelUVW(position, render_frame.view, render_frame.view_proj, 0.1f, 1000.0f);
         
@@ -139,7 +144,9 @@ void RayGenerate()
     
     
     radiance_tex[index] = float4(radiance, 1.0f);
+    //radiance_tex[index] = float4(test / step_count, 1.0f);
     transmittance_tex[index] = float4(transmittance, 1.0f);
+
 
     //radiance_tex[index] = float4(1.0f, 0.0f, 0.0f, 1.0f);
     //transmittance_tex[index] = float4(0.0f, 1.0f, 0.0f, 1.0f);

@@ -7,54 +7,6 @@
 
 namespace Alpha
 {
-	// ベクトルの長さ取得(Sqrtなし)
-	template<class Type, UInt32 N>
-	static inline Type VectorLengthSq(const TVector<Type, N>& vec);
-
-	// ベクトルの長さ取得(Sqrtあり)
-	template<class Type, UInt32 N>
-	static inline Type VectorLength(const TVector<Type, N>& vec);
-
-	// 内積計算
-	template<class Type, UInt32 N>
-	static inline Type VectorDot(const TVector<Type, N>& lhs, const TVector<Type, N>& rhs);
-
-	// ベクトル補間
-	template<class Type, UInt32 N>
-	static inline TVector<Type, N> VectorLerp(const TVector<Type, N>& lhs, const TVector<Type, N>& rhs, const float s);
-
-	// 正規化
-	template<class Type, UInt32 N>
-	static inline TVector<Type, N> VectorNormalize(const TVector<Type, N>& vec);
-
-	// 平行ベクトル
-	template<class Type, UInt32 N>
-	static inline TVector<Type, N> VectorParallel(const TVector<Type, N>& normal, const TVector<Type, N>& dir);
-
-	// 反射ベクトル
-	template<class Type, UInt32 N>
-	static inline TVector<Type, N> VectorReflect(const TVector<Type, N>& normal, const TVector<Type, N>& dir);
-
-	// ベクトル制限
-	template<class Type, UInt32 N>
-	static inline TVector<Type, N> VectorClamp(const TVector<Type, N>& vec, const Type min, const Type max);
-
-	// ベクトル制限
-	template<class Type, UInt32 N>
-	static inline TVector<Type, N> VectorClamp(const TVector<Type, N>& vec, const TVector<Type, N>& min, const TVector<Type, N>& max);
-
-	template<class Type, UInt32 N>
-	static inline TVector<Type, N> VectorMin(const TVector<Type, N>& vec, const Type min);
-
-	template<class Type, UInt32 N>
-	static inline TVector<Type, N> VectorMin(const TVector<Type, N>& vec, const TVector<Type, N>& min);
-
-	template<class Type, UInt32 N>
-	static inline TVector<Type, N> VectorMax(const TVector<Type, N>& vec, const Type max);
-
-	template<class Type, UInt32 N>
-	static inline TVector<Type, N> VectorMax(const TVector<Type, N>& vec, const TVector<Type, N>& max);
-
 	template<typename Type, UInt32 N>
 	static inline TVector<Type, N> VectorMaskR(const TVector<Type, N>& vec);
 
@@ -187,11 +139,13 @@ namespace Alpha
 	// x,y,zそれぞれの回転値取得
 	Vector3 QuaternionToEuler(const Quaternion& quaternion);
 
-	template<class Type, UInt32 N>
-	Type VectorLengthSq(const TVector<Type, N>& vec)
+	template<VectorLike Vec>
+	inline auto VectorLengthSq(const Vec& vec)
 	{
+		using Type = typename Vec::ValueType;
+
 		Type value = {};
-		for (UInt32 i = 0; i < N; i++)
+		for (UInt32 i = 0; i < Vec::Size; i++)
 		{
 			value += vec[i] * vec[i];
 		}
@@ -199,52 +153,59 @@ namespace Alpha
 		return value;
 	}
 
-	template<class Type, UInt32 N>
-	Type VectorLength(const TVector<Type, N>& vec)
+	template<VectorLike Vec>
+	inline auto VectorLength(const Vec& vec)
 	{
 		return Sqrt(VectorLengthSq(vec));
 	}
 
-	template<class Type, UInt32 N>
-	Type VectorDot(const TVector<Type, N>& lhs, const TVector<Type, N>& rhs)
+	template<VectorLike A, VectorLike B>
+	requires (A::Size == B::Size)
+	inline auto VectorDot(const A& a, const B& b)
 	{
-		Type value = {};
-		for (UInt32 i = 0; i < N; i++)
-		{
-			value += lhs[i] * rhs[i];
-		}
-		return value;
+		using Type = std::common_type_t<
+			typename A::ValueType,
+			typename B::ValueType>;
+
+		Type result{};
+
+		for (UInt32 i = 0; i < A::Size; ++i)
+			result += a[i] * b[i];
+
+		return result;
 	}
 
-	template<class Type, UInt32 N>
-	inline TVector<Type, N> VectorLerp(const TVector<Type, N>& lhs, const TVector<Type, N>& rhs, const float s)
+	template<VectorLike Vec>
+	inline VectorType<Vec> VectorLerp(const Vec& lhs, const Vec& rhs, const float s)
 	{
 		return lhs * (1.0f - s) + rhs * s;
 	}
 
-	template<class Type, UInt32 N>
-	TVector<Type, N> VectorNormalize(const TVector<Type, N>& vec)
+	template<VectorLike Vec>
+	inline VectorType<Vec> VectorNormalize(const Vec& vec)
 	{
 		return vec / VectorLength(vec);
 	}
 
-	template<class Type, UInt32 N>
-	TVector<Type, N> VectorParallel(const TVector<Type, N>& normal, const TVector<Type, N>& dir)
+	template<VectorLike Vec>
+	inline VectorType<Vec> VectorParallel(const Vec& normal, const Vec& dir)
 	{
 		return normal * VectorDot(normal, -dir) + dir;
 	}
 
-	template<class Type, UInt32 N>
-	TVector<Type, N> VectorReflect(const TVector<Type, N>& normal, const TVector<Type, N>& dir)
+	template<VectorLike Vec>
+	inline VectorType<Vec> VectorReflect(const Vec& normal, const Vec& dir)
 	{
 		return normal * VectorDot(normal, -dir) * 2 + dir;
 	}
 
-	template<class Type, UInt32 N, class MinType, class MaxType>
-	TVector<Type, N> VectorClamp(const TVector<Type, N>& vec, const MinType min, const MaxType max)
+	template<VectorLike Vec, class MinType, class MaxType>
+	inline VectorType<Vec> VectorClamp(const Vec& vec, const MinType min, const MaxType max)
 	{
-		TVector<Type, N> v;
-		for (UInt32 i = 0; i < N; i++)
+		using Type = typename Vec::ValueType;
+
+		VectorType<Vec> v;
+		for (UInt32 i = 0; i < Vec::Size; i++)
 		{
 			v[i] = static_cast<Type>(Clamp(vec[i], min, max));
 		}
@@ -252,11 +213,11 @@ namespace Alpha
 		return v;
 	}
 
-	template<class Type, UInt32 N>
-	TVector<Type, N> VectorClamp(const TVector<Type, N>& vec, const TVector<Type, N>& min, const TVector<Type, N>& max)
+	template<VectorLike Vec>
+	inline VectorType<Vec> VectorClamp(const Vec& vec, const Vec& min, const Vec& max)
 	{
-		TVector<Type, N> v;
-		for (UInt32 i = 0; i < N; i++)
+		VectorType<Vec> v;
+		for (UInt32 i = 0; i < Vec::Size; i++)
 		{
 			v[i] = Clamp(vec[i], min[i], max[i]);
 		}
@@ -264,11 +225,11 @@ namespace Alpha
 		return v;
 	}
 
-	template<class Type, UInt32 N>
-	TVector<Type, N> VectorMin(const TVector<Type, N>& vec, const Type min)
+	template<VectorLike Vec>
+	inline VectorType<Vec> VectorMin(const Vec& vec, const typename Vec::ValueType min)
 	{
-		TVector<Type, N> v;
-		for (UInt32 i = 0; i < N; i++)
+		VectorType<Vec> v;
+		for (UInt32 i = 0; i < Vec::Size; i++)
 		{
 			v[i] = Min(vec[i], min);
 		}
@@ -276,11 +237,11 @@ namespace Alpha
 		return v;
 	}
 
-	template<class Type, UInt32 N>
-	TVector<Type, N> VectorMin(const TVector<Type, N>& vec, const TVector<Type, N>& min)
+	template<VectorLike Vec>
+	inline VectorType<Vec> VectorMin(const Vec& vec, const Vec& min)
 	{
-		TVector<Type, N> v;
-		for (UInt32 i = 0; i < N; i++)
+		VectorType<Vec> v;
+		for (UInt32 i = 0; i < Vec::Size; i++)
 		{
 			v[i] = Min(vec[i], min[i]);
 		}
@@ -288,11 +249,11 @@ namespace Alpha
 		return v;
 	}
 
-	template<class Type, UInt32 N>
-	TVector<Type, N> VectorMax(const TVector<Type, N>& vec, const Type max)
+	template<VectorLike Vec>
+	inline VectorType<Vec> VectorMax(const Vec& vec, const typename Vec::ValueType max)
 	{
-		TVector<Type, N> v;
-		for (UInt32 i = 0; i < N; i++)
+		VectorType<Vec> v;
+		for (UInt32 i = 0; i < Vec::Size; i++)
 		{
 			v[i] = Max(vec[i], max);
 		}
@@ -300,11 +261,11 @@ namespace Alpha
 		return v;
 	}
 
-	template<class Type, UInt32 N>
-	TVector<Type, N> VectorMax(const TVector<Type, N>& vec, const TVector<Type, N>& max)
+	template<VectorLike Vec>
+	inline VectorType<Vec> VectorMax(const Vec& vec, const Vec& max)
 	{
-		TVector<Type, N> v;
-		for (UInt32 i = 0; i < N; i++)
+		VectorType<Vec> v;
+		for (UInt32 i = 0; i < Vec::Size; i++)
 		{
 			v[i] = Max(vec[i], max[i]);
 		}

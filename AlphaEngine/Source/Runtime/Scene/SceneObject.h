@@ -20,7 +20,6 @@ namespace Alpha
         SceneObject* m_parent{ nullptr };
         TArray<SceneObject*> m_children{};
         entt::entity m_entity{ entt::null };
-        UInt32 m_hierarchy_index{ 0 };
 
     public:
         SceneObject(Scene* scene, entt::entity entity, UInt64 uuid, StringView name);
