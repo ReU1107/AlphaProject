@@ -201,5 +201,17 @@ namespace Alpha
 		UInt32 depth{ 1 };
 	};
 
+	struct AllocatorStats
+	{
+		StringView name{};
+		UInt64 capacity{};
+		UInt64 used_size{};
+		UInt64 remaining_size{};
+
+		float UsageRatio() const
+		{
+			return capacity > 0 ? static_cast<float>(used_size) / static_cast<float>(capacity) : 0.0f;
+		}
+	};
 
 }

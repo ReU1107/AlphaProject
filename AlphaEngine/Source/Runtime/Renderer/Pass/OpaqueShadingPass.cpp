@@ -14,7 +14,7 @@ namespace Alpha::Renderer
 
 	void AddOpaqueShadingPass(RenderCore* render_core, PipelineLayout* layout, RenderGraph* graph)
 	{
-		auto shader = RenderCore::Get().CreateShader(L"Asset/OpaqueShadingCS.hlsl", ERHIShaderType::Compute);
+		auto shader = RenderCore::Get().CreateShader(L"Asset/Shader/OpaqueShadingCS.hlsl", ERHIShaderType::Compute);
 
 		ComputePipeline* pipeline = RenderCore::Get().CreateComputePipeline({
 			.pipeline_layout = layout,
@@ -82,7 +82,7 @@ namespace Alpha::Renderer
 	/*
 	* void AddOpaqueShadingPass(RenderCore* render_core, PipelineLayout* layout, RenderGraph* graph)
 	{
-		auto shader = RenderCore::Get().CreateShader(L"Asset/OpaqueShadingCS.hlsl", ERHIShaderType::Compute);
+		auto shader = RenderCore::Get().CreateShader(L"Asset/Shader/OpaqueShadingCS.hlsl", ERHIShaderType::Compute);
 
 		ComputePipeline* pipeline = RenderCore::Get().CreateComputePipeline({
 			.pipeline_layout = layout,

@@ -156,4 +156,39 @@ namespace Alpha::Renderer
 		return m_matrix_palette_allocator.get();
 	}
 
+	TArray<AllocatorStats> RenderScene::GetAllocatorStats() const
+	{
+		TArray<AllocatorStats> stats;
+
+		stats.push_back(CollectStats(m_instance_allocator.get()));
+		stats.push_back(CollectStats(m_vert_to_inst_allocator.get()));
+
+		stats.push_back(CollectStats(m_instance_tlas_allocator.get()));
+		stats.push_back(CollectStats(m_scratch_tlas_allocator.get()));
+
+		stats.push_back(CollectStats(m_result_tlas_allocator.get()));
+		stats.push_back(CollectStats(m_result_blas_allocator.get()));
+
+		stats.push_back(CollectStats(m_dynamic_vertex_allocator.get()));
+		stats.push_back(CollectStats(m_override_material_allocator.get()));
+
+		stats.push_back(CollectStats(m_light_allocator.get()));
+		stats.push_back(CollectStats(m_volume_allocator.get()));
+		stats.push_back(CollectStats(m_procedural_primitive_allocator.get()));
+
+		stats.push_back(CollectStats(m_matrix_palette_allocator.get()));
+
+		return stats;
+	}
+
+	RenderSceneStats RenderScene::GetStats() const
+	{
+		RenderSceneStats stats = {};
+		stats.instance_count = m_instance_count;
+		stats.light_count = m_light_count;
+		
+
+		return stats;
+	}
+
 }

@@ -17,7 +17,7 @@ namespace Alpha::Renderer
 
 	void AddFroxelLightingPass(RenderCore* render_core, PipelineLayout* layout, RenderGraph* graph)
 	{
-		auto shader = RenderCore::Get().CreateShader(L"Asset/FroxelLightingCS.hlsl", ERHIShaderType::Compute);
+		auto shader = RenderCore::Get().CreateShader(L"Asset/Shader/FroxelLightingCS.hlsl", ERHIShaderType::Compute);
 
 		ComputePipeline* pipeline = RenderCore::Get().CreateComputePipeline({
 			.pipeline_layout = layout,

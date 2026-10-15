@@ -18,6 +18,7 @@ namespace Alpha
 			UInt64 current_offset{ 0 };
 		};
 	private:
+		String m_name{};
 		TArray<FrameBlock> m_blocks{};
 		UInt64 m_alignment{ 4 };
 		UInt64 m_used_size{ 0 };
@@ -95,6 +96,9 @@ namespace Alpha
 		void Reset(UInt32 current_buffer_index);
 
 		void SetName(StringView name);
+
+		const String& GetName() const { return m_name; }
+
 	};
 }
 /*

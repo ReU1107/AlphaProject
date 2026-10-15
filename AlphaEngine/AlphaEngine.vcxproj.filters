@@ -21,7 +21,7 @@
     <ClCompile Include="Source\Core\IO\BinaryReader.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Core\Log\Logger.cpp">
+    <ClCompile Include="Source\Core\Logger\Logger.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Core\Math\Color.cpp">
@@ -503,7 +503,7 @@
     <ClInclude Include="Source\Core\IO\BinaryWriter.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Core\Log\Logger.h">
+    <ClInclude Include="Source\Core\Logger\Logger.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\Math\Color.h">
@@ -971,7 +971,7 @@
     <ClInclude Include="ThirdParty\imgui\imstb_truetype.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\std\stb_image.h">
+    <ClInclude Include="ThirdParty\stb\stb_image.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Renderer\DebugRenderer.h">

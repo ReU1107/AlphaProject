@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Core/Common.h"
 #include "Core/Math/AxisAlignedBoundingBox.h"
+#include "RenderCore/Definitions.h"
 #include "Renderer/Definitions.h"
 
 namespace Alpha
@@ -77,5 +78,9 @@ namespace Alpha::Renderer
         UInt32 GetInstanceCount() const { return m_instance_count; }
         UInt32 GetLightCount() const { return m_light_count; }
         UInt32 GetVolumeCount() const { return m_volume_count; }
+
+		TArray<AllocatorStats> GetAllocatorStats() const;
+
+        RenderSceneStats GetStats() const;
     };
 }

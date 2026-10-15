@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Core/Common.h"
+#include "Definitions.h"
 #include "Types.h"
 
 namespace Alpha
@@ -11,5 +12,8 @@ namespace Alpha
     TUnique<PersistentBufferAllocator> CreatePersistentAllocator(RenderCore* render_core, size_t alignment, size_t max_size, EBufferPresetType preset, StringView name);
     TUnique<TransientBufferAllocator> CreateTransientAllocator(RenderCore* render_core, size_t alignment, size_t max_size, EBufferPresetType preset, StringView name);
 
+
+    AllocatorStats CollectStats(PersistentBufferAllocator* allocator);
+    AllocatorStats CollectStats(TransientBufferAllocator* allocator);
 
 }

@@ -555,4 +555,25 @@ namespace Alpha::Renderer
             .material_table = m_material_table_allocator->GetSRVIndex()
         };
     }
+
+    TArray<AllocatorStats> RenderResourceManager::GetAllocatorStats() const
+    {
+        TArray<AllocatorStats> stats;
+
+        stats.push_back(CollectStats(m_vertex_position_allocator.get()));
+        stats.push_back(CollectStats(m_vertex_attribute_allocator.get()));
+        stats.push_back(CollectStats(m_vertex_indices_allocator.get()));
+        stats.push_back(CollectStats(m_triangle_indices_allocator.get()));
+        stats.push_back(CollectStats(m_meshlet_allocator.get()));
+        stats.push_back(CollectStats(m_index_allocator.get()));
+        stats.push_back(CollectStats(m_submesh_allocator.get()));
+
+        stats.push_back(CollectStats(m_source_as_allocator.get()));
+
+        stats.push_back(CollectStats(m_mesh_allocator.get()));
+        stats.push_back(CollectStats(m_material_allocator.get()));
+        stats.push_back(CollectStats(m_material_table_allocator.get()));
+
+        return stats;
+    }
 }

@@ -1,0 +1,23 @@
+Amazon Lumberyard Bistro の配置について
+
+AlphaEngineでは、レンダリングの動作確認用シーンとして Amazon Lumberyard Bistro を使用しています。
+
+Bistroのアセットはリポジトリに含まれていないため、以下の配布元から取得してください。
+
+配布元：
+https://developer.nvidia.com/orca/amazon-lumberyard-bistro
+
+配置先：
+AlphaEngine/Asset/Model/Bistro_v5_2/
+
+以下の構成になるように配置してください。
+
+Bistro_v5_2/
+├── Textures/
+├── BistroExterior.fbx
+├── BistroInterior.fbx
+├── LICENSE.txt
+└── README.txt
+
+※ BistroExterior.fbxとTexturesフォルダは動作確認に必要です。
+※ アセットの利用条件については、配布元のLICENSE.txtを確認してください。

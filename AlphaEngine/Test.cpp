@@ -339,13 +339,9 @@ TShared<ModelHandle> ConvertModel(ufbx_mesh* mesh, FBXImportContext& context)
 
         SubMeshHandle submesh{};
 
-        submesh.material_index =
-            static_cast<UInt32>(submeshes.size());
+        submesh.material_index = static_cast<UInt32>(submeshes.size());
 
-        // 現時点では1頂点 = 1 indexなので
-        // vertices.size()がそのままindex offsetになる。
-        submesh.index_element_offset =
-            static_cast<UInt32>(vertices.size());
+        submesh.index_element_offset = static_cast<UInt32>(vertices.size());
 
         for (uint32_t face_index : part.face_indices)
         {
@@ -757,9 +753,9 @@ AnimationBlueprint MakeLocomotionBlueprint(
     run->play_rate = 1.0f;
     dash->play_rate = 1.0f;
 
-    walk->graph.AddLeafNode(std::move(walk_clip));
-    run->graph.AddLeafNode(std::move(run_clip));
-    dash->graph.AddLeafNode(std::move(dash_clip));
+    walk->graph.AddLeafNode(walk_clip);
+    run->graph.AddLeafNode(run_clip);
+    dash->graph.AddLeafNode(dash_clip);
 
     auto add_speed_transition = [&](UInt32 source, UInt32 destination,
         ECompareType comparison, float threshold)
@@ -787,8 +783,7 @@ AnimationBlueprint MakeLocomotionBlueprint(
 #include <thread>
 #include <chrono>
 
-int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
-//int main()
+void RunBistroDemo()
 {
     WindowSystem::Args win_args =
     {
@@ -799,32 +794,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     };
 
     if (!WindowSystem::Startup(win_args))
-        return -1;
+        return ;
 
     AssetManager::Args asset_args =
     {
 
     };
     AssetManager::Startup(asset_args);
-    auto model1 = AssetManager::Get().Load<ModelHandle>(L"C:/Users/owner/Desktop/Asset/紲星☆あかり20180430/お宮式紲星☆あかりv1.00.pmx");
-    auto model2 = AssetManager::Get().Load<ModelHandle>(L"C:/Users/owner/Desktop/Asset/パチュリーVer2.00/Model/パチュリーVer2.00_Type-C(フル_ポニテC_ミニスカ_ブーツC_パンプス)_サーモン.pmx");
-    auto model3 = AssetManager::Get().GetSphere();
-    auto model4 = AssetManager::Get().GetCube();
-
-    auto walk = AssetManager::Get().Load<MotionHandle>(L"C:/Users/owner/Desktop/Asset/全親での移動モーション/歩きモーション/01_普通歩き【-33】.vmd");
-    //auto walk = AssetManager::Get().Load(L"C:/Users/owner/Documents/Skinned/Project1/Assets/ハッピーシンセサイザ配布用モーション/GUMI.vmd");
-    auto run = AssetManager::Get().Load<MotionHandle>(L"C:/Users/owner/Desktop/Asset/移動モーション_sm38179018/2_ランニング.vmd");
-    auto dash = AssetManager::Get().Load<MotionHandle>(L"C:/Users/owner/Desktop/Asset/移動モーション_sm38179018/3_ダッシュ.vmd");
-
-    auto skeleton = model1->GetSkeleton();
-
-
-    walk->GetSkeletalClip()->Bind(skeleton);
-    run->GetSkeletalClip()->Bind(skeleton);
-    dash->GetSkeletalClip()->Bind(skeleton);
-
-    auto blueprint = MakeLocomotionBlueprint(walk->GetSkeletalClip(), run->GetSkeletalClip(), dash->GetSkeletalClip());
-
 
     RenderCore::Args render_core_args = {};
     render_core_args.hWnd = (HWND)WindowSystem::Get().GetNativeHandle();
@@ -837,11 +813,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         .asset_manager = AssetManager::GetPtr(),
     };
     RenderResourceManager::Startup(resource_args);
-    
-    UInt32 akari_index = RenderResourceManager::Get().RegisterMesh(model1);
-    UInt32 patchouli_index = RenderResourceManager::Get().RegisterMesh(model2);
-    UInt32 sphere_index = RenderResourceManager::Get().RegisterMesh(model3);
-    UInt32 cube_index = RenderResourceManager::Get().RegisterMesh(model4);
 
     RenderSystem::Args rs_args = {
         .render_core = RenderCore::GetPtr(),
@@ -856,33 +827,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     auto& registry = scene.GetRegistry();
 
 
+
     {
-        SceneObject& object = scene.CreateObject(L"akari");
+        SceneObject& object = scene.CreateObject(L"MainCamera");
 
         auto& transform = object.GetComponent<TransformComponent>();
 
-        transform.SetLocalPosition(Vector3(-5.0f, 0.5f, -10.0f));
-
-        auto& mesh = object.AddComponent<MeshComponent>();
-
-        mesh.mesh_index = akari_index;
-        mesh.visible = true;
-
-        auto& anim = object.AddComponent<AnimationComponent>();
-        anim.m_state_machine = blueprint.Instantiate();
-        anim.m_pose = std::make_unique<SkeletonPose>();
-        anim.m_pose->SetSkeleton(skeleton);
-        anim.m_current_pose.bone_transforms.resize(512);
-
-        anim.Play();
-    }
-
-    {
-        SceneObject& object =  scene.CreateObject(L"MainCamera");
-
-        auto& transform = object.GetComponent<TransformComponent>();
-
-        transform.SetLocalPosition( Vector3(-10.0f, 5.f, -10.0f));
+        transform.SetLocalPosition(Vector3(-10.0f, 5.f, -10.0f));
 
         transform.LookAt(Vector3(0.0f, -0.023f, 1.0f));
 
@@ -891,12 +842,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     TestLoader(
         scene,
-        "C:/Users/owner/Desktop/Asset/Bistro_v5_2/BistroExterior.fbx",
+        "Asset/Model/Bistro_v5_2/BistroExterior.fbx",
         L"BistroExterior");
 
     using namespace std::chrono;
 
-    // 60FPSの1フレームあたりの時間（約16.66ms）
     const duration<double, std::milli> target_frame_time(1000.0 / 60.0);
 
     CameraSystem cm_sys;
@@ -908,19 +858,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     static const char* debug_view_names[] =
     {
-        "None",
-        "BaseColor",
-        "WorldNormal",
-        "UV",
-        "MaterialID",
-        "MaterialTableID",
-        "NormalTexture",
-        "BaseColorIndex",
-        "UVRaw",
-        "UVRange",
+        "DI",                  // case 0
+        "Emissive",            // case 1
+        "WorldNormal",         // case 2
+        "GeometricNormal",     // case 3
+        "Visibility",          // case 4
+        "MaterialParams",      // case 5
     };
-
-    float intensity = 1.0f;
 
     while (WindowSystem::Get().ProcessMessages() && !WindowSystem::Get().ShouldClose())
     {
@@ -972,11 +916,17 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         auto main_light_entity = registry.view<MainLight, LightComponent>().front();
         auto& maint_light = registry.get<LightComponent>(main_light_entity);
+        float intensity = maint_light.GetIntensity(); // もし既存の変数があるならそれを利用
+
+        Vector3 light_color = maint_light.GetColor();
+
         ImGui::SliderFloat("Intensity", &intensity, 0.0f, 120.0f);
+        ImGui::ColorEdit3("Light Color", light_color.data());
+
         maint_light.SetIntensity(intensity);
+        maint_light.SetColor(light_color); // 取得した色をセット
 
         ImGui::End();
-
         ImGui::Begin("Application Info");
 
         const float fps = ImGui::GetIO().Framerate;
@@ -998,7 +948,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         if (ImGui::BeginTable("GPU_Profile_Table", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
         {
-            // 列の設定
             ImGui::TableSetupColumn("Pass", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableSetupColumn("Time", ImGuiTableColumnFlags_WidthFixed, 80.0f);
             ImGui::TableSetupColumn("Ratio", ImGuiTableColumnFlags_WidthFixed, 60.0f);
@@ -1030,12 +979,73 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         const float target_60hz_ms = 1000.0f / 60.0f;
         float headroom_ms = target_60hz_ms - gpu_frame_total_ms;
 
-        if (headroom_ms < 0.0f) {
+        if (headroom_ms < 0.0f)
+        {
             ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "GPU Headroom:    %.3f ms @60Hz (Over BUDGET!)", headroom_ms);
         }
-        else {
+        else
+        {
             ImGui::Text("GPU Headroom:     %.3f ms @60Hz", headroom_ms);
         }
+        auto scene_stats = render_system.GetSceneStats();
+        ImGui::Text("Instance Count: %u", scene_stats.instance_count);
+        ImGui::Text("Light Count: %u", scene_stats.light_count);
+
+
+
+        auto draw_allocator_stats = [](const char* table_name, const auto& stats)
+        {
+            if (ImGui::BeginTable(table_name, 5, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+            {
+                ImGui::TableSetupColumn("Allocator", ImGuiTableColumnFlags_WidthStretch);
+                ImGui::TableSetupColumn("Used", ImGuiTableColumnFlags_WidthFixed, 90.0f);
+                ImGui::TableSetupColumn("Capacity", ImGuiTableColumnFlags_WidthFixed, 90.0f);
+                ImGui::TableSetupColumn("Remaining", ImGuiTableColumnFlags_WidthFixed, 90.0f);
+                ImGui::TableSetupColumn("Usage", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+                ImGui::TableHeadersRow();
+
+                for (const auto& stat : stats)
+                {
+                    const float usage =
+                        stat.capacity > 0
+                        ? static_cast<float>(stat.used_size) / static_cast<float>(stat.capacity)
+                        : 0.0f;
+
+                    ImGui::TableNextRow();
+
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("%s", StringUtil::ConvertToUtf8(stat.name).c_str());
+
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%.2f MiB", static_cast<double>(stat.used_size) / (1024.0 * 1024.0));
+
+                    ImGui::TableSetColumnIndex(2);
+                    ImGui::Text("%.2f MiB", static_cast<double>(stat.capacity) / (1024.0 * 1024.0));
+
+                    ImGui::TableSetColumnIndex(3);
+                    ImGui::Text("%.2f MiB", static_cast<double>(stat.remaining_size) / (1024.0 * 1024.0));
+
+                    ImGui::TableSetColumnIndex(4);
+                    ImGui::ProgressBar(usage, ImVec2(-FLT_MIN, 0.0f));
+                }
+
+                ImGui::EndTable();
+            }
+        };
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Text("Resource Allocators");
+
+        const auto resource_alloc_stats = render_system.GetResourceAllocatorStats();
+        draw_allocator_stats("Resource_Allocator_Table", resource_alloc_stats);
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Text("Scene Allocators");
+
+        const auto scene_alloc_stats = render_system.GetSceneAllocatorStats();
+        draw_allocator_stats("Scene_Allocator_Table", scene_alloc_stats);
 
         ImGui::End();
 
@@ -1055,19 +1065,16 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         RenderContext ctx = {};
         ctx.command_list = RenderCore::Get().AcquireCommandList();
         ctx.transient_buffer = RenderCore::Get().GetTransientAllocator();
-		ctx.profiler = RenderCore::Get().GetGPUProfiler();
+        ctx.profiler = RenderCore::Get().GetGPUProfiler();
         ctx.current_frame_index = RenderCore::Get().GetCurrentBackBufferIndex();
         ctx.current_back_buffer = RenderCore::Get().GetCurrentRenderTarget();
         ctx.debug_value = debug_value;
-
-        // 暫定でここに置いてるけどどこにおこう
-        RenderCore::Get().GetASBuilder()->RecordBuildCommands(ctx.command_list);
 
         GUISystem::Get().EndFrame();
 
         render_system.Render(registry, ctx);
 
-		ctx.profiler->Flush(ctx.command_list);
+        ctx.profiler->Flush(ctx.command_list);
 
         RenderCore::Get().EndFrame();
 
@@ -1090,7 +1097,14 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     WindowSystem::Shutdown();
 
-    system("pause");
+}
+
+
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
+{
+    
+    RunBistroDemo();
+
     return 0;
 }
 

@@ -44,8 +44,12 @@ namespace Alpha
 
 		void Render(entt::registry& registry, Renderer::RenderContext& ctx);
 
-		// 本当はよくないんだよな
 		Renderer::RenderGraph* GetGraph() const { return m_graph.get(); };
+
+		Renderer::RenderSceneStats GetSceneStats() const;
+
+		TArray<AllocatorStats> GetSceneAllocatorStats() const;
+		TArray<AllocatorStats> GetResourceAllocatorStats() const;
 
 	};
 }

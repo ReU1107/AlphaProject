@@ -3,6 +3,7 @@
 #include "Core/Subsystem.h"
 #include "Core/Container/SlotPalette.h"
 #include "Definitions.h"
+#include "RenderCore/Definitions.h"
 
 namespace Alpha
 {
@@ -95,5 +96,8 @@ namespace Alpha::Renderer
         Buffers GetBuffers() const;
 
         StaticBufferIndices GetBufferIndices() const;
+
+        TArray<AllocatorStats> GetAllocatorStats() const;
+
     };
 }

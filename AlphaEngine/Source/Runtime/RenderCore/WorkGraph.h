@@ -8,7 +8,7 @@ namespace Alpha
 /*
 * Workgraphテストコード
 *
-    auto shader = RenderCore::Get().CreateShader(L"Asset/TestWork.hlsl", ERHIShaderType::Library);
+    auto shader = RenderCore::Get().CreateShader(L"Asset/Shader/TestWork.hlsl", ERHIShaderType::Library);
     auto s = static_cast<D3D12Shader*>(shader->GetRHI());
 
     auto layout = RenderCore::Get().CreatePipelineLayout(

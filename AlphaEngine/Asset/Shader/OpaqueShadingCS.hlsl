@@ -371,7 +371,7 @@ void main(uint3 dispatch_index : SV_DispatchThreadID)
     switch (render_frame.debug_value)
     {
         case 0:
-            color = surface_data.base_color;
+            color = DI(surface_data);
             break;
         case 1:
             color = surface_data.emissive;
@@ -389,7 +389,6 @@ void main(uint3 dispatch_index : SV_DispatchThreadID)
             color = float3(surface_data.roughness, surface_data.metallic, surface_data.opacity);
             break;
     }
-    
    
     result[index] = float4(color, 1.0f);
 }

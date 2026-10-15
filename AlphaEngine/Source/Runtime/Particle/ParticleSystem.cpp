@@ -25,9 +25,9 @@ namespace Alpha::Particle
 		m_particle_counter = args.render_core->CreateBuffer(sizeof(UInt32), sizeof(UInt64), EBufferPresetType::RWStructured);
 		m_particle_counter->SetName(L"ParticleCounter");
 		
-		auto emit_cs = args.render_core->CreateShader(L"Asset/ParticleEmitCS.hlsl", ERHIShaderType::Compute);
-		auto update_cs = args.render_core->CreateShader(L"Asset/ParticleUpdateCS.hlsl", ERHIShaderType::Compute);
-		auto reset_cs = args.render_core->CreateShader(L"Asset/ParticleResetCS.hlsl", ERHIShaderType::Compute);
+		auto emit_cs = args.render_core->CreateShader(L"Asset/Shader/ParticleEmitCS.hlsl", ERHIShaderType::Compute);
+		auto update_cs = args.render_core->CreateShader(L"Asset/Shader/ParticleUpdateCS.hlsl", ERHIShaderType::Compute);
+		auto reset_cs = args.render_core->CreateShader(L"Asset/Shader/ParticleResetCS.hlsl", ERHIShaderType::Compute);
 
 		m_emit_pipeline = args.render_core->CreateComputePipeline(
 			{
