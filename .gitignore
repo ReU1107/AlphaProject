@@ -262,3 +262,6 @@ __pycache__/
 
 # External Assets
 **/Asset/Model/Bistro_v5_2/
+
+# Build cache
+PredictedInputCache_*.dat
