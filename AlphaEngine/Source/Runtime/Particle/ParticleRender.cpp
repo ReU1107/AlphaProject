@@ -27,7 +27,7 @@ namespace Alpha::Particle
 			}
 		);
 
-		auto prerender_cs = render_core->CreateShader(L"Asset/ParticlePrerenderCS.hlsl", ERHIShaderType::Compute);
+		auto prerender_cs = render_core->CreateShader(L"Asset/Shader/ParticlePrerenderCS.hlsl", ERHIShaderType::Compute);
 
 		auto particle_command = graph->CreateBuffer(L"ParticleRenderCommand",
 			{
@@ -65,9 +65,9 @@ namespace Alpha::Particle
 			}
 		);
 
-		auto sprite_ms = render_core->CreateShader(L"Asset/ParticleSpriteMS.hlsl", ERHIShaderType::Mesh);
+		auto sprite_ms = render_core->CreateShader(L"Asset/Shader/ParticleSpriteMS.hlsl", ERHIShaderType::Mesh);
 
-		auto sprite_ps = render_core->CreateShader(L"Asset/ParticleSpritePS.hlsl", ERHIShaderType::Pixel);
+		auto sprite_ps = render_core->CreateShader(L"Asset/Shader/ParticleSpritePS.hlsl", ERHIShaderType::Pixel);
 
 		auto sprite_pipeline = render_core->CreateGraphicsPipeline(
 			{

@@ -43,4 +43,26 @@ namespace Alpha
         return allocator;
     }
 
+    AllocatorStats CollectStats(PersistentBufferAllocator* allocator)
+    {
+        AllocatorStats stats = {};
+        stats.name = allocator->GetName();
+        stats.capacity = allocator->GetCapacity();
+        stats.used_size = allocator->GetUsedSize();
+        stats.remaining_size = allocator->GetRemainingSize();
+
+        return stats;
+    }
+
+    AllocatorStats CollectStats(TransientBufferAllocator* allocator)
+    {
+        AllocatorStats stats = {};
+        stats.name = allocator->GetName();
+        stats.capacity = allocator->GetCapacity();
+        stats.used_size = allocator->GetUsedSize();
+        stats.remaining_size = allocator->GetRemainingSize();
+
+        return stats;
+    }
+
 }

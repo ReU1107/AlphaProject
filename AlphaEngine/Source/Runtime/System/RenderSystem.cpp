@@ -88,6 +88,9 @@ namespace Alpha
 
 	void RenderSystem::Render(entt::registry& registry, Renderer::RenderContext& ctx)
 	{
+		// シーン構築前に読み込みによるモデルリソースのAS構築
+		RenderCore::Get().GetASBuilder()->RecordBuildCommands(ctx.command_list);
+
 		m_scene->Reset(ctx.current_frame_index);
 
 		ctx.command_list->SetPipelineLayout(m_pipeline_layout);
@@ -165,5 +168,20 @@ namespace Alpha
 		ctx.command_list->Transition(ctx.current_back_buffer, ERHIResourceState::Present);
 
 
+	}
+
+	Renderer::RenderSceneStats RenderSystem::GetSceneStats() const
+	{
+		return m_scene->GetStats();
+	}
+
+	TArray<AllocatorStats> RenderSystem::GetSceneAllocatorStats() const
+	{
+		return m_scene->GetAllocatorStats();
+	}
+
+	TArray<AllocatorStats> RenderSystem::GetResourceAllocatorStats() const
+	{
+		return RenderResourceManager::Get().GetAllocatorStats();
 	}
 }

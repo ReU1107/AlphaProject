@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Log/Logger.h"
+#include "Logger/Logger.h"
 
 namespace Alpha
 {

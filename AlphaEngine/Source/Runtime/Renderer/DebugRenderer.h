@@ -42,7 +42,7 @@ namespace Alpha::Renderer
 		struct Args
 		{
 			RenderCore* render_core{ nullptr };
-			uint32_t max_line_num{ 1024 };
+			uint32_t max_line_num{ 4096 };
 
 		};
 		bool Initialize(const Args& args);

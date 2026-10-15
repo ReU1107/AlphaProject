@@ -4,7 +4,7 @@
 #include "Core/String/StringUtil.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include <std/stb_image.h>
+#include <stb/stb_image.h>
 
 #include <cstdio>
 

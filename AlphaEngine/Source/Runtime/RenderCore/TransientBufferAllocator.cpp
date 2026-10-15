@@ -118,5 +118,6 @@ namespace Alpha
 		{
 			block.buffer->SetName(name);
 		}
+		m_name = name;
 	}
 }

@@ -24,8 +24,8 @@ namespace Alpha::Renderer
 
 		m_lines.reserve(args.max_line_num);
 
-		auto vs = args.render_core->CreateShader(L"Asset/LineVS.hlsl", ERHIShaderType::Vertex);
-		auto ps = args.render_core->CreateShader(L"Asset/LinePS.hlsl", ERHIShaderType::Pixel);
+		auto vs = args.render_core->CreateShader(L"Asset/Shader/LineVS.hlsl", ERHIShaderType::Vertex);
+		auto ps = args.render_core->CreateShader(L"Asset/Shader/LinePS.hlsl", ERHIShaderType::Pixel);
 
 		auto pipeline_layout = args.render_core->CreatePipelineLayout([](PipelineLayout& layout) {
 				layout.AddRootCBV(1);

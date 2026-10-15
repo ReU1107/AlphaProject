@@ -8,7 +8,7 @@ namespace Alpha::Renderer
 	VertexComputePass::~VertexComputePass() = default;
 	bool VertexComputePass::Initialize(const Args& args)
 	{
-		m_cs = RenderCore::Get().CreateShader(L"Asset/AlignVerticesCS.hlsl", ERHIShaderType::Compute);
+		m_cs = RenderCore::Get().CreateShader(L"Asset/Shader/AlignVerticesCS.hlsl", ERHIShaderType::Compute);
 
 		m_align_vertex_pipeline = RenderCore::Get().CreateComputePipeline(
 			{

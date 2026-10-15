@@ -130,12 +130,13 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;RHI_D3D12;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)ThirdParty\;$(ProjectDir)Source\;$(ProjectDir)Source\Core\;$(ProjectDir)Source\Runtime\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -143,7 +144,7 @@
     <ClCompile Include="Source\Core\Assertion.cpp" />
     <ClCompile Include="Source\Core\IO\BinaryReader.cpp" />
     <ClCompile Include="Source\Core\IO\StreamReader.cpp" />
-    <ClCompile Include="Source\Core\Log\Logger.cpp" />
+    <ClCompile Include="Source\Core\Logger\Logger.cpp" />
     <ClCompile Include="Source\Core\Math\Color.cpp" />
     <ClCompile Include="Source\Core\Math\GeometryUtil.cpp" />
     <ClCompile Include="Source\Core\Math\MathF.cpp" />
@@ -372,7 +373,7 @@
     <ClInclude Include="Source\Core\IO\StreamReader.h" />
     <ClInclude Include="Source\Core\IVisitor.h" />
     <ClInclude Include="Source\Core\Literal.h" />
-    <ClInclude Include="Source\Core\Log\Logger.h" />
+    <ClInclude Include="Source\Core\Logger\Logger.h" />
     <ClInclude Include="Source\Core\Math\Color.h" />
     <ClInclude Include="Source\Core\Math\GeometryUtil.h" />
     <ClInclude Include="Source\Core\Math\HashUtil.h" />
@@ -540,7 +541,7 @@
     <ClInclude Include="ThirdParty\imgui\imstb_textedit.h" />
     <ClInclude Include="ThirdParty\imgui\imstb_truetype.h" />
     <ClInclude Include="ThirdParty\meshoptimizer\meshoptimizer.h" />
-    <ClInclude Include="ThirdParty\std\stb_image.h" />
+    <ClInclude Include="ThirdParty\stb\stb_image.h" />
     <ClInclude Include="ThirdParty\tinyddsloader\tinyddsloader.h" />
     <ClInclude Include="ThirdParty\ufbx\ufbx.h" />
   </ItemGroup>

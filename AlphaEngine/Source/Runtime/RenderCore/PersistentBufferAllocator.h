@@ -11,6 +11,7 @@ namespace Alpha
     class PersistentBufferAllocator
     {
     private:
+		String m_name{};
         TUnique<Buffer> m_buffer{ nullptr };
         FreeListAllocator m_allocator{};
         UInt64 m_alignment{ 0 };
@@ -45,5 +46,7 @@ namespace Alpha
         UInt64 GetRemainingSize() const;
 
         void SetName(StringView name);
+
+        const String& GetName() const { return m_name; }
     };
 }

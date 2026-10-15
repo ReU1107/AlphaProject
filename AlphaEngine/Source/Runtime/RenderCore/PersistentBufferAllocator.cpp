@@ -74,5 +74,6 @@ namespace Alpha
     void PersistentBufferAllocator::SetName(StringView name)
     {
         m_buffer->SetName(name);
+        m_name = name;
     }
 }

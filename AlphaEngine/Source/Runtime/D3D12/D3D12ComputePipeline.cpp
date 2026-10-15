@@ -3,6 +3,7 @@
 #include "D3D12PipelineLayout.h"
 #include "RHI/Definitions.h"
 #include "D3D12Util.h"
+#if RHI_D3D12
 
 namespace Alpha
 {
@@ -49,3 +50,4 @@ namespace Alpha
         return true;
 	}
 }
+#endif

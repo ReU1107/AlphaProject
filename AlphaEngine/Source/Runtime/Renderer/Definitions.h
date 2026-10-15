@@ -414,5 +414,13 @@ namespace Alpha::Renderer
 
 	};
 
+	struct RenderSceneStats
+	{
+		UInt32 instance_count{ 0 };
+		UInt32 light_count{ 0 };
+		UInt32 volume_count{ 0 };
+		UInt32 procedural_primitive_count{ 0 };
+	};
+
 
 }

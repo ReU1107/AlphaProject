@@ -8,9 +8,9 @@ namespace Alpha::Renderer
 {
 	void AddVBufferPass(RenderCore* render_core, PipelineLayout* layout, RenderGraph* graph)
 	{
-		auto as = RenderCore::Get().CreateShader(L"Asset/VBufferAS.hlsl", ERHIShaderType::Amplification);
-		auto ms = RenderCore::Get().CreateShader(L"Asset/VBufferMS.hlsl", ERHIShaderType::Mesh);
-		auto ps = RenderCore::Get().CreateShader(L"Asset/VBufferPS.hlsl", ERHIShaderType::Pixel);
+		auto as = RenderCore::Get().CreateShader(L"Asset/Shader/VBufferAS.hlsl", ERHIShaderType::Amplification);
+		auto ms = RenderCore::Get().CreateShader(L"Asset/Shader/VBufferMS.hlsl", ERHIShaderType::Mesh);
+		auto ps = RenderCore::Get().CreateShader(L"Asset/Shader/VBufferPS.hlsl", ERHIShaderType::Pixel);
 
 		auto visibility = graph->CreateTexture(L"Visibility",
 			{
@@ -78,9 +78,9 @@ namespace Alpha::Renderer
 	* Vbufferを使わないforwadパス
 	* void AddVBufferPass(RenderCore* render_core, PipelineLayout* layout, RenderGraph* graph)
 	{
-		auto as = RenderCore::Get().CreateShader(L"Asset/TaskShader.hlsl", ERHIShaderType::Amplification);
-		auto ms = RenderCore::Get().CreateShader(L"Asset/TestMeshShader.hlsl", ERHIShaderType::Mesh);
-		auto ps = RenderCore::Get().CreateShader(L"Asset/TestPixelShader.hlsl", ERHIShaderType::Pixel);
+		auto as = RenderCore::Get().CreateShader(L"Asset/Shader/TaskShader.hlsl", ERHIShaderType::Amplification);
+		auto ms = RenderCore::Get().CreateShader(L"Asset/Shader/TestMeshShader.hlsl", ERHIShaderType::Mesh);
+		auto ps = RenderCore::Get().CreateShader(L"Asset/Shader/TestPixelShader.hlsl", ERHIShaderType::Pixel);
 
 		auto visibility = graph->CreateTexture(L"Visibility",
 			{

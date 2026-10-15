@@ -178,8 +178,8 @@ namespace Alpha::Renderer
 			m_index_buffer->Initialize(desc);
 		}
 
-		auto vs = RenderCore::Get().CreateShader(L"Asset/GUIVS.hlsl", ERHIShaderType::Vertex);
-		auto ps = RenderCore::Get().CreateShader(L"Asset/GUIPS.hlsl", ERHIShaderType::Pixel);
+		auto vs = RenderCore::Get().CreateShader(L"Asset/Shader/GUIVS.hlsl", ERHIShaderType::Vertex);
+		auto ps = RenderCore::Get().CreateShader(L"Asset/Shader/GUIPS.hlsl", ERHIShaderType::Pixel);
 
 		auto pipeline_layout = RenderCore::Get().CreatePipelineLayout(
 			[](PipelineLayout& layout)
