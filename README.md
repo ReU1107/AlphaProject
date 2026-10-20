@@ -123,14 +123,16 @@ https://developer.nvidia.com/orca/amazon-lumberyard-bistro
 
 ダウンロードしたBistroのデータを展開し、以下のディレクトリに配置してください。
 
+```text
 AlphaEngine/
-└──Asset/
-	└──Model/
-		└──Bistro_v5_2/
-				├── BistroExterior.fbx
-				├── BistroInterior.fbx
-				├── Textures/
-				└── ...
+└── Asset/
+    └── Model/
+        └── Bistro_v5_2/
+            ├── BistroExterior.fbx
+            ├── BistroInterior.fbx
+            ├── Textures/
+            └── ...
+```
 
 Bistro_v5_2 フォルダの直下に BistroExterior.fbx が存在するようにしてください。
 
