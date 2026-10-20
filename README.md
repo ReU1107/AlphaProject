@@ -111,7 +111,36 @@ Zenn に掲載したテストシーンでは、下記の条件で **GPU Frame �
 
 Windows / Visual Studio 環境で開発しています。実行には DirectX 12 に対応し、使用する **Mesh Shader / DXR 機能**をサポートする GPU・ドライバーが必要です。
 
-ビルド手順、依存ライブラリの取得方法、テスト用アセットの配置方法については、公開するプロジェクト構成に合わせて整備予定です。現時点では再現可能な手順を確認できていないため、未検証のコマンドは掲載していません。
+1. サンプルモデルのダウンロード
+
+現在のデモシーンでは、NVIDIAが公開している Amazon Lumberyard Bistro を使用しています。
+
+以下のページからモデルをダウンロードしてください。
+
+https://developer.nvidia.com/orca/amazon-lumberyard-bistro
+
+2. モデルの配置
+
+ダウンロードしたBistroのデータを展開し、以下のディレクトリに配置してください。
+
+AlphaEngine/
+└── Asset/
+    └── Model/
+        └── Bistro_v5_2/
+            ├── BistroExterior.fbx
+            ├── BistroInterior.fbx
+            ├── Textures/
+            └── ...
+
+Bistro_v5_2 フォルダの直下に BistroExterior.fbx が存在するようにしてください。
+
+※ Bistroのモデルデータは本リポジトリには含まれていません。
+
+3. ビルド・実行
+
+Visual Studioでプロジェクトを開き、ビルドして実行してください。
+
+現在のデモでは、Bistroの屋外シーンを読み込んで描画します。
 
 ## 技術記事
 
