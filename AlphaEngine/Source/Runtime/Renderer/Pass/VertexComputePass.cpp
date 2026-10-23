@@ -26,7 +26,10 @@ namespace Alpha::Renderer
 
 	void VertexComputePass::Execute(RenderContext& ctx, Buffer* dynamic_vertex_buffer, UInt64 vertex_count)
 	{
-		// ComputeShaderでのスキニングを行うにしろしないにしろこの頂点バッファに書き込む
+		if (vertex_count == 0)
+			return;
+
+		// スキニングや頂点変形を行う
 		// 粒度は頂点単位
 		ctx.command_list->SetComputePipeline(m_align_vertex_pipeline);
 

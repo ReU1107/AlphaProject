@@ -86,6 +86,8 @@ namespace Alpha
 		EVertexAttributeFlags GetVertexAttributeFlags() const { return m_vertex_attribute_flags; }
 		UInt32 GetVertexAttributeStride() const { return m_vertex_attribute_stride; }
 
+		EMeshType GetMeshType() const { return m_mesh_type; }
+
 		void Accept(IVisitor* visitor) override {}
 
 	};

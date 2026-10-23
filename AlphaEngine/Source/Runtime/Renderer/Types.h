@@ -7,6 +7,7 @@ namespace Alpha
 	{
 		Static,
 		Skeletal,
+		Dynamic,
 	};
 
 	// テクスチャ合成法

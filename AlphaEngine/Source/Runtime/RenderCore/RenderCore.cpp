@@ -144,7 +144,7 @@ namespace Alpha
 		{
 			ASBuilder::Args desc = {
 				.render_core = this,
-				.staging_buffer_size = 128_MB,
+				.staging_buffer_size = 512_MB,
 			};
 			m_as_builder->Initialize(desc);
 		}

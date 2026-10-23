@@ -107,10 +107,9 @@ namespace Alpha::Renderer
 	struct InstanceData
 	{
 		Matrix4x4 world_matrix{ Matrix4x4::Identity };
-		// 属性フラグ
-		// 行列パレットの場所を指すindex
 
-		UInt32 mesh_offset{};
+		UInt32 mesh_element_offset{};
+		UInt32 vertex_position_index{};
 		UINT32 vertex_element_offset{};
 		UInt32 override_material_element_offset{ 0xFFFFFFFF };	// 使わない場合は0xFFFFFFFF
 		UInt32 matrix_palette_offset{ 0xFFFFFFFF };
@@ -224,6 +223,8 @@ namespace Alpha::Renderer
 		
 		UInt32 vertex_count{};
 		UInt32 default_table_index{};
+		EMeshType type{};
+
 	};
 
 	/*
@@ -249,8 +250,8 @@ namespace Alpha::Renderer
 		UInt32 instance{};
 		UInt32 vertex_to_instance{};
 
-		UInt32 current_position_srv{};      // 
-		UInt32 current_position_uav{};      // 
+		UInt32 position_srv{};      // 動的に動く頂点
+		UInt32 position_uav{};      // 
 
 		UInt32 matrix_palette{};
 

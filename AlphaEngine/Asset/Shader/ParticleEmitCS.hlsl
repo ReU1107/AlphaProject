@@ -16,7 +16,6 @@ void main(uint3 id : SV_DispatchThreadID)
     RWStructuredBuffer<uint> particle_counter = ResourceDescriptorHeap[particle_buffers.particle_counter];
     StructuredBuffer<InstanceData> instance_buffer = ResourceDescriptorHeap[render_buffers.instance];
 
-    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[render_buffers.current_position_srv];
     StructuredBuffer<uint> index_buffer = ResourceDescriptorHeap[render_buffers.index];
 
     StructuredBuffer<MeshData> mesh_buffer = ResourceDescriptorHeap[render_buffers.mesh];
@@ -124,15 +123,18 @@ void main(uint3 id : SV_DispatchThreadID)
                 break;
 
             case PARTICLE_SHAPE_MESH:
-                instance = instance_buffer[emit_command.source_instance_index];
-                mesh = mesh_buffer[instance.mesh_index];
-    
-                if (emit_command.distribution == PARTICLE_DISTRIBUTION_VERTEX)
-                    local_position = SampleMeshVertex(position_buffer, index_buffer, instance.vertex_element_offset, mesh.index_element_offset, mesh.index_count, seed);
-                else
-                    local_position = SampleMeshSurface(position_buffer, index_buffer, instance.vertex_element_offset, mesh.index_element_offset, mesh.index_count, seed);
-                break;
+            {
+                    instance = instance_buffer[emit_command.source_instance_index];
+                    mesh = mesh_buffer[instance.mesh_index];
+                    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[instance.vertex_position_index];
 
+    
+                    if (emit_command.distribution == PARTICLE_DISTRIBUTION_VERTEX)
+                        local_position = SampleMeshVertex(position_buffer, index_buffer, instance.vertex_position_element_offset, mesh.index_element_offset, mesh.index_count, seed);
+                    else
+                        local_position = SampleMeshSurface(position_buffer, index_buffer, instance.vertex_position_element_offset, mesh.index_element_offset, mesh.index_count, seed);
+                    break;
+             }
             default:
                 local_position = float3(0.0f, 0.0f, 0.0f);
                 break;
