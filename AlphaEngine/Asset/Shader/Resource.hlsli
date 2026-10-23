@@ -77,8 +77,9 @@ struct InstanceData
     float4x4 world_matrix;      // ワールド変換行列
     
     uint mesh_index;            //
-    uint vertex_element_offset; // 実際に描画に使用される頂点バッファオフセット
-    uint override_material_table_offset; // overrideのマテリアルテーブルのインデックス
+    uint vertex_position_index;             // RenderBufferIndicesのpositionかcurrent_position_srvの値のどちらかが入る
+    uint vertex_position_element_offset;    // 実際に描画に使用される頂点バッファオフセット
+    uint override_material_table_offset;    // overrideのマテリアルテーブルのインデックス
     
     uint matrix_palette_offset;
     

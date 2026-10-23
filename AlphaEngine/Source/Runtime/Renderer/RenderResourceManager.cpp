@@ -93,6 +93,8 @@ namespace Alpha::Renderer
 
         Mesh& mesh = m_mesh_palette.Allocate(handle_id, palette_index);
 
+        mesh.type = handle->GetMeshType();
+
         // 座標データ
         {
 			UInt32 num = handle->GetPositions().size();
@@ -266,6 +268,15 @@ namespace Alpha::Renderer
                     }
                 );
             }
+			if (mesh.type == EMeshType::Static)
+			{
+				request.allow_update = false;
+			}
+            else
+            {
+                request.allow_update = true;
+            }
+            // dynamic時の更新は未実装
 
             ASBuildSize build_size = RenderCore::Get().PreBuildBLAS(request);
 

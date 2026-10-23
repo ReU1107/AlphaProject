@@ -35,8 +35,15 @@ void main(
 )
 {
     StructuredBuffer<InstanceData> instance_buffer = ResourceDescriptorHeap[render_buffers.instance];
+    
+    uint instance_id = payload.instance_id;
 
-    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[render_buffers.current_position_srv];
+        
+    InstanceData instance = instance_buffer[instance_id];
+    
+    if (instance.visible == 0)
+        return;
+    
     
     StructuredBuffer<MeshData> mesh_buffer = ResourceDescriptorHeap[render_buffers.mesh];
     
@@ -45,13 +52,10 @@ void main(
     StructuredBuffer<uint> vertex_indices_buffer = ResourceDescriptorHeap[render_buffers.vertex_indices];
     StructuredBuffer<uint> triangle_indices_buffer = ResourceDescriptorHeap[render_buffers.triangle_indices];
    
-    uint instance_id = payload.instance_id;
     uint local_meshlet_id = gid;
+
     
-    InstanceData instance = instance_buffer[instance_id];
-    
-    if (instance.visible == 0)
-        return;
+    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[instance.vertex_position_index];
     
     MeshData mesh = mesh_buffer[instance.mesh_index];
 
@@ -70,7 +74,7 @@ void main(
         // まず、この頂点が「元々のモデルで何番目の頂点だったか」をインデックスバッファから引く
         uint vertex_index = vertex_indices_buffer[vertex_index_offset + gtid];
                 
-        float3 position = position_buffer[instance.vertex_element_offset + vertex_index];
+        float3 position = position_buffer[instance.vertex_position_element_offset + vertex_index];
         
         outputs[gtid].position = mul(mat, float4(position, 1.0f));
     }
@@ -80,13 +84,13 @@ void main(
     if (gtid < meshlet.triangle_count)
     {
         // パックされたUInt32データを1つ取得
-        uint packedTriangle = triangle_indices_buffer[triangle_index_offset + gtid];
+        uint triangle_index = triangle_indices_buffer[triangle_index_offset + gtid];
         
         // ビットシフトとマスク演算で、1つのUInt32から3つのローカル頂点IDを切り出す
-        uint idx0 = (packedTriangle >> 0) & 0xFFu;
-        uint idx1 = (packedTriangle >> 8) & 0xFFu;
-        uint idx2 = (packedTriangle >> 16) & 0xFFu;
-
+        uint idx0 = (triangle_index >> 0) & 0xFFu;
+        uint idx1 = (triangle_index >> 8) & 0xFFu;
+        uint idx2 = (triangle_index >> 16) & 0xFFu;
+        
         // 出力インデックス配列（uint3型）に格納
         triangles[gtid] = uint3(idx0, idx1, idx2);
         prims[gtid].primitive_id = gtid;

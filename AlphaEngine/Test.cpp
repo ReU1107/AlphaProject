@@ -565,7 +565,7 @@ void TestLoader(
     UInt64 total_generated_vertices = 0;
 
     FBXImportContext context{};
-    context.asset_prefix = L"BistroExterior";
+    context.asset_prefix = asset_prefix.c_str();
 
     for (ufbx_mesh* mesh : fbx_scene->meshes)
     {
@@ -719,13 +719,21 @@ void TestLoader(
         child_it->second->SetParent(parent_it->second);
     }
 
-    BistroLighting::Options lighting_options{};
-    lighting_options.intensityScale = 0.1f;
-    lighting_options.stringIntensity = 40.f;
-    lighting_options.stringRadius = 3.0f;
+    static bool test = true;
 
-    // fbx_sceneが生きている間に実行。シーンの初回import時だけ呼ぶ。
-    auto bistro_light_rig = AddBistroLocalLights(scene, fbx_scene.get(), asset_prefix, lighting_options);
+    if (test)
+    {
+
+        BistroLighting::Options lighting_options{};
+        lighting_options.intensityScale = 0.1f;
+        lighting_options.stringIntensity = 40.f;
+        lighting_options.stringRadius = 3.0f;
+
+        // fbx_sceneが生きている間に実行。シーンの初回import時だけ呼ぶ。
+        auto bistro_light_rig = AddBistroLocalLights(scene, fbx_scene.get(), asset_prefix, lighting_options);
+
+        test = false;
+    }
 
 
 }
@@ -802,6 +810,7 @@ void RunBistroDemo()
     };
     AssetManager::Startup(asset_args);
 
+
     RenderCore::Args render_core_args = {};
     render_core_args.hWnd = (HWND)WindowSystem::Get().GetNativeHandle();
     render_core_args.transient_buffer_size = 1_MB;
@@ -827,7 +836,6 @@ void RunBistroDemo()
     auto& registry = scene.GetRegistry();
 
 
-
     {
         SceneObject& object = scene.CreateObject(L"MainCamera");
 
@@ -844,6 +852,11 @@ void RunBistroDemo()
         scene,
         "Asset/Model/Bistro_v5_2/BistroExterior.fbx",
         L"BistroExterior");
+
+    //TestLoader(
+    //    scene,
+    //    "Asset/Model/Bistro_v5_2/BistroInterior.fbx",
+    //    L"BistroInterior");
 
     using namespace std::chrono;
 

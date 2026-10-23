@@ -23,7 +23,7 @@ void main(uint3 id : SV_DispatchThreadID)
     
     MeshData mesh = mesh_buffer[instance.mesh_index];
     
-    uint local_vertex_index = vertex_index - instance.vertex_element_offset;
+    uint local_vertex_index = vertex_index - instance.vertex_position_element_offset;
     
     float3 base_position = position_buffer[mesh.vertex_position_element_offset + local_vertex_index];
 

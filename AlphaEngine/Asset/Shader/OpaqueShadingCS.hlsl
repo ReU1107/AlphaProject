@@ -213,7 +213,6 @@ void main(uint3 dispatch_index : SV_DispatchThreadID)
     
     
     StructuredBuffer<InstanceData> instance_buffer = ResourceDescriptorHeap[render_buffers.instance];
-    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[render_buffers.current_position_srv];
     
     StructuredBuffer<MeshData> mesh_buffer = ResourceDescriptorHeap[render_buffers.mesh];
     
@@ -246,6 +245,8 @@ void main(uint3 dispatch_index : SV_DispatchThreadID)
     
     InstanceData instance = instance_buffer[instance_id];
     
+    StructuredBuffer<float3> position_buffer = ResourceDescriptorHeap[instance.vertex_position_index];
+
     
     MeshData mesh = mesh_buffer[instance.mesh_index];
 
@@ -272,9 +273,9 @@ void main(uint3 dispatch_index : SV_DispatchThreadID)
     uint v1 = vertex_indices_buffer[vertex_index_offset + idx1];
     uint v2 = vertex_indices_buffer[vertex_index_offset + idx2];
     
-    float3 w0 = mul(instance.world_matrix, float4(position_buffer[instance.vertex_element_offset + v0], 1.0f));
-    float3 w1 = mul(instance.world_matrix, float4(position_buffer[instance.vertex_element_offset + v1], 1.0f));
-    float3 w2 = mul(instance.world_matrix, float4(position_buffer[instance.vertex_element_offset + v2], 1.0f));
+    float3 w0 = mul(instance.world_matrix, float4(position_buffer[instance.vertex_position_element_offset + v0], 1.0f));
+    float3 w1 = mul(instance.world_matrix, float4(position_buffer[instance.vertex_position_element_offset + v1], 1.0f));
+    float3 w2 = mul(instance.world_matrix, float4(position_buffer[instance.vertex_position_element_offset + v2], 1.0f));
         
     
     float3 world_position = ScreenToWorld(uv, depth, render_frame.inv_view_proj);

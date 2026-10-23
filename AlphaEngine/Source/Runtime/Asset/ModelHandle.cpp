@@ -64,7 +64,7 @@ namespace Alpha
 			m_vertex_attribute_flags |= EVertexAttribute::Normals;
 			m_vertex_attribute_stride += 12;
 		}
-		if (IsSkeletal())
+		if (!m_bone_indices.empty() && !m_bone_weights.empty())
 		{
 			m_vertex_attribute_flags |= EVertexAttribute::BoneWeights;
 			m_vertex_attribute_stride += 32;

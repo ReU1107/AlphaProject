@@ -110,7 +110,10 @@ namespace Alpha
 
         auto view = registry.view<MeshComponent, TransformComponent>();
 
-        UInt64 vertex_count = 0;
+        UInt64 dynamic_vertex_count = 0;
+
+        UInt32 static_position_index = resource_manager.GetBufferIndices().position;
+        UInt32 dynamic_position_index = render_scene.GetBufferIndices().position_srv;
 
         for (auto [entity, mesh_com, transform] : view.each())
         {
@@ -122,10 +125,12 @@ namespace Alpha
 
             const UInt32 current_instance_id = static_cast<UInt32>(m_instances.size());
 
+            const auto& mesh = resource_manager.GetMeshByIndex(mesh_com.mesh_index);
+
             InstanceData instance{};
 
             instance.world_matrix = transform.GetWorldMatrix();
-            instance.mesh_offset = resource_manager.GetGPUMeshOffset(mesh_com.mesh_index);
+            instance.mesh_element_offset = resource_manager.GetGPUMeshOffset(mesh_com.mesh_index);
 
             instance.visible = mesh_com.visible ? 1u : 0u;
 
@@ -140,69 +145,83 @@ namespace Alpha
                 instance.override_material_element_offset = material_byte_offset / sizeof(MaterialData);
             }
 
-            if (auto* anim_com = registry.try_get<AnimationComponent>(entity))
-            {
-                const auto& palette = anim_com->m_pose->GetMatrixPallet();
-
-                if (!palette.empty())
-                {
-                    const UInt64 palette_byte_offset = render_scene.GetMatrixPaletteAllocator()->WriteData(palette.data(), palette.size());
-
-                    instance.matrix_palette_offset = palette_byte_offset / sizeof(Matrix4x4);
-                }
-
-            }
-
-            const auto& mesh = resource_manager.GetMeshByIndex(mesh_com.mesh_index);
-
-            UInt64 vertex_byte_offset = render_scene.GetDynamicVertexAllocator()->AllocateOffset(mesh.vertex_position_alloc.size);
-
-            instance.vertex_element_offset = vertex_byte_offset / sizeof(Vector3);
-
-
-            render_scene.GetVertToInstanceAllocator()->FillData(current_instance_id, mesh.vertex_count);
-
-
-            vertex_count += mesh.vertex_count;
-
-            UInt64 as_byte_offset = render_scene.GetBLASAllocator()->AllocateOffset(mesh.as.size);
-
-
-            BLASRequest request =
-            {
-                .vertex_buffer = render_scene.GetDynamicVertexAllocator()->GetBuffer(),
-                .vertex_offset = vertex_byte_offset,
-                .index_buffer = buffers.index,
-                .index_offset = mesh.index_alloc.offset,
-                .result_buffer = render_scene.GetBLASAllocator()->GetBuffer(),
-                .result_offset = as_byte_offset,
-                .source_as_buffer = buffers.source_as,
-                .source_as_offset = mesh.as.source_alloc.offset,
-                .scratch_size = mesh.as.scratch_size,
-                .vertex_count = mesh.vertex_count,
-            };
-
-
-            for (const auto& sub : mesh.submeshes)
-            {
-                request.geometries.push_back(
-                    {
-                        .index_byte_offset = sub.index_element_offset * sizeof(UInt32),
-                        .index_count = sub.index_count,
-                        .is_opaque = true,
-                    });
-            }
-
-
-            m_render_core->GetASBuilder()->AddUpdateRequest(request);
-
 
             ASInstanceData as_instance{};
             as_instance.instance_id = current_instance_id;
-            as_instance.blas_gpu_address = render_scene.GetBLASAllocator()->GetBuffer()->GetGPUAddress() + as_byte_offset;
             as_instance.transform = MatrixTranspose(instance.world_matrix);
             as_instance.hit_group_offset = 0;
 
+            // ASの更新
+            if (mesh.type == EMeshType::Skeletal)
+            {
+                if (auto* anim_com = registry.try_get<AnimationComponent>(entity))
+                {
+                    const auto& palette = anim_com->m_pose->GetMatrixPallet();
+
+                    if (!palette.empty())
+                    {
+                        const UInt64 palette_byte_offset = render_scene.GetMatrixPaletteAllocator()->WriteData(palette.data(), palette.size());
+
+                        instance.matrix_palette_offset = palette_byte_offset / sizeof(Matrix4x4);
+                    }
+
+                }
+
+                UInt64 vertex_byte_offset = render_scene.GetDynamicVertexAllocator()->AllocateOffset(mesh.vertex_position_alloc.size);
+
+                instance.vertex_element_offset = vertex_byte_offset / sizeof(Vector3);
+
+
+                render_scene.GetVertToInstanceAllocator()->FillData(current_instance_id, mesh.vertex_count);
+
+
+                dynamic_vertex_count += mesh.vertex_count;
+
+
+                UInt64 as_byte_offset = render_scene.GetBLASAllocator()->AllocateOffset(mesh.as.size);
+
+                BLASRequest request =
+                {
+                    .vertex_buffer = render_scene.GetDynamicVertexAllocator()->GetBuffer(),
+                    .vertex_offset = vertex_byte_offset,
+                    .index_buffer = buffers.index,
+                    .index_offset = mesh.index_alloc.offset,
+                    .result_buffer = render_scene.GetBLASAllocator()->GetBuffer(),
+                    .result_offset = as_byte_offset,
+                    .source_as_buffer = buffers.source_as,
+                    .source_as_offset = mesh.as.source_alloc.offset,
+                    .scratch_size = mesh.as.scratch_size,
+                    .vertex_count = mesh.vertex_count,
+                };
+
+
+                for (const auto& sub : mesh.submeshes)
+                {
+                    request.geometries.push_back(
+                        {
+                            .index_byte_offset = sub.index_element_offset * sizeof(UInt32),
+                            .index_count = sub.index_count,
+                            .is_opaque = true,
+                        });
+                }
+
+
+                m_render_core->GetASBuilder()->AddUpdateRequest(request);
+
+                as_instance.blas_gpu_address = render_scene.GetBLASAllocator()->GetBuffer()->GetGPUAddress() + as_byte_offset;
+
+
+                instance.vertex_position_index = dynamic_position_index;
+            }
+            else if (mesh.type == EMeshType::Static)
+            {
+
+                as_instance.blas_gpu_address = buffers.source_as->GetGPUAddress() + mesh.as.source_alloc.offset;
+
+                instance.vertex_position_index = static_position_index;
+                instance.vertex_element_offset = mesh.data.vertex_position_element_offset;
+            }
+            // Dynamic実装したらASの再構築
 
             render_scene.GetTLASInstanceAllocator()->WriteData(&as_instance);
 
@@ -212,7 +231,7 @@ namespace Alpha
 
         }
 
-        return vertex_count;
+        return dynamic_vertex_count;
     }
 
     void RenderSceneBuilder::ResolveMaterialTextures(TArray<MaterialData>& materials)

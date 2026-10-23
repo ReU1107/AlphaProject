@@ -29,7 +29,7 @@ namespace Alpha::Renderer
 		m_scratch_tlas_allocator = CreateTransientAllocator(args.render_core, 256, build_size.scratch, EBufferPresetType::RWByteAddress, L"TLASScratch");
 
 		m_result_tlas_allocator = CreateTransientAllocator(args.render_core, 256, build_size.result, EBufferPresetType::RTAccelStructure, L"TLASResult");
-		m_result_blas_allocator = CreateTransientAllocator(args.render_core, 256, 256_MB, EBufferPresetType::RTAccelStructure, L"BLASResult");
+		m_result_blas_allocator = CreateTransientAllocator(args.render_core, 256, 512_MB, EBufferPresetType::RTAccelStructure, L"BLASResult");
 
 		m_dynamic_vertex_allocator = CreateTransientAllocator(args.render_core, sizeof(Vector3), 64_MB, EBufferPresetType::RWStructured, L"DynamicVertex");
 		m_override_material_allocator = CreateTransientAllocator(args.render_core, sizeof(MaterialData), 4_MB, EBufferPresetType::UploadStructured, L"OverrideMaterial");
@@ -106,8 +106,8 @@ namespace Alpha::Renderer
 		return DynamicBufferIndices{
 			.instance = m_instance_allocator->GetSRVIndex(),
 			.vertex_to_instance = m_vert_to_inst_allocator->GetSRVIndex(),
-			.current_position_srv = m_dynamic_vertex_allocator->GetSRVIndex(),
-			.current_position_uav = m_dynamic_vertex_allocator->GetUAVIndex(),
+			.position_srv = m_dynamic_vertex_allocator->GetSRVIndex(),
+			.position_uav = m_dynamic_vertex_allocator->GetUAVIndex(),
 			.matrix_palette = m_matrix_palette_allocator->GetSRVIndex(),
 			.override_material = m_override_material_allocator->GetSRVIndex(),
 			.light = m_light_allocator->GetSRVIndex(),
