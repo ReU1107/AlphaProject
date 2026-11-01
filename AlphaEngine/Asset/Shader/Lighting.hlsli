@@ -44,6 +44,7 @@ float ViewDepthToFroxelZ(float depth, float near, float far)
     return log(depth / near) / log(far / near);
 }
 
+
 float3 WorldPositionToFroxelUVW(float3 world_pos, float4x4 view, float4x4 view_proj, float near, float far)
 {
     float4 clip_pos = mul(view_proj, float4(world_pos, 1.0f));

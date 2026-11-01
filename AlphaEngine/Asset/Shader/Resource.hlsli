@@ -112,6 +112,12 @@ struct VolumeData
     float scattering;
 };
 
+struct Cluster
+{
+    uint offset;
+    uint count;
+};
+
 struct RenderBufferIndices
 {
     // Static

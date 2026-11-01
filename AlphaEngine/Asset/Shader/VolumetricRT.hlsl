@@ -30,6 +30,7 @@ float InterleavedGradientNoise(float2 pixel_coord)
     return frac(magic.z * frac(dot(pixel_coord, magic.xy)));
 }
 
+
 [shader("raygeneration")]
 void RayGenerate()
 {   
@@ -80,8 +81,6 @@ void RayGenerate()
     float3 fog_color = float3(1.0f, 1.0f, 1.0f);
     float3 phase_m = HGPhase(cossita, 0.75f); // gの部分は今後場所によって変わるように
 
-    //float3 test = float3(0.0f, 0.0f, 0.0f);
-    float3 test = light_dir;
     
     for (uint i = 0; i < step_count; ++i)
     {
@@ -133,6 +132,7 @@ void RayGenerate()
         float3 dominant = light.color * light.intensity * payload.visibility * scattering;
         
                 
+                
         // メインライト(DirectionalLight)だけ
         radiance += transmittance * (dominant) * step_size;
         
@@ -144,13 +144,13 @@ void RayGenerate()
     
     
     radiance_tex[index] = float4(radiance, 1.0f);
+    transmittance_tex[index] = float4(transmittance, 1.0f); 
     //radiance_tex[index] = float4(test / step_count, 1.0f);
-    transmittance_tex[index] = float4(transmittance, 1.0f);
 
 
     //radiance_tex[index] = float4(1.0f, 0.0f, 0.0f, 1.0f);
     //transmittance_tex[index] = float4(0.0f, 1.0f, 0.0f, 1.0f);
-    
+  
 }
 
 

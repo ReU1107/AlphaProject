@@ -6,6 +6,9 @@ struct PassConstants
     uint result_index;
     uint visibility;
     uint depth;
+    uint cluster;
+    uint light_cluster;
+    uint light_indices;
 };
 
 ConstantBuffer<PassConstants> pass_info : register(b2);
@@ -157,17 +160,41 @@ float3 DI(SurfaceData surface_data)
 {
     StructuredBuffer<LightData> light_buffer = ResourceDescriptorHeap[render_buffers.light];
 
+    Texture3D<uint> cluster_tex = ResourceDescriptorHeap[pass_info.cluster];
+    StructuredBuffer<Cluster> cluster_buffer = ResourceDescriptorHeap[pass_info.light_cluster];
+    StructuredBuffer<uint> light_indices_buffer = ResourceDescriptorHeap[pass_info.light_indices];
+        
+    float3 uvw = WorldPositionToFroxelUVW(surface_data.world_position, render_frame.view, render_frame.view_proj, 0.1f, 1000.0f);
+
+    //uint cluster_index = cluster_tex.Sample(sam, uvw);
+
+    uint3 cluster_dim = uint3(32, 24, 16);
+
+    float3 cluster_uvw = saturate(uvw);
+
+    uint3 cluster_coord = min((uint3) (cluster_uvw * cluster_dim), cluster_dim - 1);
+
+    uint cluster_index = (cluster_coord.z * cluster_dim.y + cluster_coord.y) * cluster_dim.x + cluster_coord.x;
+    
+
+    Cluster cluster = cluster_buffer[cluster_index];
+    
     float3 V = normalize(render_frame.camera_pos.xyz - surface_data.world_position);
 
     float3 radiance = float3(0, 0, 0);
-    for (uint i = 0; i < render_frame.light_count; ++i)
+    
+    if (render_frame.debug_value == 6)
     {
-        LightData light = light_buffer[i];
+        for (uint i = 0; i < render_frame.light_count; ++i)
+        {        
+            LightData light = light_buffer[i];
         
-        float3 light_color = light.color * light.intensity;
-        float3 direction = -light.direction;
-        if (light.type != 2)
-        {
+            float3 light_color = light.color * light.intensity;
+            float3 direction = -light.direction;
+            
+            if (light.type == LIGHT_DIRECTIONAL)
+                continue;
+            
             float dist = length(light.position - surface_data.world_position);
         
             // ライトの範囲外なら無視
@@ -179,25 +206,76 @@ float3 DI(SurfaceData surface_data)
             float attenuation = max(0.0f, 1.0f - (dist / light.radius));
         
             // スポットライトの円錐減衰
-            if (light.type == 1)
+            if (light.type == LIGHT_SPOT)
             {
                 float angle = dot(-direction, normalize(light.direction));
                 attenuation *= saturate((angle - light.outer_cone) / (light.inner_cone - light.outer_cone));
             }
             light_color *= attenuation;
 
+        
+            float3 L = direction;
+            float3 N = normalize(surface_data.geometric_normal);
+        
+            float3 brdf = ComputeBRDF(N, V, L, surface_data.base_color, surface_data.metallic, surface_data.roughness);
+            float NdotL = max(dot(N, L), 0.0);
+
+            radiance += brdf * light_color * NdotL;
+        
         }
+    }
+    else
+    {
+        for (uint i = 0; i < cluster.count; ++i)
+        {
+            uint light_index = light_indices_buffer[cluster.offset + i];
+        
+            LightData light = light_buffer[light_index];
+        
+            float3 light_color = light.color * light.intensity;
+            float3 direction = -light.direction;
+            float dist = length(light.position - surface_data.world_position);
+        
+            // ライトの範囲外なら無視
+            if (dist > light.radius)
+                continue;
+        
+            direction = (light.position - surface_data.world_position) / max(dist, 1e-6f);
+        
+            float attenuation = max(0.0f, 1.0f - (dist / light.radius));
+        
+            // スポットライトの円錐減衰
+            if (light.type == LIGHT_SPOT)
+            {
+                float angle = dot(-direction, normalize(light.direction));
+                attenuation *= saturate((angle - light.outer_cone) / (light.inner_cone - light.outer_cone));
+            }
+            light_color *= attenuation;
 
         
-        float3 L = direction;
-        float3 N = normalize(surface_data.geometric_normal);
+            float3 L = direction;
+            float3 N = normalize(surface_data.geometric_normal);
         
-        float3 brdf = ComputeBRDF(N, V, L, surface_data.base_color, surface_data.metallic, surface_data.roughness);
-        float NdotL = max(dot(N, L), 0.0);
+            float3 brdf = ComputeBRDF(N, V, L, surface_data.base_color, surface_data.metallic, surface_data.roughness);
+            float NdotL = max(dot(N, L), 0.0);
 
-        radiance += brdf * light_color * NdotL;
+            radiance += brdf * light_color * NdotL;
+        
+        }
         
     }
+    
+    LightData main_light = light_buffer[render_frame.main_light];
+    float3 light_color = main_light.color * main_light.intensity;
+    float3 direction = -main_light.direction;
+        
+    float3 L = direction;
+    float3 N = normalize(surface_data.geometric_normal);
+        
+    float3 brdf = ComputeBRDF(N, V, L, surface_data.base_color, surface_data.metallic, surface_data.roughness);
+    float NdotL = max(dot(N, L), 0.0);
+
+    radiance += brdf * light_color * NdotL;
     
     return surface_data.emissive + radiance;
     
@@ -207,7 +285,6 @@ float3 DI(SurfaceData surface_data)
 void main(uint3 dispatch_index : SV_DispatchThreadID)
 {
     RWTexture2D<float4> result = ResourceDescriptorHeap[pass_info.result_index];
-    //Texture2D<float4> visibility_tex = ResourceDescriptorHeap[pass_info.visibility];
     Texture2D<uint2> visibility_tex = ResourceDescriptorHeap[pass_info.visibility];
     Texture2D<float> depth_tex = ResourceDescriptorHeap[pass_info.depth];
     
@@ -240,6 +317,12 @@ void main(uint3 dispatch_index : SV_DispatchThreadID)
     
     uint2 visibility = visibility_tex.Load(int3(index, 0));
     float depth = depth_tex.Load(int3(index, 0));
+    
+    if (depth <= 0.00001f)
+    {
+        result[index] = float4(0.0f, 0.0f, 0.0f, 1.0f);
+        return;
+    }
     
     uint instance_id = visibility.x;
     

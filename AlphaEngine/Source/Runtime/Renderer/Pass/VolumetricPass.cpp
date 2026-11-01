@@ -14,7 +14,7 @@ namespace Alpha::Renderer
 		UInt32 transmittance{};
 	};
 
-	void AddVolumetricPass(RenderCore* render_core, PipelineLayout* layout, RenderGraph* graph)
+	VolumetricResources AddVolumetricPass(RenderCore* render_core, PipelineLayout* layout, RenderGraph* graph, const VBufferResources& vbuffer_resources, const FroxelLightingResources& froxel_resources)
 	{
 		TArray<String> entries = { L"RayGenerate", L"OpaqueHit", L"Miss" };
 		Shader* shader_library = render_core->CreateShaderLibrary(L"Asset/Shader/VolumetricRT.hlsl",
@@ -46,23 +46,9 @@ namespace Alpha::Renderer
 
 		RayTracePipeline* rtpso = render_core->CreateRayTracePipeline(pipeline_args);
 
-		auto froxel_radiance = graph->CreateTexture(L"FroxelRadiance",
-			{
-				160, 90, 64,
-				ERHIResourceDimension::Tex3D,
-				ERHIResourceBindFlags::ShaderResource | ERHIResourceBindFlags::UnorderedAccess,
-				ERHIResourceFormat::RGBAFloat
-			}
-		);
+		auto froxel_radiance = froxel_resources.froxel_radiance_texture;
 
-		auto depth = graph->CreateTexture(L"Depth",
-			{
-				1920, 1080, 1,
-				ERHIResourceDimension::Tex2D,
-				ERHIResourceBindFlags::ShaderResource | ERHIResourceBindFlags::DepthStencil,
-				ERHIResourceFormat::Depth32
-			}
-		);
+		auto depth = vbuffer_resources.depth_texture;
 
 		auto radiance = graph->CreateTexture(L"RadianceVolume",
 			{
@@ -93,10 +79,10 @@ namespace Alpha::Renderer
 			},
 			[=](RenderGraphContext& ctx)
 			{
-				Texture* froxel_radiance_tex = ctx.graph->GetTexture(froxel_radiance);
-				Texture* depth_tex = ctx.graph->GetTexture(depth);
-				Texture* radiance_tex = ctx.graph->GetTexture(radiance);
-				Texture* transmittance_tex = ctx.graph->GetTexture(transmittance);
+				auto* froxel_radiance_tex = ctx.graph->GetTexture(froxel_radiance);
+				auto* depth_tex = ctx.graph->GetTexture(depth);
+				auto* radiance_tex = ctx.graph->GetTexture(radiance);
+				auto* transmittance_tex = ctx.graph->GetTexture(transmittance);
 
 				VolumetricPassConstants constants = {};
 				constants.volume = froxel_radiance_tex->GetSRVHandle().index;
@@ -117,6 +103,8 @@ namespace Alpha::Renderer
 				ctx.command_list->DispatchRayTrace(desc);
 			}
 		);
+
+		return VolumetricResources{ radiance, transmittance };
 	}
 
 	// バンディング直さないと

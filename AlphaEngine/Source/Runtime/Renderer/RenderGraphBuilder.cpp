@@ -9,6 +9,10 @@ namespace Alpha::Renderer
 		m_pass->pipeline = { handle,type };
 	}
 
+	/*
+	* ReadやWriteのに基づいたステートになっているかをチェックする
+	*/
+
 	RGTextureHandle RenderGraphBuilder::ReadTexture(RGTextureHandle handle, ERHIResourceState state)
 	{
 		m_pass->textures.push_back({ handle, state });
@@ -25,11 +29,15 @@ namespace Alpha::Renderer
 
 	RGBufferHandle RenderGraphBuilder::ReadBuffer(RGBufferHandle handle, ERHIResourceState state)
 	{
-		return RGBufferHandle();
+		m_pass->buffers.push_back({ handle, state });
+
+		return handle;
 	}
 
 	RGBufferHandle RenderGraphBuilder::WriteBuffer(RGBufferHandle handle, ERHIResourceState state)
 	{
-		return RGBufferHandle();
+		m_pass->buffers.push_back({ handle, state });
+
+		return handle;
 	}
 }

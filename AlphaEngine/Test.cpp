@@ -877,6 +877,7 @@ void RunBistroDemo()
         "GeometricNormal",     // case 3
         "Visibility",          // case 4
         "MaterialParams",      // case 5
+        "Light",
     };
 
     while (WindowSystem::Get().ProcessMessages() && !WindowSystem::Get().ShouldClose())
@@ -926,18 +927,86 @@ void RunBistroDemo()
             &debug_value,
             debug_view_names,
             IM_ARRAYSIZE(debug_view_names));
+        auto light_view =
+            registry.view<MainLight, LightComponent, TransformComponent>();
 
-        auto main_light_entity = registry.view<MainLight, LightComponent>().front();
-        auto& maint_light = registry.get<LightComponent>(main_light_entity);
-        float intensity = maint_light.GetIntensity(); // もし既存の変数があるならそれを利用
+        {
+            auto light_entity = light_view.front();
 
-        Vector3 light_color = maint_light.GetColor();
+            auto& light =
+                light_view.get<LightComponent>(light_entity);
 
-        ImGui::SliderFloat("Intensity", &intensity, 0.0f, 120.0f);
-        ImGui::ColorEdit3("Light Color", light_color.data());
+            auto& light_transform =
+                light_view.get<TransformComponent>(light_entity);
 
-        maint_light.SetIntensity(intensity);
-        maint_light.SetColor(light_color); // 取得した色をセット
+            ImGui::SeparatorText("Directional Light");
+
+            // ----------------------------
+            // Light Intensity
+            // ----------------------------
+            float intensity = light.GetIntensity();
+
+            if (ImGui::SliderFloat(
+                "Intensity", &intensity, 0.0f, 120.0f))
+            {
+                light.SetIntensity(intensity);
+            }
+
+            // ----------------------------
+            // Light Color
+            // ----------------------------
+            Vector3 color = light.GetColor();
+
+            if (ImGui::ColorEdit3("Light Color", color.data()))
+            {
+                light.SetColor(color);
+            }
+
+            // ----------------------------
+            // Sun Direction
+            // ----------------------------
+            // SliderAngleは内部的にラジアンを使用
+            static float elevation = 0.5f;
+            static float azimuth = 0.0f;
+
+            bool changed = false;
+
+            changed |= ImGui::SliderAngle(
+                "Sun Elevation",
+                &elevation,
+                -89.0f,
+                89.0f
+            );
+
+            changed |= ImGui::SliderAngle(
+                "Sun Azimuth",
+                &azimuth,
+                -180.0f,
+                180.0f
+            );
+
+            if (changed)
+            {
+                // 散乱地点から太陽へ向かう方向
+                Vector3 sun_dir =
+                {
+                    cosf(elevation) * sinf(azimuth),
+                    sinf(elevation),
+                    cosf(elevation) * cosf(azimuth)
+                };
+
+                // Directional Lightの光が進む方向
+                Vector3 light_dir = -sun_dir;
+
+                // AlphaEngineでは+ZをForwardとする想定
+                light_transform.LookAt(light_dir);
+            }
+
+            ImGui::Text(
+                "Elevation: %.2f deg",
+                elevation * 180.0f / PI
+            );
+        }
 
         ImGui::End();
         ImGui::Begin("Application Info");
