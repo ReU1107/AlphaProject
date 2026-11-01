@@ -6,7 +6,7 @@
 
 namespace Alpha::Renderer
 {
-	void AddVBufferPass(RenderCore* render_core, PipelineLayout* layout, RenderGraph* graph)
+	VBufferResources AddVBufferPass(RenderCore* render_core, PipelineLayout* layout, RenderGraph* graph)
 	{
 		auto as = RenderCore::Get().CreateShader(L"Asset/Shader/VBufferAS.hlsl", ERHIShaderType::Amplification);
 		auto ms = RenderCore::Get().CreateShader(L"Asset/Shader/VBufferMS.hlsl", ERHIShaderType::Mesh);
@@ -72,6 +72,8 @@ namespace Alpha::Renderer
 				ctx.command_list->DispatchMesh(ctx.instance_count, 1, 1);
 			}
 		);
+
+		return VBufferResources{ visibility, depth };
 	}
 
 	/*

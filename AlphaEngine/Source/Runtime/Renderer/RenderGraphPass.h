@@ -13,6 +13,7 @@ namespace Alpha::Renderer
 	{
 		String name{};
 		TArray<RGTextureUsage> textures{};
+		TArray<RGBufferUsage> buffers{};
 		RGPipelineUsage pipeline{};
 
 

@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Core/Common.h"
+#include "../PassResources.h"
 
 namespace Alpha
 {
@@ -11,6 +12,8 @@ namespace Alpha::Renderer
 {
 	class RenderGraph;
 
-	void AddFroxelLightingPass(RenderCore* render_core, PipelineLayout* layout, RenderGraph* graph);
+	struct FroxelLightingSettings;
+
+	FroxelLightingResources AddFroxelLightingPass(RenderCore* render_core, PipelineLayout* layout, RenderGraph* graph, const FroxelLightingSettings& froxel_settings, const ClusterLightResources& cluster_resources);
 
 }

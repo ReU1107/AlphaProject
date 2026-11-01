@@ -171,6 +171,7 @@
     <ClCompile Include="Source\Runtime\RenderCore\GPUQueryHeap.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\PipelineCache.cpp" />
     <ClCompile Include="Source\Runtime\RenderCore\ShaderCache.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\Pass\ClusterLightCullingPass.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\RendererDefinitions.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\Pass\OpaqueShadingPass.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\RenderGraph.cpp" />
@@ -342,10 +343,13 @@
     <ClInclude Include="Source\Runtime\RenderCore\RayTracePipeline.h" />
     <ClInclude Include="Source\Runtime\RenderCore\ShaderCache.h" />
     <ClInclude Include="Source\Runtime\RenderCore\Util.h" />
+    <ClInclude Include="Source\Runtime\Renderer\PassResources.h" />
+    <ClInclude Include="Source\Runtime\Renderer\Pass\ClusterLightCullingPass.h" />
     <ClInclude Include="Source\Runtime\Renderer\Pass\OpaqueShadingPass.h" />
     <ClInclude Include="Source\Runtime\Renderer\RenderGraph.h" />
     <ClInclude Include="Source\Runtime\Renderer\RenderGraphBuilder.h" />
     <ClInclude Include="Source\Runtime\Renderer\RenderGraphPass.h" />
+    <ClInclude Include="Source\Runtime\Renderer\RenderSettings.h" />
     <ClInclude Include="Source\Runtime\Renderer\VolumeComponent.h" />
     <ClInclude Include="Source\Runtime\Renderer\LightComponent.h" />
     <ClInclude Include="Source\Runtime\Renderer\MaterialOverrideComponent.h" />

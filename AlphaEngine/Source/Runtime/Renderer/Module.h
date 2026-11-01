@@ -17,3 +17,6 @@
 #include "RenderGraphBuilder.h"
 
 #include "Definitions.h"
+#include "RenderSettings.h"
+
+#include "PassResources.h"

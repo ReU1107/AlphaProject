@@ -2,6 +2,7 @@
 
 #include "RenderCore/Module.h"
 #include "Renderer/Module.h"
+#include "Renderer/Pass/ClusterLightCullingPass.h"
 #include "Renderer/Pass/VBufferPass.h"
 #include "Renderer/Pass/FroxelLightingPass.h"
 #include "Renderer/Pass/VolumetricPass.h"
@@ -29,6 +30,12 @@ namespace Alpha
 	RenderSystem::~RenderSystem() = default;
 
 	static TUnique<Texture> test = nullptr;
+
+	struct RenderSettings
+	{
+		ClusterGridSettings cluster{};
+		FroxelLightingSettings froxel{};
+	};
 
 	bool RenderSystem::Initialize(const Args& args)
 	{
@@ -58,12 +65,23 @@ namespace Alpha
 		m_graph = std::make_unique<RenderGraph>();
 		m_graph->Initialize({ args.render_core });
 
-		AddVBufferPass(args.render_core, m_pipeline_layout, m_graph.get());
-		AddFroxelLightingPass(args.render_core, m_pipeline_layout, m_graph.get());
-		AddVolumetricPass(args.render_core, m_pipeline_layout, m_graph.get());
-		AddOpaqueShadingPass(args.render_core, m_pipeline_layout, m_graph.get());
+		RenderSettings render_settings = {};
+		render_settings.cluster.max_lights_per_cluster = 64;
+
+		auto cluster_resources = AddClusterLightCullingPass(args.render_core, m_pipeline_layout, m_graph.get(), render_settings.cluster);
+		
+		auto vbuffer_resources = AddVBufferPass(args.render_core, m_pipeline_layout, m_graph.get());
+		
+		auto froxel_resources = AddFroxelLightingPass(args.render_core, m_pipeline_layout, m_graph.get(), render_settings.froxel, cluster_resources);
+		
+		auto volumetric_resources = AddVolumetricPass(args.render_core, m_pipeline_layout, m_graph.get(), vbuffer_resources, froxel_resources);
+		
+		AddOpaqueShadingPass(args.render_core, m_pipeline_layout, m_graph.get(), cluster_resources, vbuffer_resources);
+		
 		AddParticleRenderPass(args.render_core, m_pipeline_layout, m_particle_system.get(), m_graph.get());
+		
 		AddCompositePass(args.render_core, m_pipeline_layout, m_graph.get());
+
 
 		GUISystem::Args gui_args = {
 			.render_core = RenderCore::GetPtr(),

@@ -8,7 +8,7 @@ struct VertexOut
     float2 uv : TEXCOORD0;
 };
 
-float4 unpackUnorm4x8(uint packedVal)
+float4 UnpackUnorm4x8(uint packedVal)
 {
     uint4 u;
     u.x = packedVal & 0xFFu;
@@ -51,8 +51,8 @@ void main(
     float3 p2 = center - right - up;
     float3 p3 = center + right - up;
     
-    float4 start_color = unpackUnorm4x8(particle.packed_start_color);
-    float4 end_color = unpackUnorm4x8(particle.packed_end_color);
+    float4 start_color = UnpackUnorm4x8(particle.packed_start_color);
+    float4 end_color = UnpackUnorm4x8(particle.packed_end_color);
     
     float4 color = lerp(start_color, end_color, t);
 

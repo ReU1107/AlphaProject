@@ -51,8 +51,8 @@ namespace Alpha::Renderer
 
 	struct TextureBindingData
 	{
-		UInt32 texture_index{ 0xFFFFFFFF };
-		UInt32 sampler_index;
+		uint texture_index{ 0xFFFFFFFF };
+		uint sampler_index;
 	};
 
 	struct MaterialData
@@ -68,63 +68,52 @@ namespace Alpha::Renderer
 
 	struct Meshlet
 	{
-		UInt32 vertex_element_offset{};
-		UInt32 triangle_element_offset{};
-		UInt32 vertex_count{};
-		UInt32 triangle_count{};
+		uint vertex_element_offset{};
+		uint triangle_element_offset{};
+		uint vertex_count{};
+		uint triangle_count{};
 
-		UInt32 material_index{};
+		uint material_index{};
 	};
 
 	struct Submesh
 	{
-		UInt32 index_element_offset{ 0 };
-		UInt32 index_count{ 0 };
+		uint index_element_offset{ 0 };
+		uint index_count{ 0 };
 	};
 
 	struct MeshData
 	{
-		UInt32 vertex_position_element_offset{};
-		UInt32 vertex_attribute_byte_offset{};
+		uint vertex_position_element_offset{};
+		uint vertex_attribute_byte_offset{};
 
-		UInt32 index_element_offset{};
-		UInt32 submesh_element_offset{};
+		uint index_element_offset{};
+		uint submesh_element_offset{};
 
-		UInt32 meshlet_element_offset{};
-		UInt32 meshlet_count{};
+		uint meshlet_element_offset{};
+		uint meshlet_count{};
 
-		UInt32 vertex_element_offset{};
-		UInt32 triangle_element_offset{};
+		uint vertex_element_offset{};
+		uint triangle_element_offset{};
 
-		UInt32 material_table_element_offset{};
+		uint material_table_element_offset{};
 
-		UInt32 attribute_flags{};	// このモデルが持つ頂点属性のフラグ
-		UInt32 vertex_stride{};	// 頂点属性のバイト数
-		UInt32 index_count{};
+		uint attribute_flags{};	// このモデルが持つ頂点属性のフラグ
+		uint vertex_stride{};	// 頂点属性のバイト数
+		uint index_count{};
 	};
 
 	// ラスタライズ用
 	struct InstanceData
 	{
-		Matrix4x4 world_matrix{ Matrix4x4::Identity };
+		float4x4 world_matrix{ float4x4::Identity };
 
-		UInt32 mesh_element_offset{};
-		UInt32 vertex_position_index{};
-		UINT32 vertex_element_offset{};
-		UInt32 override_material_element_offset{ 0xFFFFFFFF };	// 使わない場合は0xFFFFFFFF
-		UInt32 matrix_palette_offset{ 0xFFFFFFFF };
-		UInt32 visible{ 1 };
-	};
-
-	// レイトレ用
-	struct ASInstanceData
-	{
-		Matrix3x4 transform{ Matrix3x3::Identity };
-		UInt32 instance_id : 24{ 0 };
-		UInt32 instance_mask : 8{ 0xff };
-		UInt32 hit_group_offset : 24{ 0 };
-		UInt32 flags : 8{ 0 };
-		UInt64 blas_gpu_address{ 0 };
+		uint mesh_element_offset{};
+		uint vertex_position_index{};
+		uint vertex_element_offset{};
+		uint override_material_element_offset{ 0xFFFFFFFF };	// 使わない場合は0xFFFFFFFF
+		uint matrix_palette_offset{ 0xFFFFFFFF };
+		uint visible{ 1 };
 	};
 
 	struct VolumeMaterial
@@ -154,13 +143,19 @@ namespace Alpha::Renderer
 		float intensity{ 1.0f };
 
 		float3 direction{};
-		UInt32 type{ 0 };				// ライト種別 (0:Point, 1:Spot, 2:Directional)
+		uint type{ 0 };				// ライト種別 (0:Point, 1:Spot, 2:Directional)
 
 		float inner_cone{ 1.0f };	// スポットライト内角のcos
 		float outer_cone{ 0.7f };	// スポットライト外角のcos
 
 	};
 
+
+	struct Cluster
+	{
+		uint offset;
+		uint count;
+	};
 
 
 	/*
@@ -230,6 +225,17 @@ namespace Alpha::Renderer
 	/*
 	* 
 	*/
+
+	// レイトレ用
+	struct ASInstanceData
+	{
+		Matrix3x4 transform{ Matrix3x3::Identity };
+		UInt32 instance_id : 24{ 0 };
+		UInt32 instance_mask : 8{ 0xff };
+		UInt32 hit_group_offset : 24{ 0 };
+		UInt32 flags : 8{ 0 };
+		UInt64 blas_gpu_address{ 0 };
+	};
 
 	struct StaticBufferIndices
 	{
@@ -377,8 +383,8 @@ namespace Alpha::Renderer
 
 	struct RGBufferUsage
 	{
-		RGBufferHandle handle{};    // このテクスチャを
-		ERHIResourceState state{};    // このステートで使用する
+		RGBufferHandle handle{};
+		ERHIResourceState state{};
 	};
 
 	using RGPipelineHandle = std::variant<
@@ -422,6 +428,5 @@ namespace Alpha::Renderer
 		UInt32 volume_count{ 0 };
 		UInt32 procedural_primitive_count{ 0 };
 	};
-
 
 }

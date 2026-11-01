@@ -214,6 +214,12 @@ namespace Alpha::Renderer
 
 				ctx.command_list->Transition(resource.target, texture.state);
 			}
+			for (auto& buffer : pass.buffers)
+			{
+				const RGBufferResource& resource = m_buffer_palette.GetAt(buffer.handle.index);
+
+				ctx.command_list->Transition(resource.target, buffer.state);
+			}
 
 			std::visit([&](auto&& val) -> void {
 				using T = std::decay_t<decltype(val)>;

@@ -2,7 +2,7 @@
 #include "Particle.hlsli"
 #include "Sample.hlsli"
 
-uint packUnorm4x8(float4 val)
+uint PackUnorm4x8(float4 val)
 {
     uint4 u = uint4(round(clamp(val, 0.0, 1.0) * 255.0));
     return (u.x | (u.y << 8) | (u.z << 16) | (u.w << 24));
@@ -148,8 +148,8 @@ void main(uint3 id : SV_DispatchThreadID)
         particle.lifetime = emit_command.lifetime;
         particle.start_size = emit_command.start_size;
         particle.end_size = emit_command.end_size;
-        particle.packed_start_color = packUnorm4x8(emit_command.start_color);
-        particle.packed_end_color = packUnorm4x8(emit_command.end_color);
+        particle.packed_start_color = PackUnorm4x8(emit_command.start_color);
+        particle.packed_end_color = PackUnorm4x8(emit_command.end_color);
 
         particle_buffer[particle_offset + i] = particle;
     }
